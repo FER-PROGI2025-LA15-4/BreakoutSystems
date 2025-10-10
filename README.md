@@ -43,7 +43,7 @@ Kodeks ponašanja skup je provedivih pravila koja služe za jasnu komunikaciju o
 >* implicitno podrazmijevamo da će svi članovi grupe slijediti kodeks ponašanja.
  
 >###  Prijava problema
->Najgore što se može dogoditi je da netko šuti kad postoje problemi. Postoji nekoliko stvari koje možete učiniti kako biste najbolje riješili sukobe i probleme:
+>Najgore što se može dogoditi je da netko šuti kad postoje problemi.  Postoji nekoliko stvari koje možete učiniti kako biste najbolje riješili sukobe i probleme:
 >* Obratite mi se izravno [e-pošta](mailto:vlado.sruk@fer.hr) i  učinit ćemo sve što je u našoj moći da u punom povjerenju saznamo koje korake trebamo poduzeti kako bismo riješili problem.
 >* Razgovarajte s vašim asistentom jer ima najbolji uvid u dinamiku tima. Zajedno ćete saznati kako riješiti sukob i kako izbjeći daljnje utjecanje u vašem radu.
 >* Ako se osjećate ugodno neposredno razgovarajte o problemu. Manje incidente trebalo bi rješavati izravno. Odvojite vrijeme i privatno razgovarajte s pogođenim članom tima te vjerujte u iskrenost.
@@ -59,6 +59,10 @@ uvjet da navođenja autora, ne upotrebljavate ga u komercijalne svrhe te dijelit
 >
 > Svi paketi distribuiraju se pod vlastitim licencama.
 > Svi upotrijebleni materijali  (slike, modeli, animacije, ...) distribuiraju se pod vlastitim licencama.
+
+
+# 🧪 Test README update – commit check
+
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 
