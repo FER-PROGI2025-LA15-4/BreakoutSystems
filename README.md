@@ -1,32 +1,30 @@
-# Programsko inženjerstvo
+# BreakoutSystems
 
-> Ime projekta u naslovu ima cilj opisati namjenu projekta te pomoći u podizanju početnog interesa za projekt prezentirajući osnovnu svrhu projekta.
-> Isključivo ovisi o Vama!
-> 
-> Naravno, nijedan predložak nije idealan za sve projekte jer su potrebe i ciljevi različiti. Ne bojte se naglasiti Vaš cilj u ovoj početnoj stranici projekta, podržat ćemo ga bez obzira usredotočili se Vi više na tenologiju ili marketing.
-> 
-> Zašto ovaj dokument? Samo manji dio timova je do sada propoznao potrebu (a i meni je lakše pratiti Vaš rad).  
+## Opis projekta
+Ovaj projekt je reultat timskog rada u sklopu projeknog zadatka
+kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na
+Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
 
-# Opis projekta
-Ovaj projekt je reultat timskog rada u sklopu projeknog zadatka kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
+[_Wiki - Opis projektnog zadatka_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/1.--Opis-projektnog-zadatka)
 
-Kratko opisati cilj Vašeg projekta. Vaša motivacija?  (Napomena: odgovor nije »Zato što je to bio zadatak i nismo imali ideje za drugo.«). Koji problem rješavate?
-> Obzirom da je ovo zadani projekt navedite i što želite/jeste novo  naučili.
+## Funkcijski zahtjevi
+[_Wiki - Analiza zahtjeva_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/2.-Analiza-zahtjeva)
 
-> Dobro izrađen opis omogućuje vam da pokažete svoj rad drugim programerima, kao i potencijalnim poslodavcima. Ne samo da prvi dojam na stranici opisa često razlikuje dobar projekt od lošeg projekta već i predstavlja dobru praksu koju morate savladati.
+## Tehnologije
 
-# Funkcijski zahtjevi
-> Navedite ključne zahtjeve Vašeg projekta.
+## Instalacija
 
+## Članovi tima 
+| Ime i prezime   | Doprinos                   |
+|-----------------|----------------------------|
+| Hana Dolovčak   | Baza podataka, Wiki        |
+| Antonio Mamić   | Voditelj, DevOps, Frontend |
+| Aurora Necko    | Dizajn, Frontend           |
+| Bruno Pećnik    | Frontend                   |
+| Lucija Stipetić | Backend                    |
+| Filip Šušak     | Backend                    |
 
-# Tehnologije
-
-#Instalcija
-# Članovi tima 
-> Popis članova tima/linkovi/ glavni doprinos
->
-
-# Kontribucije
+## Kontribucije
 >Pravila ovise o organizaciji tima i su često izdvojena u CONTRIBUTING.md
 
 
