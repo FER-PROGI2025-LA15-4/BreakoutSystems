@@ -41,7 +41,6 @@ if %errorlevel% neq 0 (
   echo No npm found in PATH 1>&2
   exit /b 1
 )
-echo here
 
 rem install node packages and build frontend
 pushd frontend || (echo Failed to change to frontend directory 1>&2 & exit /b 1)

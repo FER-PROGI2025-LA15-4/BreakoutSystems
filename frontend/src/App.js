@@ -1,14 +1,22 @@
 import React from 'react';
-import MyButton from './components/MyButton';
-import { BrowserRouter as Router, Routes, Route } from 'react-router';
+import HomePage from './pages/Home';
+import LeaderboardPage from "./pages/Leaderboard";
+import NotFoundPage from "./pages/NotFound";
+import { BrowserRouter, Routes, Route } from 'react-router';
 
 function App() {
     return (
-        <Router>
+        <BrowserRouter>
             <Routes>
-                <Route path="/" element={<MyButton/>} />
+
+                <Route index element={<HomePage/>} />
+
+                <Route path="leaderboard" element={<LeaderboardPage/>} />
+
+                <Route path="*" element={<NotFoundPage />} />
+
             </Routes>
-        </Router>
+        </BrowserRouter>
     );
 }
 
