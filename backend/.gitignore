@@ -12,7 +12,7 @@ ENV/
 instance/
 .webassets-cache
 
-# Environment variables - NAJVAŽNIJE!
+# Environment variables
 .env
 
 # Database
@@ -28,4 +28,5 @@ instance/
 
 # OS
 .DS_Store
+
 Thumbs.db
