@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import { useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import logo from "../assets/images/logo.png";
 import profileIcon from "../assets/icons/user-profile.svg"
 
@@ -20,8 +20,8 @@ function Header(props) {
                     <p>Početna</p>
                     <div></div>
                 </NavLink>
-                <NavLink to="/link" className="header-nav-link">
-                    <p>Moj tim</p>
+                <NavLink to="/rooms" className="header-nav-link">
+                    <p>Escape Rooms</p>
                     <div></div>
                 </NavLink>
                 <NavLink to="/leaderboard"
