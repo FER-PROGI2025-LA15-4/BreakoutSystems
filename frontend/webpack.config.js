@@ -22,6 +22,10 @@ module.exports = {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
+            {
+                test: /\.(png|jpe?g|gif|svg|ico)$/i,
+                type: 'asset',
+            }
         ],
     },
     resolve: {
@@ -29,12 +33,13 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './public/index.html',
-            favicon: './public/favicon.ico',
+            template: './src/index.html',
+            favicon: './src/assets/icons/favicon.ico',
         }),
     ],
     devServer: {
         port: 3000,
-        proxy: [{ context: ['/api'], target: 'http://localhost:5000' }],
+        // ovo kasnije od-komentiramo kad spojimo sa backendom
+        // proxy: [{ context: ['/api'], target: 'http://localhost:5000' }],
     },
 };

@@ -1,14 +1,30 @@
 import React from 'react';
-import MyButton from './components/MyButton';
-import { BrowserRouter as Router, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import HomePage from './pages/Home';
+import EscapeRoomsPage from './pages/EscapeRooms';
+import LeaderboardPage from './pages/Leaderboard';
+import NotFoundPage from './pages/NotFound';
 
 function App() {
     return (
-        <Router>
+        <BrowserRouter>
             <Routes>
-                <Route path="/" element={<MyButton/>} />
+
+                {/* početna stranica */}
+                <Route index element={<HomePage />} />
+
+                {/* escape rooms stranica */}
+                <Route path="rooms" element={<EscapeRoomsPage />} />
+
+                {/* leaderboard stranica */}
+                <Route path="leaderboard" element={<LeaderboardPage />} />
+
+                {/* stranica 404 */}
+                <Route path="*" element={<NotFoundPage />} />
+
             </Routes>
-        </Router>
+        </BrowserRouter>
     );
 }
 
