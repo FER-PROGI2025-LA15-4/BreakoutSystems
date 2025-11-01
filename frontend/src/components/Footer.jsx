@@ -1,6 +1,6 @@
 import React from "react";
 import logo from "../assets/images/logo.png";
-import fer_logo from "../assets/images/fer-logo.svg";
+import fer_logo from "../assets/images/FER-logo.svg";
 
 function Footer() {
     return (
