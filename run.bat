@@ -44,7 +44,7 @@ if %errorlevel% neq 0 (
 
 rem install node packages and build frontend
 pushd frontend || (echo Failed to change to frontend directory 1>&2 & exit /b 1)
-call npm install
+call npm install --production=false
 if %errorlevel% neq 0 (
   echo npm install failed 1>&2
   popd
