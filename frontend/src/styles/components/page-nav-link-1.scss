@@ -1,0 +1,25 @@
+.page-nav-link-1 {
+  font-size: 1rem;
+  padding: 1.25rem 1.75rem;
+  color: white;
+  text-decoration: none;
+  background-color: #ea35b4;
+  border-radius: 999rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  column-gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+  user-select: none;
+  img {
+    height: 0.75rem;
+  }
+}
+.page-nav-link-1:hover {
+  column-gap: 2rem;
+}
+.page-nav-link-1:active {
+  column-gap: 2rem;
+}

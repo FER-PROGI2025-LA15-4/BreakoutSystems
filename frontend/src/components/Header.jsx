@@ -20,7 +20,7 @@ function Header(props) {
                     <p>Početna</p>
                     <div></div>
                 </NavLink>
-                <NavLink to="/rooms" className="header-nav-link">
+                <NavLink to="/escape-rooms" className="header-nav-link">
                     <p>Escape Rooms</p>
                     <div></div>
                 </NavLink>
@@ -29,7 +29,7 @@ function Header(props) {
                     <p>Leaderboard</p>
                     <div></div>
                 </NavLink>
-                <NavLink to="/link" id="header-nav-link-profile" className="header-nav-link">
+                <NavLink to="/profile" id="header-nav-link-profile" className={"header-nav-link" + (props.page === "profile" ? " header-nav-link-active" : "")}>
                     <p>Moj profil</p>
                     <div></div>
                 </NavLink>

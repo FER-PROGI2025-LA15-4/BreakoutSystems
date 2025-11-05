@@ -1,0 +1,37 @@
+.footer {
+  border-top: 1px solid #d3d6d8;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  align-content: center;
+  align-items: center;
+  user-select: none;
+}
+@media (max-width: 830px) {
+  .footer {
+    flex-direction: column;
+  }
+}
+.footer-msg {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+
+  p {
+    text-align: center;
+    margin: 0.5em;
+  }
+}
+.footer-logo-img {
+  height: 3.75em;
+  margin: 1em;
+}
+.footer-fer-logo-img {
+  height: 5em;
+  margin: 0 3em;
+}

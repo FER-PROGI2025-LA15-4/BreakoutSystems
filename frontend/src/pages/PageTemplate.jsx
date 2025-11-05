@@ -2,7 +2,7 @@ import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-function HomePage(props) {
+function PageTemplate(props) {
     return (
         <div className="react-body">
             <Header page={props.name}/>
@@ -14,4 +14,4 @@ function HomePage(props) {
     );
 }
 
-export default HomePage;
+export default PageTemplate;
