@@ -1,6 +1,113 @@
 @import "./escapeRooms";
 
-/* home page */
+:root {
+  --container: 1200px;
+  --gutter: 16px;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; overflow-x: hidden; }
+img { max-width: 100%; height: auto; display: block; }
+
+.container {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.header {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.header-inner {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-logo-div { display: flex; align-items: center; }
+
+.header-logo-img { height: 50px; width: auto; display: block; }
+
+.header-nav { display: flex; align-items: center; gap: 24px; }
+
+.header-nav-link {
+  text-decoration: none !important;
+  color: #111 !important;
+  font-weight: 600;
+  font-size: 15px;
+  position: relative;
+}
+
+.header-nav-link p { margin: 0; padding: 8px 10px 6px; }
+
+.header-nav-link div {
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+.header-nav-link:hover div,
+.header-nav-link-active div { background: #42d2f5; }
+
+.header-profile { display: flex; align-items: center; }
+.header-profile div {
+  background-color: #42d2f5;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+}
+.header-profile img { width: 24px; height: 24px; }
+
+.header-menu-icon { width: 44px; min-width: 44px; }
+
+.header a { text-decoration: none; color: inherit; }
+
+@media (max-width: 768px) {
+  .header-inner {
+    height: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-block: 12px;
+  }
+}
+
+.footer {
+  width: 100%;
+  background: #f7f7f7;
+}
+
+.footer-inner {
+  padding-block: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.footer-logo-img,
+.footer-fer-logo-img { height: 50px; display: block; }
+
+.footer-msg p {
+  margin: 4px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #444;
+}
+
+@media (max-width: 768px) {
+  .footer-inner { flex-direction: column; text-align: center; gap: 16px; }
+}
+
 .home-page {
   --maxw: 1200px;
   --space: 24px;
@@ -13,23 +120,20 @@
   --clr-purple-800: #2f238c;
   --clr-purple-700: #4630b8;
 
-  --clr-accent: #f062c0; 
-  --clr-pill: #4d3fd6;  
+  --clr-accent: #f062c0;
+  --clr-pill: #4d3fd6;
 
   color: var(--clr-text);
   background: var(--clr-bg);
 
-  /* svaku sekciju centriram i ima konzistentni padding */
   > section {
     width: min(100%, var(--maxw));
     margin-inline: auto;
     padding: clamp(24px, 4vw, 56px) 24px;
   }
 
-  /* hero */
   .hero {
     width: 100%;
-    /* full bleed pozadina hero-a */
     margin: 0;
     padding: clamp(28px, 5vw, 72px) 24px;
     border-radius: 0;
@@ -253,213 +357,5 @@
   @media (max-width: 560px) {
     .room-grid { grid-template-columns: 1fr; }
     .room-card > img { height: 200px; }
-  }
-}
-
-.header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.header-logo-img {
-  height: 60px;         /* fiksna, da ne može narasti */
-  width: auto;
-  display: block;
-}
-
-/* navigacija */
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-nav-link {
-  text-decoration: none !important;
-  color: #181818 !important;
-  font-weight: 600;
-}
-
-.header-nav-link p {
-  margin: 0;
-  padding: 8px 10px 6px;
-}
-
-.header-nav-link div {
-  height: 3px;
-  background: transparent;
-}
-
-.header-nav-link:hover,
-.header-nav-link.header-nav-link-active {
-  color: rgb(66, 210, 245) !important;
-}
-
-.header-nav-link:hover div,
-.header-nav-link.header-nav-link-active div {
-  background: rgb(66, 210, 245);
-}
-
-.header-profile div {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-}
-
-.header-profile img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  display: block;
-}
-
-.header-menu-icon {
-  width: 44px;
-  min-width: 44px;
-}
-
-.footer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 16px 24px;
-}
-
-.footer img {
-  display: block;
-  height: auto;
-  max-height: 64px;   /* spriječi ogromne logotipe */
-}
-
-.footer-logo-img { max-height: 60px; }
-.footer-fer-logo-img { max-height: 64px; }
-
-.footer-msg p {
-  margin: 4px 0;
-  line-height: 1.4;
-  text-align: center;
-}
-
-@media (max-width: 768px) {
-  .footer { flex-direction: column; }
-}
-
-/* sitni reset da linkovi u headeru ne budu plavi i podcrtani */
-.header a { text-decoration: none; color: inherit; }
-
-.header {
-  background: white;
-  height: 80px;
-  padding: 0 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #eee;
-}
-
-.header-logo-div {
-  display: flex;
-  align-items: center;
-}
-
-.header-logo-img {
-  height: 50px;
-  margin-right: 20px;
-}
-
-/* navigacija je ravno po sredini */
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-/* linkovi malo deblji i crni */
-.header-nav-link {
-  text-decoration: none;
-  color: #111 !important;
-  font-weight: 600;
-  font-size: 15px;
-  position: relative;
-}
-
-/* underline efekt na hover */
-.header-nav-link div {
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: transparent;
-  transition: background-color 0.2s ease;
-}
-
-.header-nav-link:hover div,
-.header-nav-link-active div {
-  background: #42d2f5;
-}
-
-/* profilna ikona poravnana desno */
-.header-profile {
-  display: flex;
-  align-items: center;
-}
-
-.header-profile div {
-  background-color: #42d2f5;
-  border-radius: 50%;
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-}
-
-.header-profile img {
-  width: 24px;
-  height: 24px;
-  margin-top: 0;
-}
-
-.footer {
-  background: #f7f7f7;
-  padding: 24px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 30px;
-}
-
-.footer-logo-img {
-  height: 50px;
-}
-
-.footer-fer-logo-img {
-  height: 50px;
-}
-
-.footer-msg p {
-  margin: 4px 0;
-  text-align: center;
-  font-size: 14px;
-  color: #444;
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-wrap: wrap;
-    justify-content: center;
-    height: auto;
-  }
-
-  .footer {
-    flex-direction: column;
-    text-align: center;
   }
 }
