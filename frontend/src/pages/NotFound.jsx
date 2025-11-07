@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import PageTemplate from "./PageTemplate";
+import PageNavLink1 from "../components/PageNavLink1";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1520975922284-9d09d07c8a09?q=80&w=1200&auto=format&fit=crop"; // privremeno

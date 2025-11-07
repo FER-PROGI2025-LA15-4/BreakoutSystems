@@ -4,6 +4,7 @@ import HomePage from './pages/Home';
 import EscapeRoomsPage from './pages/EscapeRooms';
 import LeaderboardPage from './pages/Leaderboard';
 import NotFoundPage from './pages/NotFound';
+import ProfilePage from "./pages/Profile";
 
 function App() {
     return (
@@ -14,10 +15,13 @@ function App() {
                 <Route index element={<HomePage />} />
 
                 {/* escape rooms stranica */}
-                <Route path="rooms" element={<EscapeRoomsPage />} />
+                <Route path="escape-rooms" element={<EscapeRoomsPage />} />
 
                 {/* leaderboard stranica */}
                 <Route path="leaderboard" element={<LeaderboardPage />} />
+
+                {/* profil stranica */}
+                <Route path="profile" element={<ProfilePage />} />
 
                 {/* stranica 404 */}
                 <Route path="*" element={<NotFoundPage />} />

@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     entry: './src/index.js',
@@ -35,7 +36,13 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './src/index.html',
             favicon: './src/assets/icons/favicon.ico',
+            publicPath: '/',
         }),
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: 'node_modules/leaflet/dist/images', to: '' }
+            ]
+        })
     ],
     devServer: {
         port: 3000,
