@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import PageTemplate from "./PageTemplate";
+import PageNavLink1 from "../components/PageNavLink1";
+import {SyncLoader} from "react-spinners";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import RoomTile from "../components/RoomTile";
 
 /*
  * API očekivanja (backend) :
@@ -28,11 +32,11 @@ const MOCK_ROOMS = [
   {
     id: "r2",
     name: "Ukradeni kolači",
-    description: "Netko je pojeo sve kolače iz pekare 'Slatki kutak'! Riješi misterij.",
+    description: "Netko je pojeo sve kolače iz pekare 'Slatki kutak'!",
     genre: "Humor",
     difficulty: 4,
     location: "Zagreb, Donji grad",
-    imageUrl: "https://images.unsplash.com/photo-1606755962773-0b57b7b9303d?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://hotelrepublika.qupola.net/wp-content/uploads/sites/14/2025/10/cookies-chocolate-chips-arrangement-1024x683.jpg",
   },
   {
     id: "r3",
@@ -81,6 +85,7 @@ function useFeaturedRooms() {
 
 function HomeContent() {
   const { rooms, loading } = useFeaturedRooms();
+  const position = [45.8150, 15.9819]; // Zagreb coordinates
 
   return (
     <div className="home-page">
@@ -92,14 +97,7 @@ function HomeContent() {
             Istraži najuzbudljivije Escape Room avanture u svom gradu – okupi tim, rješavaj zagonetke i
             popni se na vrh ljestvice!
           </p>
-          <button>Pretraži ➜</button>
-        </div>
-        <div className="hero-right">
-          {/* ovdje cemo neku sliku stavit */}
-          <img
-            src="https://cdn.pixabay.com/photo/2020/07/01/12/58/escape-room-5359953_1280.png"
-            alt="Escape Room ilustracija"
-          />
+          <PageNavLink1 to="/escape-rooms" text="PRETRAŽI" />
         </div>
       </section>
 
@@ -110,9 +108,8 @@ function HomeContent() {
           organizatore.
         </p>
         <p>
-          <strong>Pretraži</strong> sobe, <strong>rezerviraj</strong> termin, <strong>plati</strong>{" "}
-          online i <strong>prati rezultate</strong> svog tima na ljestvici. Tvoja sljedeća avantura počinje
-          ovdje!
+          <strong>Pretraži</strong> sobe, <strong>rezerviraj</strong> termin, <strong>plati</strong> online
+            i <strong>prati rezultate</strong> svog tima na ljestvici. Tvoja sljedeća avantura počinje ovdje!
         </p>
       </section>
 
@@ -122,63 +119,42 @@ function HomeContent() {
         <p>Više od 100 Escape Roomova iz cijele Hrvatske! Odaberite i rezervirajte.</p>
 
         {loading ? (
-          <p>Učitavanje...</p>
+          <SyncLoader />
         ) : (
           <div className="room-grid">
-            {rooms.map((room) => (
-              <div key={room.id} className="room-card">
-                <img src={room.imageUrl} alt={room.name} />
-                <h3>{room.name}</h3>
-                <p>{room.description}</p>
-                <p>
-                  <strong>Žanr:</strong> {room.genre}
-                </p>
-                <p>
-                  <strong>Težina:</strong>{" "}
-                  {Array.from({ length: room.difficulty }).map((_, i) => "⭐")}
-                </p>
-                <p>
-                  <strong>Lokacija:</strong> {room.location}
-                </p>
-                <button>Detalji</button>
-              </div>
-            ))}
+            {rooms.map((room) => <RoomTile room={room}/>)}
           </div>
         )}
-        <button className="show-all">Pogledaj sve ➜</button>
+        <PageNavLink1 to="/escape-rooms" text="POGLEDAJ SVE" className="featured-btn"/>
       </section>
 
       {/* mapa sekcija */}
       <section className="map-section">
         <div className="map-text">
           <h2>Sve na jednom mjestu</h2>
-          <p>
-            Pogledajte lokacije svih Escape Roomova i odaberite svoj sljedeći izazov! Uskoro će ovdje biti
-            prikazana interaktivna karta s dostupnim sobama.
-          </p>
+          <p>Pogledajte lokacije svih Escape Roomova i odaberite svoj sljedeći izazov!</p>
         </div>
-        <div className="map-placeholder">
-          <iframe
-            title="Google mapa"
-            width="100%"
-            height="300"
-            loading="lazy"
-            allowFullScreen
-            src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=Zagreb"
-          ></iframe>
-        </div>
+        <MapContainer className="map-content" center={position} zoom={13} scrollWheelZoom={true} attributionControl={false}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+            <Marker position={position}>
+                <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
+            </Marker>
+        </MapContainer>
       </section>
 
       {/* CTA sekcija */}
       <section className="cta-owner">
-        <h2>Vlasnik si Escape rooma?</h2>
-        <p>
-          <strong>Dodaj</strong> svoj Escape Room na BreakoutSystems, <strong>povećaj vidljivost</strong> i
-          učini ga <strong>dostupnim svima</strong>.  
-          Upravljaj <strong>terminima</strong>, <strong>rezultatima</strong> i{" "}
-          <strong>rezervacijama</strong> – sve s jednog mjesta!
-        </p>
-        <button>Moje sobe ➜</button>
+        <div className="cta-owner-circle"></div>
+        <div className="cta-owner-content">
+          <h2>Vlasnik si Escape rooma?</h2>
+          <p>
+              <strong>Dodaj</strong> svoj Escape Room na BreakoutSystems, <strong>povećaj vidljivost</strong> i
+              učini ga <strong>dostupnim svima</strong>.<br/>
+              Upravljaj <strong>terminima</strong>, <strong>rezultatima</strong> i <strong>rezervacijama</strong> – sve
+              s jednog mjesta!
+          </p>
+          <PageNavLink1 to="/profile" text="MOJE SOBE" className="cta-btn"/>
+        </div>
       </section>
     </div>
   );
