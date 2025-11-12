@@ -20,7 +20,7 @@ function RoomTile({ room, className }) {
             <p>
                 <strong>Lokacija:</strong> {room.location}
             </p>
-            <button>Detalji</button>
+            <button>DETALJI</button>
         </div>
     );
 }
