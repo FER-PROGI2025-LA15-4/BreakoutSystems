@@ -1,5 +1,6 @@
 import React from "react";
 import RightArrowIcon from "../assets/icons/right-arrow.svg";
+import RightArrowIconDark from "../assets/icons/right-arrow-black.svg";
 import { NavLink } from "react-router-dom";
 
 function PageNavLink1(props) {
@@ -7,10 +8,11 @@ function PageNavLink1(props) {
     if (props.className) {
         class_name += " " + props.className;
     }
+    const right_icon = props.dark === true ? RightArrowIconDark : RightArrowIcon;
     return (
         <NavLink to={props.to} className={class_name}>
             <p>{props.text}</p>
-            <img src={RightArrowIcon} alt="Desna strelica"/>
+            <img src={right_icon} alt="Desna strelica"/>
         </NavLink>
     );
 }
