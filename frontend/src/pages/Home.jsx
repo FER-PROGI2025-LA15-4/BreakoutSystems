@@ -97,7 +97,7 @@ function HomeContent() {
             Istraži najuzbudljivije Escape Room avanture u svom gradu – okupi tim, rješavaj zagonetke i
             popni se na vrh ljestvice!
           </p>
-          <PageNavLink1 to="/escape-rooms" text="PRETRAŽI" />
+          <PageNavLink1 to="/nf" text="PRETRAŽI" />
         </div>
       </section>
 

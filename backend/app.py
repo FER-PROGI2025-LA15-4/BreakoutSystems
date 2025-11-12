@@ -59,15 +59,11 @@ import os
 # - Backend automatski redirecta logirane korisnike na odgovarajuće stranice.
 # - Ne mijenjati redirect URI, mora biti isti kao u GitHub OAuth App postavkama.
 
-#  ❗ ❗ ❗ ❗ Provjerite CORS postavke ako frontend i backend nisu na istoj domeni ❗ ❗ ❗ ❗ ❗ ❗
-#  ❗ ❗ ❗ ❗ mislim da trebate koristiti
-#   fetch('/api/me', {
-#       credentials: 'include' // da se ukljuci cookie u zahtjev
-#   })
 
 
 
-app = Flask(__name__, static_folder='build', static_url_path='')
+app = Flask(__name__)
+app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
 # Učitaj konfiguraciju iz config.py
 app.config.from_object(Config)
@@ -139,14 +135,17 @@ def delete_users():
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react(path):
-    """
-    Služi React aplikaciju za sve rute koje nisu /api/*
-    catch all funkcija
-    """
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+    if path.startswith("api"):
+        return jsonify({"error": "Not Found"}), 404
+
+    if path == "":
+        path = "index.html"
+
+    full_path = os.path.join(app.frontend_dir, path)
+    if os.path.exists(full_path) and os.path.isfile(full_path):
+        return send_from_directory(app.frontend_dir, path)
+
+    return send_from_directory(app.frontend_dir, "index.html")
 
 
 # ===== DATABASE SETUP =====
@@ -155,7 +154,6 @@ def create_tables():
     """Kreira database tablice ako ne postoje"""
     with app.app_context():
         db.create_all()
-        print("✅ Database tablice kreirane")
 
 
 # ===== ERROR HANDLERS =====
@@ -179,19 +177,9 @@ def unauthorized():
     return jsonify({'error': 'Unauthorized', 'authenticated': False}), 401
 
 
-# ===== POKRETANJE APLIKACIJE =====
-
 if __name__ == '__main__':
     # Kreiraj tablice pri prvom pokretanju
     create_tables()
 
-    print("=" * 50)
-    print("🚀 ESCAPE ROOM APP - React + Flask")
-    print("=" * 50)
-    print("📍 Server: http://localhost:5000")
-    print("🔐 OAuth callback: http://localhost:5000/api/auth/callback")
-    print("📱 React app: http://localhost:5000")
-    print("=" * 50)
-
     # Pokreni development server
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    app.run(debug=True, port=int(os.environ.get("PORT", 5000)), host='0.0.0.0')

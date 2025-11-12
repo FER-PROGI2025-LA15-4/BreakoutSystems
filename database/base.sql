@@ -21,14 +21,6 @@ CREATE TABLE Vlasnik (
     FOREIGN KEY (username) REFERENCES Korisnik(username) ON DELETE CASCADE
 );
 
-CREATE TABLE PlacenaClanarina (
-    username VARCHAR(255),
-    datVrUplate VARCHAR(255) DEFAULT CURRENT_TIMESTAMP,
-    brMjeseci INT NOT NULL CHECK (brMjeseci in (1, 12)),
-    PRIMARY KEY (username, datVrUplate),
-    FOREIGN KEY (username) REFERENCES Vlasnik(username) ON DELETE CASCADE
-);
-
 CREATE TABLE Tim (
     ime VARCHAR(255) PRIMARY KEY,
     image_url VARCHAR(255) UNIQUE,
@@ -39,26 +31,11 @@ CREATE TABLE Tim (
 CREATE TABLE ClanTima (
     ime_tima VARCHAR(255),
     username VARCHAR(255),
-    requestDatVr VARCHAR(255) DEFAULT CURRENT_TIMESTAMP,
-    joinDatVr VARCHAR(255),   -- vrijeme ulaska u tim, ako je NULL korisnik jos nije prihvatio ulazak u tim
-    leaveDatVr VARCHAR(255),  -- vrijeme izlaska iz tima, ako je NULL, korisnik je jos u timu (ako joinDatVr nije NULL)
-    PRIMARY KEY (ime_tima, username, requestDatVr),
+    accepted BOOLEAN NOT NULL DEFAULT 0,
+    PRIMARY KEY (ime_tima, username),
     FOREIGN KEY (ime_tima) REFERENCES Tim(ime) ON DELETE CASCADE,
-    FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE,
-    CHECK (joinDatVr IS NULL OR (requestDatVr <= joinDatVr)),
-    CHECK (leaveDatVr IS NULL OR (joinDatVr IS NOT NULL AND joinDatVr <= leaveDatVr AND requestDatVr <= leaveDatVr))
+    FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE
 );
-CREATE TRIGGER tg_ClanTima_enforce_single_user_entry
-    BEFORE INSERT ON ClanTima
-    FOR EACH ROW
-BEGIN
-    SELECT RAISE(ABORT, 'User already is a part of or has an invite for this team')
-        WHERE EXISTS (
-		SELECT *
-		FROM ClanTima
-		WHERE ClanTima.username=NEW.username AND (ClanTima.joinDatVr IS NULL OR ClanTima.leaveDatVr IS NOT NULL)
-	);
-END;
 
 CREATE TABLE EscapeRoom (
     room_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,6 +71,23 @@ CREATE TABLE Termin (
     FOREIGN KEY (ime_tima) REFERENCES Tim(ime) ON DELETE CASCADE
 );
 
+CREATE TABLE ClanNaTerminu (
+    room_id INT,
+    datVrPoc VARCHAR(255),
+    username VARCHAR(255),
+    PRIMARY KEY (room_id, datVrPoc, username),
+    FOREIGN KEY (room_id, datVrPoc) REFERENCES Termin(room_id, datVrPoc) ON DELETE CASCADE,
+    FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE
+);
+
+CREATE TABLE PlacenaClanarina (
+    room_id INT,
+    datVrUplate VARCHAR(255) DEFAULT CURRENT_TIMESTAMP,
+    brMjeseci INT NOT NULL CHECK (brMjeseci in (1, 12)),
+    PRIMARY KEY (room_id, datVrUplate),
+    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE
+);
+
 CREATE TABLE OcjenaTezine (
     room_id INT,
     username VARCHAR(255),
@@ -108,14 +102,9 @@ CREATE TRIGGER tg_OcjenaTezine_enforce_user_visit
     FOR EACH ROW
 BEGIN
     SELECT RAISE(ABORT, 'User never visited room')
-        WHERE NOT EXISTS (
+    WHERE NOT EXISTS (
 		SELECT *
-		FROM Termin JOIN Tim ON Termin.ime_tima=Tim.ime
-			JOIN ClanTima ON Tim.ime=ClanTima.ime_tima
-		WHERE Termin.room_id=NEW.room_id
-			AND ClanTima.username=NEW.username
-			AND ClanTima.joinDatVr IS NOT NULL
-			AND Termin.datVrPoc >= ClanTima.joinDatVr
-			AND (ClanTima.leaveDatVr IS NULL OR ClanTima.leaveDatVr >= Termin.datVrPoc)
+		FROM ClanNaTerminu
+		WHERE Termin.room_id=NEW.room_id AND ClanNaTerminu.username=NEW.username
 	);
 END;

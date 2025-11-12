@@ -1,7 +1,19 @@
-.not-found-body {
+.nf-body {
   flex: 1 0 auto;
+  width: 100%;
+  background-color: #f0df37;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+
+  >div {
+    flex: 1 0 auto;
+  }
+}
+.nf-body-img {
+  background-image: url('../assets/images/404.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
 }
