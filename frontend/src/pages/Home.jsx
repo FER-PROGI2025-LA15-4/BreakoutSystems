@@ -132,7 +132,7 @@ function HomeContent() {
       <section className="map-section">
         <div className="map-text">
           <h2>Sve na jednom mjestu</h2>
-          <p>Pogledajte lokacije svih Escape Roomova i odaberite svoj sljedeći izazov!</p>
+          <p>Pogledajte lokacije svih Escape Roomova i odaberite svoje sljedeći izazov! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         </div>
         <MapContainer className="map-content" center={position} zoom={13} scrollWheelZoom={true} attributionControl={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>

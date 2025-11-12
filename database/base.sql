@@ -1,110 +1,110 @@
--- PROGI: Platforma za rezervaciju Escape Room-ova
-
--- 1. KORISNIK (Sve uloge)
 CREATE TABLE Korisnik (
-    korisnik_id SERIAL PRIMARY KEY, 
-    oauth_id VARCHAR(255) UNIQUE NOT NULL, -- ID iz OAuth 2.0 sustava
-    ime VARCHAR(100) NOT NULL,
-    prezime VARCHAR(100) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    uloga VARCHAR(50) NOT NULL CHECK (uloga IN ('POLAZNIK', 'VLASNIK', 'ADMINISTRATOR')), -- ogranicenje na dozvoljene uloge
-    datum_registracije TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    username VARCHAR(255) PRIMARY KEY,
+    oauth_id VARCHAR(255) UNIQUE NOT NULL,                                           -- ID iz OAuth 2.0 sustava
+    uloga VARCHAR(8) NOT NULL CHECK (uloga IN ('POLAZNIK', 'VLASNIK', 'ADMIN'))      -- ogranicenje na dozvoljene uloge
 );
 
--- 2. VLASNIK
+CREATE TABLE Polaznik (
+    username VARCHAR(255) PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    profImgUrl VARCHAR(255) UNIQUE,
+    FOREIGN KEY (username) REFERENCES Korisnik(username) ON DELETE CASCADE
+);
+
 CREATE TABLE Vlasnik (
-    korisnik_id INT PRIMARY KEY,
-    naziv_tvrtke VARCHAR(255) UNIQUE,
-    opis_profila TEXT,
-    FOREIGN KEY (korisnik_id) REFERENCES Korisnik(korisnik_id) ON DELETE CASCADE
+    username VARCHAR(255) PRIMARY KEY,
+    naziv_tvrtke VARCHAR(255) NOT NULL,
+    adresa VARCHAR(255) NOT NULL,
+    grad VARCHAR(255) NOT NULL,
+    telefon VARCHAR(255) NOT NULL,
+    logoImgUrl VARCHAR(255) UNIQUE,
+    FOREIGN KEY (username) REFERENCES Korisnik(username) ON DELETE CASCADE
 );
 
--- 3. ESCAPE ROOM
-CREATE TABLE EscapeRoom (
-    room_id SERIAL PRIMARY KEY,
-    vlasnik_id INT NOT NULL,
-    naziv VARCHAR(255) NOT NULL,
-    opis TEXT,
-    slika_url VARCHAR(500),
-    geografska_lokacija VARCHAR(100), -- Format 'lat,lon' ili JSON
-    inicijalna_tezina DECIMAL(3,1) NOT NULL,
-    cijena_po_timu DECIMAL(10,2) NOT NULL,
-    prosjecna_tezina DECIMAL(3,1) DEFAULT 0.0, -- korigirana težina
-    FOREIGN KEY (vlasnik_id) REFERENCES Vlasnik(korisnik_id) ON DELETE CASCADE
-);
-
--- 4. OCJENATEZINE
-CREATE TABLE OcjenaTezine (
-    ocjena_id SERIAL PRIMARY KEY,
-    room_id INT NOT NULL,
-    korisnik_id INT NOT NULL,
-    vrijednost_ocjene INT NOT NULL CHECK (vrijednost_ocjene BETWEEN 1 AND 5), 
-    datum_ocjene DATE DEFAULT CURRENT_DATE,
-    UNIQUE (room_id, korisnik_id), -- jedan korisnik može ocijeniti jedan room samo jednom
-    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE,
-    FOREIGN KEY (korisnik_id) REFERENCES Korisnik(korisnik_id) ON DELETE CASCADE
-);
-
--- 5. TERMIN
-CREATE TABLE Termin (
-    termin_id SERIAL PRIMARY KEY,
-    room_id INT NOT NULL,
-    vrijeme_pocetka TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('SLOBODNO', 'REZERVIRANO', 'ODIGRANO')),
-    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE
-);
-
--- 6. TIM
 CREATE TABLE Tim (
-    tim_id SERIAL PRIMARY KEY,
-    naziv VARCHAR(150) NOT NULL,
-    voditelj_id INT NOT NULL, -- korisnik koji rezervira i plaća
-    FOREIGN KEY (voditelj_id) REFERENCES Korisnik(korisnik_id) ON DELETE CASCADE
+    ime VARCHAR(255) PRIMARY KEY,
+    image_url VARCHAR(255) UNIQUE,
+    voditelj_username VARCHAR(255) NOT NULL,                                      -- korisnik koji rezervira i placa
+    FOREIGN KEY (voditelj_username) REFERENCES Polaznik(username) ON DELETE CASCADE
 );
 
--- 7. CLANTIMA (M:N veza)
 CREATE TABLE ClanTima (
-    tim_id INT NOT NULL,
-    korisnik_id INT NOT NULL,
-    datum_pridruzivanja DATE DEFAULT CURRENT_DATE,
-    PRIMARY KEY (tim_id, korisnik_id),
-    FOREIGN KEY (tim_id) REFERENCES Tim(tim_id) ON DELETE CASCADE,
-    FOREIGN KEY (korisnik_id) REFERENCES Korisnik(korisnik_id) ON DELETE CASCADE
+    ime_tima VARCHAR(255),
+    username VARCHAR(255),
+    accepted BOOLEAN NOT NULL DEFAULT 0,
+    PRIMARY KEY (ime_tima, username),
+    FOREIGN KEY (ime_tima) REFERENCES Tim(ime) ON DELETE CASCADE,
+    FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE
 );
 
--- 8. REZERVACIJA
-CREATE TABLE Rezervacija (
-    rezervacija_id SERIAL PRIMARY KEY,
-    termin_id INT UNIQUE NOT NULL, -- Termin se može rezervirati samo jednom
-    tim_id INT NOT NULL,
-    datum_rezervacije TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    iznos_placanja DECIMAL(10,2) NOT NULL,
-    status_placanja VARCHAR(50) NOT NULL CHECK (status_placanja IN ('PLACENO', 'CEKA', 'OTKAZANO')),
-    FOREIGN KEY (termin_id) REFERENCES Termin(termin_id) ON DELETE RESTRICT,
-    FOREIGN KEY (tim_id) REFERENCES Tim(tim_id) ON DELETE RESTRICT
+CREATE TABLE EscapeRoom (
+    room_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vlasnik_username VARCHAR(255) NOT NULL,
+    naziv VARCHAR(255) NOT NULL,
+    opis VARCHAR(255) NOT NULL,
+    geo_lat DOUBLE NOT NULL CHECK (geo_lat BETWEEN -90.0 AND 90.0),
+    geo_long DOUBLE NOT NULL CHECK (geo_long BETWEEN -180.0 AND 180.0),
+    adresa VARCHAR(255) NOT NULL,
+    grad VARCHAR(255) NOT NULL,
+    inicijalna_tezina DOUBLE NOT NULL CHECK (inicijalna_tezina BETWEEN 1.0 AND 5.0),
+    cijena DOUBLE NOT NULL CHECK (cijena >= 0.0),
+    minBrClanTima INT NOT NULL CHECK (minBrClanTima >= 1),
+    maxBrClanTima INT NOT NULL,
+    kategorija VARCHAR(255) NOT NULL,
+    CHECK (minBrClanTima <= maxBrClanTima),
+    FOREIGN KEY (vlasnik_username) REFERENCES Vlasnik(username) ON DELETE CASCADE
 );
 
--- 9. REZULTATIGRE
-CREATE TABLE RezultatIgre (
-    rezultat_id SERIAL PRIMARY KEY,
-    rezervacija_id INT UNIQUE NOT NULL, 
-    vrijeme_zavrsetka_sekunde INT NOT NULL, 
-    datum_igre DATE,
-    osvojeni_bodovi_globalno INT, 
-    FOREIGN KEY (rezervacija_id) REFERENCES Rezervacija(rezervacija_id) ON DELETE CASCADE
-);
-
--- 10. pomoćna tablica POSJECENIROOM (za provjeru pravila rezervacije)
--- osigurava da znamo točno koje je sobe posjetio koji korisnik
-CREATE TABLE PosjeceniRoom (
-    korisnik_id INT NOT NULL,
+CREATE TABLE EscapeRoomImage (
+    image_url VARCHAR(255) PRIMARY KEY,
     room_id INT NOT NULL,
-    PRIMARY KEY (korisnik_id, room_id),
-    FOREIGN KEY (korisnik_id) REFERENCES Korisnik(korisnik_id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE
 );
 
--- Indeksi za brže pretraživanje
-CREATE INDEX idx_room_vlasnik ON EscapeRoom(vlasnik_id);
-CREATE INDEX idx_termin_room ON Termin(room_id);
-CREATE INDEX idx_clan_korisnik ON ClanTima(korisnik_id);
+CREATE TABLE Termin (
+    room_id INT,
+    datVrPoc VARCHAR(255),
+    ime_tima VARCHAR(255),
+    rezultatSekunde INT,
+    PRIMARY KEY(room_id, datVrPoc),
+    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE,
+    FOREIGN KEY (ime_tima) REFERENCES Tim(ime) ON DELETE CASCADE
+);
+
+CREATE TABLE ClanNaTerminu (
+    room_id INT,
+    datVrPoc VARCHAR(255),
+    username VARCHAR(255),
+    PRIMARY KEY (room_id, datVrPoc, username),
+    FOREIGN KEY (room_id, datVrPoc) REFERENCES Termin(room_id, datVrPoc) ON DELETE CASCADE,
+    FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE
+);
+
+CREATE TABLE PlacenaClanarina (
+    room_id INT,
+    datVrUplate VARCHAR(255) DEFAULT CURRENT_TIMESTAMP,
+    brMjeseci INT NOT NULL CHECK (brMjeseci in (1, 12)),
+    PRIMARY KEY (room_id, datVrUplate),
+    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE
+);
+
+CREATE TABLE OcjenaTezine (
+    room_id INT,
+    username VARCHAR(255),
+    vrijednost_ocjene DOUBLE NOT NULL CHECK (vrijednost_ocjene BETWEEN 1.0 AND 5.0),
+    PRIMARY KEY (room_id, username),
+    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE,
+    FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE
+);
+
+CREATE TRIGGER tg_OcjenaTezine_enforce_user_visit
+    BEFORE INSERT ON OcjenaTezine
+    FOR EACH ROW
+BEGIN
+    SELECT RAISE(ABORT, 'User never visited room')
+    WHERE NOT EXISTS (
+		SELECT *
+		FROM ClanNaTerminu
+		WHERE Termin.room_id=NEW.room_id AND ClanNaTerminu.username=NEW.username
+	);
+END;
