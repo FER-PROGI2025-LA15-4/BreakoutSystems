@@ -46,7 +46,8 @@ module.exports = {
     ],
     devServer: {
         port: 3000,
-        // ovo kasnije od-komentiramo kad spojimo sa backendom
-        // proxy: [{ context: ['/api'], target: 'http://localhost:5000' }],
+        historyApiFallback: true,
+        hot: true,
+        proxy: [{ context: ['/api'], target: 'http://localhost:5000' }],
     },
 };

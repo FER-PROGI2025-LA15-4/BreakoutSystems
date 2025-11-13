@@ -1,0 +1,40 @@
+.profile-page {
+  flex: 1 0 0;
+  width: 100%;
+  background-color: #42d1f3;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  >h1 {
+    align-self: flex-start;
+    z-index: 5;
+    background-color: white;
+    padding: 1em;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+  >h1:hover {
+    background-color: #f0df37;
+  }
+}
+$circle-radius: 1000px;
+.profile-page-circle {
+  width: $circle-radius;
+  height: $circle-radius;
+  background-color: #f0df37;
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: -15%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+.profile-page-content {
+  background-color: white;
+  border-radius: 20px;
+  z-index: 5;
+}
