@@ -27,6 +27,10 @@ class Korisnik(UserMixin, db.Model):
         self.oauth_id = oauth_id
         self.uloga = uloga
 
+    def get_id(self):
+        """Flask-Login zahtijeva ovu metodu - vraća username kao ID"""
+        return self.username
+
     def __repr__(self):
         return f"<Korisnik {self.username} ({self.uloga})>"
 
@@ -41,7 +45,7 @@ class Korisnik(UserMixin, db.Model):
 # -----------------------------
 # 2. Polaznik
 # -----------------------------
-class Polaznik(db.Model):
+class Polaznik(UserMixin, db.Model):
     __tablename__ = 'Polaznik'
 
     username = db.Column(
@@ -59,21 +63,27 @@ class Polaznik(db.Model):
         self.email = email
         self.profImgUrl = profImgUrl
 
+    def get_id(self):
+        """Flask-Login zahtijeva ovu metodu - vraća username kao ID"""
+        return self.username
+
     def __repr__(self):
         return f"<Polaznik {self.username} ({self.email})>"
 
     def to_dict(self):
         return {
+            "oauth_id": self.korisnik.oauth_id,
             "username": self.username,
             "email": self.email,
-            "profImgUrl": self.profImgUrl
+            "profImgUrl": self.profImgUrl,
+            "uloga": "POLAZNIK"
         }
 
 
 # -----------------------------
 # 3. Vlasnik
 # -----------------------------
-class Vlasnik(db.Model):
+class Vlasnik(UserMixin, db.Model):
     __tablename__ = 'Vlasnik'
 
     username = db.Column(
@@ -97,15 +107,21 @@ class Vlasnik(db.Model):
         self.telefon = telefon
         self.logoImgUrl = logoImgUrl
 
+    def get_id(self):
+        """Flask-Login zahtijeva ovu metodu - vraća username kao ID"""
+        return self.username
+
     def __repr__(self):
         return f"<Vlasnik {self.username} ({self.naziv_tvrtke})>"
 
     def to_dict(self):
         return {
+            "oauth_id": self.korisnik.oauth_id,
             "username": self.username,
             "naziv_tvrtke": self.naziv_tvrtke,
             "adresa": self.adresa,
             "grad": self.grad,
             "telefon": self.telefon,
-            "logoImgUrl": self.logoImgUrl
+            "logoImgUrl": self.logoImgUrl,
+            "uloga": "VLASNIK"
         }

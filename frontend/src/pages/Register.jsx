@@ -18,7 +18,7 @@ function RegisterPage() {
                 <h2>Registracija</h2>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
 
-                <form action={"/api/auth/login"} method="POST" encType={"multipart/form-data"} className="register-form">
+                <form action={"/api/auth/register"} method="POST" encType={"multipart/form-data"} className="register-form">
                     <div className={"register-form-element"}>
                         <label htmlFor="username">Korisničko ime</label><br/>
                         <input type="text" id="username" name="username" required={true}/>

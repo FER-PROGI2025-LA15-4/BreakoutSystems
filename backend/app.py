@@ -1,11 +1,10 @@
 # app.py
 # GLAVNA APLIKACIJA - Entry point projekta
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory,session
 from flask_login import LoginManager, login_required, current_user
 from config import Config
 from models import db, Korisnik, Polaznik, Vlasnik
 from auth import auth_bp, init_oauth
-from database import db_bp
 import sqlite3
 import os
 
@@ -80,21 +79,21 @@ login_manager.login_view = 'api.login_check'
 login_manager.login_message = 'Molimo prijavite se za pristup ovoj stranici.'
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(username):
     """Flask-Login koristi ovu funkciju da učita korisnika iz sessiona"""
-    if(Polaznik.query.get(int(user_id))):
-        return Polaznik.query.get(int(user_id))
-    if(Vlasnik.query.get(int(user_id))):
-        return Vlasnik.query.get(int(user_id))
+    if Polaznik.query.get(username):
+        return Polaznik.query.get(username)
+    if Vlasnik.query.get(username):
+        return Vlasnik.query.get(username)
 
-    return Korisnik.query.get(int(user_id))
+    return Korisnik.query.get(username)
 
 # Inicijaliziraj OAuth
 oauth = init_oauth(app)
 
 # Registriraj authentication blueprint
 app.register_blueprint(auth_bp)
-app.register_blueprint(db_bp)
+#app.register_blueprint(db_bp)
 
 
 # ===== API RUTE =====
@@ -110,10 +109,12 @@ def get_current_user():
         return jsonify({'error': 'Nije logiran'}), 401
 
 
-@app.route('/api/delete-users', methods=['DELETE'])
+@app.route('/api/delete-users')
 def delete_users():
     """DEV ONLY - Briše sve usere iz baze"""
-    User.query.delete()
+    Korisnik.query.delete()
+    Polaznik.query.delete()
+    Vlasnik.query.delete()
     db.session.commit()
     return jsonify({'message': 'Svi useri obrisani'}), 200
 
@@ -134,6 +135,31 @@ def serve_react(path):
         return send_from_directory(app.frontend_dir, path)
 
     return send_from_directory(app.frontend_dir, "index.html")
+
+@app.route('/api/print-all')
+def print_all_data():
+    with app.app_context():  # Obavezno za SQLAlchemy
+        print("=== KORISNIK ===")
+        for user in Korisnik.query.all():
+            print(user.to_dict())
+
+        print("\n=== POLAZNIK ===")
+        for p in Polaznik.query.all():
+            print(p.to_dict())
+
+        print("\n=== VLASNIK ===")
+        for v in Vlasnik.query.all():
+            print(v.to_dict())
+
+
+# app.py (dodaj ovu rutu za debugging sessiona)
+@app.route('/api/debug-session')
+def debug_session():
+    """DEV ONLY - Debug session podataka"""
+    return jsonify({
+        'session_data': dict(session),
+        'reg_data': session.get('reg_data')
+    }), 200
 
 
 # ===== DATABASE SETUP =====
