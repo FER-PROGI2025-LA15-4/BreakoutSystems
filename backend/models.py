@@ -1,180 +1,127 @@
 # models.py
-# Database modeli - definiše strukturu tablica u bazi
-# Slično kao Sequelize models u Node.js ili JPA Entities u Javi
-from math import trunc
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from datetime import datetime
 
-# Kreiraj SQLAlchemy instancu - ORM (Object Relational Mapper)
-# Omogućava rad sa bazom kroz Python objekte umjesto SQL upita
 db = SQLAlchemy()
 
+# -----------------------------
+# 1. Korisnik
+# -----------------------------
+class Korisnik(UserMixin, db.Model):
+    __tablename__ = 'Korisnik'
 
-class EscapeRoom(db.Model):
+    username = db.Column(db.String(255), primary_key=True)
+    oauth_id = db.Column(db.String(255), unique=True, nullable=False)
+    uloga = db.Column(db.String(8), nullable=False)
 
-    """
-    Escape Room model - predstavlja escape room u aplikaciji
-    Kljuc: id
-    Ime: varchar 200
-    Opis text
-    """
-
-    __tablename__ = 'escape_rooms'
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-        autoincrement=True
-    )
-    
-    name = db.Column(
-        db.String(200),
-        nullable=False
+    __table_args__ = (
+        db.CheckConstraint("uloga IN ('POLAZNIK', 'VLASNIK', 'ADMIN')"),
     )
 
-    description = db.Column(
-        db.Text,
-        nullable=True
-    )
+    # Relacije
+    polaznik = db.relationship('Polaznik', uselist=False, back_populates='korisnik', cascade='all, delete')
+    vlasnik = db.relationship('Vlasnik', uselist=False, back_populates='korisnik', cascade='all, delete')
+
+    def __init__(self, username, oauth_id, uloga):
+        self.username = username
+        self.oauth_id = oauth_id
+        self.uloga = uloga
+
+    def get_id(self):
+        """Flask-Login zahtijeva ovu metodu - vraća username kao ID"""
+        return self.username
 
     def __repr__(self):
-        return f'<EscapeRoom {self.name}>'
-
-
-
-
-""""
-Ljestvica najboljih rezultata za escape room
-
-Kljuc: escape_room_id, user_id
-Score: integer
-
-"""
-
-
-class LeaderBoard(db.Model):
-    __tablename__ = 'leaderboard'
-
-    escape_room_id = db.Column(
-        db.Integer,
-        db.ForeignKey('escape_rooms.id'),  # Foreign key prema escape_rooms tablici
-        primary_key=True
-    )
-
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id'),  # Foreign key prema users tablici
-        nullable=False
-    )
-
-    score = db.Column(
-        db.Integer,
-        nullable=False,
-        default=0
-    )
-
-    def __repr__(self):
-        return f'<LeaderBoard UserID: {self.user_id} Score: {self.score}>'
-
-
-
-class User(UserMixin, db.Model):
-    """
-    User model - predstavlja korisnika u aplikaciji
-
-    UserMixin dodaje metode koje Flask-Login zahtijeva:
-    - is_authenticated: Da li je user logiran
-    - is_active: Da li je user aktivan
-    - is_anonymous: Da li je user anoniman
-    - get_id(): Vraća user ID kao string
-
-    db.Model je bazna klasa za sve SQLAlchemy modele
-    Kao @Entity anotacija u JPA (Java)
-    """
-
-    # Ime tablice u bazi podataka
-    __tablename__ = 'users'
-
-    # ===== KOLONE TABLICE =====
-
-    # ID - primarni ključ, auto-increment
-    id = db.Column(
-        db.Integer,  # Tip podatka
-        primary_key=True,  # Primarni ključ
-        autoincrement=True  # Automatski povećava vrijednost
-    )
-
-    # GitHub ID - jedinstveni identifikator od GitHuba
-    # Čuvamo kao string jer GitHub ID može biti veliki broj
-    github_id = db.Column(
-        db.String(100),  # VARCHAR(100) u SQL-u
-        unique=True,  # Mora biti jedinstven - INDEX constraint
-        nullable=False  # Ne smije biti NULL - NOT NULL constraint
-    )
-
-    # Email adresa korisnika
-    email = db.Column(
-        db.String(120),
-        unique=True,  # Svaki email može biti samo jednom u bazi
-        nullable=False
-    )
-
-    # Puno ime korisnika (ili GitHub username ako nema ime)
-    name = db.Column(db.String(100))
-
-    # URL profilne slike sa GitHuba
-    profile_picture = db.Column(db.String(500))
-
-    # ===== TIMESTAMPOVI =====
-    # Automatski se postavljaju pri kreiranju i updatu
-
-    # Vrijeme kreiranja user-a
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow  # Funkcija se poziva automatski pri INSERT-u
-    )
-
-    # Vrijeme zadnjeg updatea
-    updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow  # Automatski update pri svakom UPDATE-u
-    )
-
-
-    user_type = db.Column(
-        db.String(20),
-        nullable=True,  # NULL dok ne izabere tip
-        default=None
-    )
-    # Moguće vrijednosti: 'regular', 'creator', 'admin'
-
-    def __repr__(self):
-        return f'<User {self.email} ({self.user_type})>'
+        return f"<Korisnik {self.username} ({self.uloga})>"
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'github_id': self.github_id,
-            'email': self.email,
-            'name': self.name,
-            'profile_picture': self.profile_picture,
-            'user_type': self.user_type,  # Dodaj u dict
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            "username": self.username,
+            "oauth_id": self.oauth_id,
+            "uloga": self.uloga
         }
 
-    # Test metode za provjeru permisija
-    def is_creator(self):
-        """Da li user može kreirati rezervacije"""
-        return self.user_type in ['creator', 'admin']
 
-    def is_admin(self):
-        """Da li user ima admin privilegije"""
-        return self.user_type == 'admin'
+# -----------------------------
+# 2. Polaznik
+# -----------------------------
+class Polaznik(UserMixin, db.Model):
+    __tablename__ = 'Polaznik'
+
+    username = db.Column(
+        db.String(255),
+        db.ForeignKey('Korisnik.username', ondelete='CASCADE'),
+        primary_key=True
+    )
+    email = db.Column(db.String(255), nullable=False)
+    profImgUrl = db.Column(db.String(255), unique=True)
+
+    korisnik = db.relationship('Korisnik', back_populates='polaznik')
+
+    def __init__(self, username, email, profImgUrl=None):
+        self.username = username
+        self.email = email
+        self.profImgUrl = profImgUrl
+
+    def get_id(self):
+        """Flask-Login zahtijeva ovu metodu - vraća username kao ID"""
+        return self.username
+
+    def __repr__(self):
+        return f"<Polaznik {self.username} ({self.email})>"
+
+    def to_dict(self):
+        return {
+            "oauth_id": self.korisnik.oauth_id,
+            "username": self.username,
+            "email": self.email,
+            "profImgUrl": self.profImgUrl,
+            "uloga": "POLAZNIK"
+        }
 
 
+# -----------------------------
+# 3. Vlasnik
+# -----------------------------
+class Vlasnik(UserMixin, db.Model):
+    __tablename__ = 'Vlasnik'
 
+    username = db.Column(
+        db.String(255),
+        db.ForeignKey('Korisnik.username', ondelete='CASCADE'),
+        primary_key=True
+    )
+    naziv_tvrtke = db.Column(db.String(255), nullable=False)
+    adresa = db.Column(db.String(255), nullable=False)
+    grad = db.Column(db.String(255), nullable=False)
+    telefon = db.Column(db.String(255), nullable=False)
+    logoImgUrl = db.Column(db.String(255), unique=True)
 
+    korisnik = db.relationship('Korisnik', back_populates='vlasnik')
+
+    def __init__(self, username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl=None):
+        self.username = username
+        self.naziv_tvrtke = naziv_tvrtke
+        self.adresa = adresa
+        self.grad = grad
+        self.telefon = telefon
+        self.logoImgUrl = logoImgUrl
+
+    def get_id(self):
+        """Flask-Login zahtijeva ovu metodu - vraća username kao ID"""
+        return self.username
+
+    def __repr__(self):
+        return f"<Vlasnik {self.username} ({self.naziv_tvrtke})>"
+
+    def to_dict(self):
+        return {
+            "oauth_id": self.korisnik.oauth_id,
+            "username": self.username,
+            "naziv_tvrtke": self.naziv_tvrtke,
+            "adresa": self.adresa,
+            "grad": self.grad,
+            "telefon": self.telefon,
+            "logoImgUrl": self.logoImgUrl,
+            "uloga": "VLASNIK"
+        }
