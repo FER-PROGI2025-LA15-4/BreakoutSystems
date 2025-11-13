@@ -5,6 +5,8 @@ import EscapeRoomsPage from './pages/EscapeRooms';
 import LeaderboardPage from './pages/Leaderboard';
 import NotFoundPage from './pages/NotFound';
 import ProfilePage from "./pages/Profile";
+import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
 
 function App() {
     return (
@@ -22,6 +24,12 @@ function App() {
 
                 {/* profil stranica */}
                 <Route path="profile" element={<ProfilePage />} />
+
+                {/* login stranica */}
+                <Route path="login" element={<LoginPage />} />
+
+                {/* register stranica */}
+                <Route path="register" element={<RegisterPage />} />
 
                 {/* stranica 404 */}
                 <Route path="*" element={<NotFoundPage />} />

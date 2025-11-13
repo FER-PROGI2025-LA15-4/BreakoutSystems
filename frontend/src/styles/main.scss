@@ -5,6 +5,7 @@
 @use "./pages/NotFound.scss";
 @use "./pages/Home.scss";
 @use "./pages/Profile.scss";
+@use "./pages/LoginRegister.scss";
 
 @font-face {
   font-family: 'Montserrat';
@@ -28,6 +29,7 @@ body {
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: space-between;
+  overflow: hidden;
 }
 .page-body {
   flex: 1 0 auto;

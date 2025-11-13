@@ -11,6 +11,7 @@
   >div {
     flex: 1 0 0;
     z-index: 5;
+    padding: 10em 0;
   }
   >.nf-body-img {
     background-image: url('../assets/images/404.png');
@@ -24,7 +25,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 2em;
 
     >h1 {
       font-size: 12.5em;
@@ -33,6 +33,7 @@
     >p {
       font-size: 1.5em;
       margin-bottom: 1.5em;
+      font-weight: 500;
     }
     >.nf-back-button {
       background-color: #42d1f3;
@@ -65,5 +66,16 @@
   }
   .nf-body::before {
     opacity: 0.95;
+  }
+  .nf-body .nf-body-container {
+    h1 {
+      font-size: 7em;
+    }
+    p {
+      font-size: 1.3em;
+    }
+    .nf-back-button {
+      font-size: 0.7em;
+    }
   }
 }

@@ -1,10 +1,11 @@
 # app.py
 # GLAVNA APLIKACIJA - Entry point projekta
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory,session
 from flask_login import LoginManager, login_required, current_user
 from config import Config
-from models import db, User, LeaderBoard, EscapeRoom
+from models import db, Korisnik, Polaznik, Vlasnik
 from auth import auth_bp, init_oauth
+import sqlite3
 import os
 
 # FRONTEND DOKUMENTACIJA
@@ -78,54 +79,42 @@ login_manager.login_view = 'api.login_check'
 login_manager.login_message = 'Molimo prijavite se za pristup ovoj stranici.'
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(username):
     """Flask-Login koristi ovu funkciju da učita korisnika iz sessiona"""
-    return User.query.get(int(user_id))
+    if Polaznik.query.get(username):
+        return Polaznik.query.get(username)
+    if Vlasnik.query.get(username):
+        return Vlasnik.query.get(username)
+
+    return Korisnik.query.get(username)
 
 # Inicijaliziraj OAuth
 oauth = init_oauth(app)
 
 # Registriraj authentication blueprint
 app.register_blueprint(auth_bp)
+#app.register_blueprint(db_bp)
 
 
 # ===== API RUTE =====
 
 @app.route('/api/me')
-@login_required
 def get_current_user():
     """Vraća podatke o trenutno logiranom korisniku"""
-    return jsonify(current_user.to_dict())
+
+    #treba dodati is_authenticated
+    if current_user.is_authenticated:
+        return jsonify(current_user.to_dict())
+    else:
+        return jsonify({'error': 'Nije logiran'}), 401
 
 
-@app.route('/api/select-user-type', methods=['POST'])
-@login_required
-def select_user_type_api():
-    """API endpoint za postavljanje tipa korisnika"""
-    # Ako user već ima tip, vrati grešku
-    if current_user.user_type:
-        return jsonify({'error': 'User već ima postavljen tip'}), 400
-
-    data = request.get_json()
-    selected_type = data.get('user_type')
-
-    # Validacija
-    if selected_type not in ['regular', 'creator']:
-        return jsonify({'error': 'Nevažeći tip korisnika'}), 400
-
-    # Spremi tip u bazu
-    current_user.user_type = selected_type
-    db.session.commit()
-
-    print(f"✅ User {current_user.email} odabrao tip: {selected_type}")
-
-    return jsonify(current_user.to_dict())
-
-
-@app.route('/api/delete-users', methods=['DELETE'])
+@app.route('/api/delete-users')
 def delete_users():
     """DEV ONLY - Briše sve usere iz baze"""
-    User.query.delete()
+    Korisnik.query.delete()
+    Polaznik.query.delete()
+    Vlasnik.query.delete()
     db.session.commit()
     return jsonify({'message': 'Svi useri obrisani'}), 200
 
@@ -146,6 +135,31 @@ def serve_react(path):
         return send_from_directory(app.frontend_dir, path)
 
     return send_from_directory(app.frontend_dir, "index.html")
+
+@app.route('/api/print-all')
+def print_all_data():
+    with app.app_context():  # Obavezno za SQLAlchemy
+        print("=== KORISNIK ===")
+        for user in Korisnik.query.all():
+            print(user.to_dict())
+
+        print("\n=== POLAZNIK ===")
+        for p in Polaznik.query.all():
+            print(p.to_dict())
+
+        print("\n=== VLASNIK ===")
+        for v in Vlasnik.query.all():
+            print(v.to_dict())
+
+
+# app.py (dodaj ovu rutu za debugging sessiona)
+@app.route('/api/debug-session')
+def debug_session():
+    """DEV ONLY - Debug session podataka"""
+    return jsonify({
+        'session_data': dict(session),
+        'reg_data': session.get('reg_data')
+    }), 200
 
 
 # ===== DATABASE SETUP =====
