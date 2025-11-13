@@ -29,6 +29,7 @@ body {
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: space-between;
+  overflow: hidden;
 }
 .page-body {
   flex: 1 0 auto;

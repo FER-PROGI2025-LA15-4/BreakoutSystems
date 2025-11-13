@@ -50,7 +50,7 @@ def login():
         return redirect('/profile')
 
     redirect_uri = url_for('auth.callback', _external=True)
-    return oauth.github.authorize_redirect(redirect_uri)
+    return oauth.github.authorize_redirect(redirect_uri, prompt="select_account")
 
 
 # ===== Funkcija za upload slike =====
@@ -136,7 +136,7 @@ def register():
     print(f"Session reg_data spremljen: {reg_data}")
 
     redirect_uri = url_for('auth.callback', _external=True)
-    return oauth.github.authorize_redirect(redirect_uri)
+    return oauth.github.authorize_redirect(redirect_uri, prompt="select_account")
 
 
 @auth_bp.route('/callback')
@@ -233,7 +233,7 @@ def callback():
                 polaznik = Polaznik(
                     username=user.username,
                     email=reg_data['email'],
-                    profImgUrl=image_url
+                    profImgUrl=None
                 )
                 db.session.add(polaznik)
 
@@ -244,7 +244,7 @@ def callback():
                     adresa=reg_data['adresa'],
                     grad=reg_data['grad'],
                     telefon=reg_data['telefon'],
-                    logoImgUrl=image_url
+                    logoImgUrl=None
                 )
                 db.session.add(vlasnik)
 
