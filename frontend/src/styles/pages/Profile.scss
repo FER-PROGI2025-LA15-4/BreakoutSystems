@@ -11,7 +11,7 @@ $bd-radius: 20px;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding: 3em;
+  padding: 7em;
 }
 .login-background::before {
   content: '';
@@ -31,7 +31,7 @@ $bd-radius: 20px;
   border-bottom-left-radius: $bd-radius;
   box-shadow: 0 0 20px 5px rgba(0, 0, 0, 0.2);
   >img {
-    width: 3em;
+    width: 3.5em;
   }
   >button {
     border: none;
@@ -61,7 +61,7 @@ $bd-radius: 20px;
   box-shadow: 0 0 20px 5px rgba(0, 0, 0, 0.2);
   z-index: 5;
   >img {
-    width: 4em;
+    width: 3.5em;
   }
   >button {
     border-radius: 9999em;
@@ -82,7 +82,7 @@ $bd-radius: 20px;
   flex-wrap: nowrap;
   justify-content: space-evenly;
   align-items: center;
-  padding: 3em;
+  padding: 4em;
   max-width: 35em;
 
   >h2 {
@@ -99,9 +99,10 @@ $bd-radius: 20px;
   >button {
     font-size: 1.25em;
     font-weight: 500;
-    padding: 0.65em 1.5em;
+    padding: 0.9em 1.5em;
     letter-spacing: 2px;
     font-family: Montserrat, sans-serif;
+    margin-top: 0.8em;
   }
 }
 @media (max-width: 835px) {
@@ -121,6 +122,12 @@ $bd-radius: 20px;
 
 
 
+.login-container.register-form-container {
+  max-width: 900px;
+  h2 {
+    margin-bottom: 0.3em;
+  }
+}
 .register-form-container {
   border-radius: $bd-radius;
   >img {
@@ -128,15 +135,19 @@ $bd-radius: 20px;
   }
 }
 .register-form {
-  width: 100%;
+  width: 80%;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: center;
   align-items: stretch;
-  padding: 2em;
-  gap: 1.5em;
+  gap: 2em;
   color: black;
+
+  label, p {
+    font-size: 1.15em;
+    font-weight: 500;
+  }
 
   >button[type="submit"] {
     border: none;
@@ -149,10 +160,18 @@ $bd-radius: 20px;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    padding: 1em;
+    padding: 1.4em 2.2em;
+    width: fit-content;
+    align-self: center;
     >img {
       width: 1.25em;
       margin-right: 0.5em;
+    }
+    margin-top: 2em;
+    img, p {
+      font-size: 1.2em;
+      font-weight: 600;
+      letter-spacing: 1.2px;
     }
   }
 }
@@ -166,8 +185,34 @@ $bd-radius: 20px;
   >div {
     flex: 1 0 0;
   }
+  margin: 2em 0;
 }
 .register-form-element input[type="text"], .register-form-element input[type="email"] {
   width: 100%;
   padding: 0.6em 0.75em;
+  margin-top: 0.8em;
+  border-radius: 5px;
+  border: 1px solid gray;
+}
+label#radio {
+  display: flex;
+  font-weight: 400;
+  gap: 0.5em;
+}
+.register-form-element-radio {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+.slika-profila {
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.8em;
+}
+.slika-profila input[type="file"]::file-selector-button {
+  padding: 0.5em 1em;
+  margin-right: 0.7em;
 }
