@@ -86,7 +86,7 @@ function RegisterPage() {
 
                             <div>
                                 <label htmlFor={"telefon"}>Telefonski broj tvrtke </label><br/>
-                                <input type="text" id={"telefon"} name={"telefon"} required={true}/>
+                                <input type="text" id={"telefon"} name={"telefon"} pattern={"(\\+[1-9][0-9]{0,2}|00[1-9][0-9]{0,2}|0)[1-9][0-9]{7,14}"} required={true}/>
                             </div>
                         </div>
                     )}

@@ -1,0 +1,94 @@
+.profile-page {
+  flex: 1 0 0;
+  width: 100%;
+  background-color: #42d1f3;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5em;
+  padding-bottom: 5em;
+  z-index: -2;
+  >h1 {
+    align-self: flex-start;
+    z-index: 5;
+    background-color: white;
+    padding: 0.2em 0.5em 0.2em 1em;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    font-size: 3.5em;
+    font-weight: 700;
+    margin-top: 1.5em;
+  }
+  >h1:hover {
+    background-color: #f0df37;
+  }
+}
+$circle-radius: 1000px;
+.profile-page-circle {
+  width: $circle-radius;
+  height: $circle-radius;
+  background-color: #f0df37;
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: -15%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+}
+.profile-page-content {
+  background-color: white;
+  border-radius: 20px;
+  z-index: 5;
+  max-width: 1200px;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  padding: 3em;
+  .logout {
+    align-self: flex-end;
+    margin: -1em -1em 0 0;
+    img {
+      width: 50px;
+      height: 50px;
+    }
+  }
+  .user-data {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 1.5em;
+    margin-top: -1em;
+    img {
+      height: 100px;
+      width: 100px;
+      border-radius: 999px;
+      margin-left: 1em;
+    }
+    .ime-mail {
+      padding-top: 1em;
+      .ime-uredi {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 1em;
+        img {
+          width: 40px;
+          height: 40px;
+          padding-bottom: 0.3em;
+        }
+      }
+      h3 {
+        padding-bottom: 0.2em;
+        font-size: 1.8em;
+      }
+      h4 {
+        font-size: 1.4em;
+        font-weight: 400;
+      }
+    }
+  }
+}
