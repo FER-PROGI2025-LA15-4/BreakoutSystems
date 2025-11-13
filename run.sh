@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# enforce UTF-8 for Python and the shell
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 # set better error handling -> exit on error, undefined variable, or error in pipeline
 set -euo pipefail
 

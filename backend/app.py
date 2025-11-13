@@ -3,9 +3,10 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_login import LoginManager, login_required, current_user
 from config import Config
-from models import db, User, LeaderBoard, EscapeRoom
+from models import db, Korisnik, Polaznik, Vlasnik
 from auth import auth_bp, init_oauth
 from database import db_bp
+import sqlite3
 import os
 
 # FRONTEND DOKUMENTACIJA
@@ -81,7 +82,12 @@ login_manager.login_message = 'Molimo prijavite se za pristup ovoj stranici.'
 @login_manager.user_loader
 def load_user(user_id):
     """Flask-Login koristi ovu funkciju da učita korisnika iz sessiona"""
-    return User.query.get(int(user_id))
+    if(Polaznik.query.get(int(user_id))):
+        return Polaznik.query.get(int(user_id))
+    if(Vlasnik.query.get(int(user_id))):
+        return Vlasnik.query.get(int(user_id))
+
+    return Korisnik.query.get(int(user_id))
 
 # Inicijaliziraj OAuth
 oauth = init_oauth(app)
@@ -94,10 +100,14 @@ app.register_blueprint(db_bp)
 # ===== API RUTE =====
 
 @app.route('/api/me')
-@login_required
 def get_current_user():
     """Vraća podatke o trenutno logiranom korisniku"""
-    return jsonify(current_user.to_dict())
+
+    #treba dodati is_authenticated
+    if current_user.is_authenticated:
+        return jsonify(current_user.to_dict())
+    else:
+        return jsonify({'error': 'Nije logiran'}), 401
 
 
 @app.route('/api/delete-users', methods=['DELETE'])

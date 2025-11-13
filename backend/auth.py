@@ -1,11 +1,14 @@
 # auth.py
 # OAuth2 autentifikacija - API endpoints
-from flask import Blueprint, redirect, url_for, request, jsonify
+from pathlib import Path
+
+from flask import Blueprint, redirect, url_for, request, jsonify,current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
-from models import db, User
+from models import db, Korisnik, Vlasnik, Polaznik
 from werkzeug.utils import secure_filename
 import os
+import uuid
 
 # Blueprint sa /api/auth prefiksom
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -53,49 +56,53 @@ def login():
 def register():
     """API endpoint za postavljanje tipa korisnika"""
 
+
     if current_user.is_authenticated:
         return redirect('/profile')
 
-    username = request.form.get('username')
-    uloga = request.form.get('uloga')
-    if uloga == "POLAZNIK":
-        email = request.form.get('email')
-    elif uloga == "VLASNIK":
-        naziv_tvrtke = request.form.get('naziv_tvrtke')
-        adresa = request.form.get('adresa')
-        grad = request.form.get('grad')
-        telefon = request.form.get('telefon')
+    session['username'] = request.form.get('username')
+    session['uloga'] = request.form.get('uloga')
+    if session['uloga'] == "POLAZNIK":
+        session['email'] = request.form.get('email')
+    elif session['uloga'] == "VLASNIK":
+        session['naziv_tvrtke'] = request.form.get('naziv_tvrtke')
+        session['adresa'] = request.form.get('adresa')
+        session['grad'] = request.form.get('grad')
+        session['telefon'] = request.form.get('telefon')
     else:
+        #ciscenje session varijabli u slucaju nevalidne uloge
+        session['username'] = None
+        session['uloga'] = None
         return jsonify({'error': 'Nevažeća uloga korisnika'}), 400
 
-    # Get file upload
-    if 'image' in request.files:
-        file = request.files['image']
-        if file.filename != '':
-            # generate random filename
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+    UPLOAD_FOLDER = Path("instance/images")
+    UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
+    file = request.files.get('image')
+
+    if file:
+        ext = os.path.splitext(secure_filename(file.filename))[1]
+        filename = f"{uuid.uuid4().hex}{ext}"
+        file_path = UPLOAD_FOLDER / filename
+        file.save(file_path)
+        session['imageUrl'] = str(file_path)
+    else:
+        session['imageUrl'] = str(UPLOAD_FOLDER / "default.png")
+
+    # Get file upload
+    #image upload
+    #Spremi sliku u folder instance/images
+    #slika ce dobiti naziv neki random string + extension
 
     # Validacija
-    if selected_type not in ['regular', 'creator']:
+    selected_type = session['uloga']
+    #admin se ne moze odbarati preko forme, samo rucno u bazi
+    if selected_type not in ['POLAZNIK', 'VLASNIK']:
         return jsonify({'error': 'Nevažeći tip korisnika'}), 400
 
-    # ako nije uspjela validacija, vratiti grešku
-
-    # inače poslati na github
-
-    # ako autentifikacija uspije, spremiti u bazu
-
-
     # Spremi tip u bazu
-    current_user.user_type = selected_type
-    db.session.commit()
 
-    print(f"✅ User {current_user.email} odabrao tip: {selected_type}")
-
-    return jsonify(current_user.to_dict())
+    return redirect('/api/auth/callback')
 
 
 @auth_bp.route('/callback')
@@ -131,42 +138,56 @@ def callback():
 
         if not primary_email:
             # Redirect na error stranicu u Reactu
+            #redirect('/NotFound')
             return redirect('/?error=no_verified_email')
 
-        github_id = str(user_data['id'])
+        oauth_id = str(user_data['id'])
 
         # Provjeri/kreiraj usera
-        user = User.query.filter_by(github_id=github_id).first()
+        user = Korisnik.query.filter_by(oauth_id=oauth_id).first()
 
         if not user:
-            user = User(
-                github_id=github_id,
-                email=primary_email,
-                name=user_data.get('name') or user_data.get('login'),
-                profile_picture=user_data.get('avatar_url')
-            )
+            user = Korisnik(session['username'],oauth_id,session['uloga'])
             db.session.add(user)
             db.session.commit()
-            print(f"✅ Novi user kreiran: {primary_email}")
+            print(f"Novi user kreiran: {user.username}")
+
+            #treba stvoriti i odgovarajucu podtablicu
+            if session['uloga'] == 'POLAZNIK':
+                polaznik = Polaznik(
+                    username=user.username,
+                    email=session['email'],
+                    profImgUrl=str(session['imageUrl'])
+                )
+                db.session.add(polaznik)
+                db.session.commit()
+                print(f"Kreiran polaznik: {polaznik.username}")
+            elif session['uloga'] == 'VLASNIK':
+                vlasnik = Vlasnik(
+                    username=user.username,
+                    naziv_tvrtke=session['naziv_tvrtke'],
+                    adresa=session['adresa'],
+                    grad=session['grad'],
+                    telefon=session['telefon'],
+                    logoImgUrl=str(session['imageUrl'])
+                )
+                db.session.add(vlasnik)
+                db.session.commit()
+                print(f"Kreiran vlasnik: {vlasnik.username}")
         else:
-            # Updateaj postojeće podatke
-            user.name = user_data.get('name') or user_data.get('login')
-            user.profile_picture = user_data.get('avatar_url')
-            db.session.commit()
-            print(f"✅ User updatan: {primary_email}")
+            print("Vec logiran user")
 
         # Logiraj usera preko Flask-Login
         login_user(user, remember=True)
-        print(f"✅ User logiran: {user.email}")
+        print(f"User logiran: {user.email}")
 
         # Redirect na React frontend ovisno o tome ima li user_type
-        if not user.user_type:
-            return redirect('/select-user-type')
-        else:
-            return redirect('/dashboard')
+        session.clear()
+
+        return redirect('/profile')
 
     except Exception as e:
-        print(f"❌ GitHub OAuth Error: {str(e)}")
+        print(f"GitHub OAuth Error: {str(e)}")
         import traceback
         traceback.print_exc()
         # Redirect na error stranicu u Reactu
@@ -181,8 +202,7 @@ def logout():
     Pristupa se preko: http://localhost:5000/api/auth/logout
     Redirecta na login stranicu nakon logout-a
     """
-    email = current_user.email
     logout_user()
-    print(f"✅ User se odlogirao: {email}")
+    print(f"User se odlogirao: {current_user.username}")
 
     return redirect('/')
