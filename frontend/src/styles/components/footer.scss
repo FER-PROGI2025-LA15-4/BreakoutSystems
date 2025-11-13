@@ -9,15 +9,17 @@
   user-select: none;
   gap: 2%;
   padding: 0 5%;
-  margin: 20px 0;
+  padding: 20px 0;
   border: none;
+  background-color: white;
 }
 .copyright {
   text-align: center;
   border-top: 2px solid rgb(234, 234, 234);
   padding-top: 15px;
-  opacity: 0.5;
   margin-bottom: 3%;
+  background-color: white;
+  color: rgba(0,0,0,0.4);
 }
 .footer-msg {
   display: flex;
