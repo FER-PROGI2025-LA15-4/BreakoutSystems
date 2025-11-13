@@ -5,6 +5,7 @@ from flask_login import LoginManager, login_required, current_user
 from config import Config
 from models import db, User, LeaderBoard, EscapeRoom
 from auth import auth_bp, init_oauth
+from database import db_bp
 import os
 
 # FRONTEND DOKUMENTACIJA
@@ -87,6 +88,7 @@ oauth = init_oauth(app)
 
 # Registriraj authentication blueprint
 app.register_blueprint(auth_bp)
+app.register_blueprint(db_bp)
 
 
 # ===== API RUTE =====
@@ -95,30 +97,6 @@ app.register_blueprint(auth_bp)
 @login_required
 def get_current_user():
     """Vraća podatke o trenutno logiranom korisniku"""
-    return jsonify(current_user.to_dict())
-
-
-@app.route('/api/select-user-type', methods=['POST'])
-@login_required
-def select_user_type_api():
-    """API endpoint za postavljanje tipa korisnika"""
-    # Ako user već ima tip, vrati grešku
-    if current_user.user_type:
-        return jsonify({'error': 'User već ima postavljen tip'}), 400
-
-    data = request.get_json()
-    selected_type = data.get('user_type')
-
-    # Validacija
-    if selected_type not in ['regular', 'creator']:
-        return jsonify({'error': 'Nevažeći tip korisnika'}), 400
-
-    # Spremi tip u bazu
-    current_user.user_type = selected_type
-    db.session.commit()
-
-    print(f"✅ User {current_user.email} odabrao tip: {selected_type}")
-
     return jsonify(current_user.to_dict())
 
 

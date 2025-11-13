@@ -1,9 +1,11 @@
 # auth.py
 # OAuth2 autentifikacija - API endpoints
-from flask import Blueprint, redirect, url_for
+from flask import Blueprint, redirect, url_for, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from models import db, User
+from werkzeug.utils import secure_filename
+import os
 
 # Blueprint sa /api/auth prefiksom
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -34,7 +36,7 @@ def init_oauth(app):
 
 # ===== API RUTE =====
 
-@auth_bp.route('/login')
+@auth_bp.route('/login', methods=['GET'])
 def login():
     """
     Pokreće GitHub OAuth flow
@@ -42,15 +44,58 @@ def login():
     User se redirecta na GitHub, a zatim nazad na /api/auth/callback
     """
     if current_user.is_authenticated:
-        # Redirectaj na frontend rutu, ne backend
-        if current_user.user_type:
-            return redirect('/profile')
-        else:
-            return redirect('/select-user-type')
+        return redirect('/profile')
 
     redirect_uri = url_for('auth.callback', _external=True)
-    print(f"🔐 Pokrećem GitHub OAuth, redirect_uri: {redirect_uri}")
     return oauth.github.authorize_redirect(redirect_uri)
+
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    """API endpoint za postavljanje tipa korisnika"""
+
+    if current_user.is_authenticated:
+        return redirect('/profile')
+
+    username = request.form.get('username')
+    uloga = request.form.get('uloga')
+    if uloga == "POLAZNIK":
+        email = request.form.get('email')
+    elif uloga == "VLASNIK":
+        naziv_tvrtke = request.form.get('naziv_tvrtke')
+        adresa = request.form.get('adresa')
+        grad = request.form.get('grad')
+        telefon = request.form.get('telefon')
+    else:
+        return jsonify({'error': 'Nevažeća uloga korisnika'}), 400
+
+    # Get file upload
+    if 'image' in request.files:
+        file = request.files['image']
+        if file.filename != '':
+            # generate random filename
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+
+    # Validacija
+    if selected_type not in ['regular', 'creator']:
+        return jsonify({'error': 'Nevažeći tip korisnika'}), 400
+
+    # ako nije uspjela validacija, vratiti grešku
+
+    # inače poslati na github
+
+    # ako autentifikacija uspije, spremiti u bazu
+
+
+    # Spremi tip u bazu
+    current_user.user_type = selected_type
+    db.session.commit()
+
+    print(f"✅ User {current_user.email} odabrao tip: {selected_type}")
+
+    return jsonify(current_user.to_dict())
 
 
 @auth_bp.route('/callback')
