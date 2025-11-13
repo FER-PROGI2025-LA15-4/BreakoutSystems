@@ -46,9 +46,9 @@ function ProfilePage() {
                         <input type="text" id="username" name="username" required={true}/>
                     </div>
 
-                    <div className={"register-form-element"}>
+                    <div className={"register-form-element-radio"}>
                         <p>Uloga</p><br/>
-                        <label>
+                        <label id="radio">
                             <input
                                 name="uloga"
                                 type="radio"
@@ -58,7 +58,7 @@ function ProfilePage() {
                             />
                             Igrač
                         </label><br/>
-                        <label>
+                        <label id="radio">
                             <input
                                 name="uloga"
                                 type="radio"
@@ -76,8 +76,8 @@ function ProfilePage() {
                                 <label htmlFor="email">Email</label><br/>
                                 <input type="email" id="email" name="email" required={true}/>
                             </div>
-                            <div>
-                                <label htmlFor="image">Slika profila</label><br/>
+                            <div className="slika-profila">
+                                <label htmlFor="image">Slika profila</label>
                                 <input type="file" id="image" name="image" accept="image/*"/>
                             </div>
                         </div>
@@ -90,8 +90,8 @@ function ProfilePage() {
                                 <input type="text" id={"naziv_tvrtke"} name={"naziv_tvrtke"} required={true} />
                             </div>
 
-                            <div>
-                                <label htmlFor="image">Logo tvrtke</label><br/>
+                            <div className="slika-profila">
+                                <label htmlFor="image">Logo tvrtke</label>
                                 <input type="file" id="image" name="image" accept="image/*"/>
                             </div>
 
@@ -123,7 +123,7 @@ function ProfilePage() {
     );
 
     let body;
-    if ("korisnik prijavljen") {
+    if ("korisnik registriran") {
         body = profileRegisterBody;
     } else {
         body = profileLoginBody;
