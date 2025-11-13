@@ -15,10 +15,10 @@ function ProfilePage() {
                 <img src={loginLogo} alt="login logo"/>
                 <h2>Prijavi se!</h2>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                <button>
+                <a href={"/api/auth/login"}>
                     <img src={githubLogo} alt="github logo"/>
                     <p>PRIJAVA</p>
-                </button>
+                </a>
             </div>
             <div className="register-container">
                 <img src={registerLogo} alt="register logo"/>
@@ -40,7 +40,7 @@ function ProfilePage() {
                 <h2>Registracija</h2>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
 
-                <form action={"/auth/register"} method="POST" encType={"multipart/form-data"} className="register-form">
+                <form action={"/api/auth/login"} method="POST" encType={"multipart/form-data"} className="register-form">
                     <div className={"register-form-element"}>
                         <label htmlFor="username">Korisničko ime</label><br/>
                         <input type="text" id="username" name="username" required={true}/>
