@@ -30,44 +30,60 @@ function ProfilePage() {
             })
             .catch(err => {
                 setLoading(false);
-                navigate('/login');
+                navigate('/login', { replace: true });
             });
     }, [navigate]);
 
-    const handleLogout = () => {
-        // Redirect na logout endpoint
-        window.location.href = '/api/auth/logout';
-    };
+    let body;
+    if (userData && !loading) {
+        let user_data;
+        if (userData["uloga"] === "ADMIN") {
+            user_data = <div></div>;
+        } else if (userData["uloga"] === "POLAZNIK") {
+            user_data =
+                <div>
+                    <h4>Email: {userData["email"]}</h4>
+                </div>;
+        } else if (userData["uloga"] === "VLASNIK") {
+            user_data =
+                <div>
+                    <h4>Naziv tvrtke: {userData["naziv_tvrtke"]}</h4>
+                    <h4>Adresa: {userData["adresa"]}</h4>
+                    <h4>Grad: {userData["grad"]}</h4>
+                    <h4>Telefon: {userData["telefon"]}</h4>
+                </div>;
+        }
 
-    let content = <div></div>;
-    if (loading) {
-        content = <SyncLoader />;
-    } else if (userData) {
-        content =
-        <div className={"profile-page-content"}>
-            <div className="logout" onClick={handleLogout}>
-                <img src={logout} alt={"logout icon"}></img>
-            </div>
-            <div className="user-data">
-                <img src={profilna}></img>
-                <div className="ime-mail">
-                    <div className="ime-uredi">
-                        <h3>{userData.username}</h3>
-                        <img src={edit}></img>
-                    </div>
-                    <h4>{userData.email}</h4>
+        body =
+            <div className={"profile-page"}>
+                <div className={"profile-page-circle"}>
+                    <div></div>
                 </div>
-            </div>
-        </div>;
+                <h1>Moj profil</h1>
+                <div className={"profile-page-content"}>
+
+                    <a className="logout" href={"/api/auth/logout"}>
+                        <img src={logout} alt={"logout icon"}></img>
+                    </a>
+                    <div className="user-data">
+                        <img src={profilna}></img>
+                        <div className="ime-mail">
+                            <div className="ime-uredi">
+                                <h3>{userData["username"]}</h3>
+                                <img src={edit}></img>
+                            </div>
+                            <h4>TIP: {userData["uloga"]}</h4>
+                            {user_data}
+                        </div>
+                    </div>
+                </div>
+            </div>;
+    } else {
+        body =
+            <div className="profile-page-loading">
+                <SyncLoader className={"profile-page-loader"}/>
+            </div>;
     }
-
-    const body =
-        <div className="profile-page">
-            <div className={"profile-page-circle"}></div>
-            { !loading && userData && <h1>Moj profil</h1> }
-
-            {content}
-        </div>;
 
     return <PageTemplate name={name} body={body} />;
 }
