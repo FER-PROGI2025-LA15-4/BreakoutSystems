@@ -7,34 +7,37 @@ import NotFoundPage from './pages/NotFound';
 import ProfilePage from "./pages/Profile";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
+import {AuthProvider} from "./context/AuthContext";
 
 function App() {
     return (
         <BrowserRouter>
-            <Routes>
+            <AuthProvider>
+                <Routes>
 
-                {/* početna stranica */}
-                <Route index element={<HomePage />} />
+                    {/* početna stranica */}
+                    <Route index element={<HomePage />} />
 
-                {/* escape rooms stranica */}
-                <Route path="escape-rooms" element={<EscapeRoomsPage />} />
+                    {/* escape rooms stranica */}
+                    <Route path="escape-rooms" element={<EscapeRoomsPage />} />
 
-                {/* leaderboard stranica */}
-                <Route path="leaderboard" element={<LeaderboardPage />} />
+                    {/* leaderboard stranica */}
+                    <Route path="leaderboard" element={<LeaderboardPage />} />
 
-                {/* profil stranica */}
-                <Route path="profile" element={<ProfilePage />} />
+                    {/* profil stranica */}
+                    <Route path="profile" element={<ProfilePage />} />
 
-                {/* login stranica */}
-                <Route path="login" element={<LoginPage />} />
+                    {/* login stranica */}
+                    <Route path="login" element={<LoginPage />} />
 
-                {/* register stranica */}
-                <Route path="register" element={<RegisterPage />} />
+                    {/* register stranica */}
+                    <Route path="register" element={<RegisterPage />} />
 
-                {/* stranica 404 */}
-                <Route path="*" element={<NotFoundPage />} />
+                    {/* stranica 404 */}
+                    <Route path="*" element={<NotFoundPage />} />
 
-            </Routes>
+                </Routes>
+            </AuthProvider>
         </BrowserRouter>
     );
 }
