@@ -5,19 +5,6 @@ import {SyncLoader} from "react-spinners";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import RoomTile from "../components/RoomTile";
 
-/*
- * API očekivanja (backend) :
- * 1) GET /api/rooms?limit=3 -> prikaz tri najpopularnije sobe
- *    [{
- *      id: "r1",
- *      name: "Kuća u tišini",
- *      description: "Svjetlo treperi, vrata škripe...",
- *      genre: "Horor",
- *      difficulty: 4.5,
- *      location: "Zagreb, Donji grad",
- *      imageUrl: "https://example.com/slika.jpg"
- *    }]
- */
 
 const MOCK_ROOMS = [
   {

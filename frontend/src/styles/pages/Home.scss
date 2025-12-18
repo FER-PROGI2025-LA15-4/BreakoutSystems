@@ -14,7 +14,7 @@
   width: 100%;
   min-height: 50vh;
   margin: 0;
-  padding: 50px 0px;
+  padding: 50px 0;
   color: #fff;
   background-color: #481b6f;
   display: grid;
@@ -170,43 +170,12 @@ $cta-owner-bg-secondary: #3a178e;
   column-gap: 30px;
   row-gap: 30px;
   margin: 12px 10%;
-
-  button {
-    font-size: 14px;
-  }
-}
-.room-tile {
-  padding: 20px;
-  h3 {
-    padding: 0;
-    font-weight: 600;
-    padding-bottom: 5px;
-  }
-  p {
-    padding: 0;
-    padding-bottom: 5px;
-  }
-  img {
-    margin-bottom: 20px;
-  }
-  button {
-    background-color: #3D2CAE;
-    color: #fff;
-    border-radius: 999px;
-    width: fit-content;
-    padding: 15px 25px;
-    border: none;
-    margin-top: 20px;
-    font-family: Montserrat, sans-serif;
-    font-weight: 500;
-  }
 }
 @media (max-width: 768px) {
   .room-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
   .room-grid { grid-template-columns: 1fr; }
-  .room-card > img { height: 200px; }
 }
 
 
