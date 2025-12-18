@@ -105,6 +105,6 @@ BEGIN
     WHERE NOT EXISTS (
 		SELECT *
 		FROM ClanNaTerminu
-		WHERE Termin.room_id=NEW.room_id AND ClanNaTerminu.username=NEW.username
+		WHERE ClanNaTerminu.room_id=NEW.room_id AND ClanNaTerminu.username=NEW.username AND ClanNaTerminu.datVrPoc < CURRENT_TIMESTAMP
 	);
 END;
