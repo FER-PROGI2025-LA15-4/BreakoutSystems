@@ -52,19 +52,32 @@ def login():
     redirect_uri = url_for('auth.callback', _external=True)
     return oauth.github.authorize_redirect(redirect_uri, prompt="select_account")
 
+@auth_bp.route('/me')
+def get_current_user():
+    """Vraća podatke o trenutno logiranom korisniku"""
+
+    #treba dodati is_authenticated
+    if current_user.is_authenticated:
+        return jsonify(current_user.to_dict())
+    else:
+        return jsonify({'error': 'Nije logiran'}), 401
+
 
 # ===== Funkcija za upload slike =====
 def save_uploaded_file(file):
     """Sprema uploadanu sliku i vraća relativni URL za frontend"""
     if not file or not file.filename:
-        return "/images/default.png"  # default ako nema filea
+        return "/static/images/default.png"  # default ako nema filea
 
     # Kreiraj folder ako ne postoji
-    upload_folder = Path(current_app.instance_path) / "images"
+    upload_folder = Path(current_app.static_folder) / "images"
     upload_folder.mkdir(parents=True, exist_ok=True)
 
     # Generiraj jedinstveno ime
-    ext = Path(secure_filename(file.filename)).suffix
+    ext = Path(secure_filename(file.filename)).suffix or ".png"
+    allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
+    if ext.lower() not in allowed_extensions:
+        raise ValueError("Nedopušten format datoteke")
     filename = f"{uuid.uuid4().hex}{ext}"
 
     # Spremi datoteku
@@ -72,7 +85,7 @@ def save_uploaded_file(file):
     file.save(file_path)
 
     # Vrati relativni URL za frontend
-    return f"/images/{filename}"
+    return f"/static/images/{filename}"
 
 
 @auth_bp.route('/register', methods=['POST'])
@@ -96,6 +109,11 @@ def register():
 
     if uloga not in ['POLAZNIK', 'VLASNIK']:
         return jsonify({'error': 'Nevažeća uloga korisnika'}), 400
+
+    # provjeri da li username već postoji
+    existing_user = Korisnik.query.filter_by(username=username).first()
+    if existing_user:
+        return redirect('/register?auth_error=username_taken')
 
     # Obrada slike
     file = request.files.get('image')
@@ -180,11 +198,18 @@ def callback():
         user = Korisnik.query.filter_by(oauth_id=oauth_id).first()
 
         if user:
-            # POSTOJEĆI KORISNIK - LOGIN FLOW
+            reg_data = session.get('reg_data')
+
+            if reg_data:
+                # registracija, ali GitHub account već postoji
+                session.pop('reg_data', None)
+                return redirect('/register?auth_error=account')
+
+            # login flow
             print(f"Postojeći user logiran: {user.username}")
             login_user(user, remember=True)
-            session.pop('reg_data', None)  # Očisti eventualne preostale reg podatke
             return redirect('/profile')
+
 
         else:
             # NOVI KORISNIK - REGISTER FLOW
@@ -193,18 +218,10 @@ def callback():
             if not reg_data:
                 # KORISNIK POKUŠAVA PRIJAVU BEZ REGISTRACIJE
                 print("Korisnik pokušava prijavu bez registracije")
-
-                # Preusmjeri na registracijsku stranicu s porukom
-                return redirect('/register?error=not_registered&github_username=' + github_username)
+                return redirect('/login?auth_error=no_account')
 
             # REGISTRACIJA S PODACIMA IZ SESSIONA
             print(f"Reg data iz sessiona: {reg_data}")
-
-            # Provjeri da li username već postoji u bazi
-            existing_user = Korisnik.query.filter_by(username=reg_data['username']).first()
-            if existing_user:
-                session.pop('reg_data', None)
-                return redirect('/register?error=username_taken')
 
             # Kreiraj novog usera
             user = Korisnik(
@@ -279,11 +296,11 @@ def logout():
     logout_user()
     print(f"User se odlogirao: {username}")
 
-    return redirect('/')
+    return "", 200
 
 
-# ===== ROUTE ZA PRIKAZ SLIKA =====
-@auth_bp.route('/images/<filename>')
-def uploaded_file(filename):
+# ===== ROUTE ZA PRIKAZ SLIKA ===== -možda ne treba ako se slike poslužuju iz static foldera
+#@auth_bp.route('/images/<filename>')
+#def uploaded_file(filename):
     """Servira uploadane slike iz instance/images"""
     return send_from_directory(os.path.join(current_app.instance_path, 'images'), filename)

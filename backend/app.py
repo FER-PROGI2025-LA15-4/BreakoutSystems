@@ -75,8 +75,6 @@ db.init_app(app)
 # Inicijaliziraj Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'api.login_check'
-login_manager.login_message = 'Molimo prijavite se za pristup ovoj stranici.'
 
 @login_manager.user_loader
 def load_user(username):
@@ -97,27 +95,6 @@ app.register_blueprint(auth_bp)
 
 
 # ===== API RUTE =====
-
-@app.route('/api/me')
-def get_current_user():
-    """Vraća podatke o trenutno logiranom korisniku"""
-
-    #treba dodati is_authenticated
-    if current_user.is_authenticated:
-        return jsonify(current_user.to_dict())
-    else:
-        return jsonify({'error': 'Nije logiran'}), 401
-
-
-@app.route('/api/delete-users')
-def delete_users():
-    """DEV ONLY - Briše sve usere iz baze"""
-    Korisnik.query.delete()
-    Polaznik.query.delete()
-    Vlasnik.query.delete()
-    db.session.commit()
-    return jsonify({'message': 'Svi useri obrisani'}), 200
-
 
 # ===== REACT ROUTING - SPA =====
 
