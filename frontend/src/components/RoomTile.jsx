@@ -1,4 +1,5 @@
 import React from "react";
+import Button1 from "./Button1";
 
 function RoomTile({ room, className }) {
     let class_name = "room-tile";
@@ -20,7 +21,7 @@ function RoomTile({ room, className }) {
             <p>
                 <strong>Lokacija:</strong> {room.location}
             </p>
-            <button>DETALJI</button>
+            <Button1 text={"DETALJI"} className={"room-tile-button"}/>
         </div>
     );
 }

@@ -15,8 +15,7 @@
 .copyright {
   text-align: center;
   border-top: 2px solid rgb(234, 234, 234);
-  padding-top: 15px;
-  padding-bottom: 3%;
+  padding: 10px 0;
   background-color: white;
   color: rgba(0,0,0,0.4);
 }
@@ -45,13 +44,13 @@
 @media (max-width: 830px) {
   .footer {
     flex-direction: column;
+    padding: 10px 0;
     p {
       text-align: center;
       font-size: 1em;
     }
   }
   .copyright {
-    margin-bottom: 10%;
     font-size: 0.8em;
   }
 }

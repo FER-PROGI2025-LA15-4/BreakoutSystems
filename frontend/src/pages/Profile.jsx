@@ -1,56 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
-import logout from '../assets/icons/logout.svg';
+import logoutImg from '../assets/icons/logout.svg';
 import edit from '../assets/icons/edit-profile.png';
 import {SyncLoader} from "react-spinners";
+import {useAuth} from "../context/AuthContext";
 
 function ProfilePage() {
     const name = "profile";
     
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { user, loading, logout } = useAuth();
 
     useEffect(() => {
-        // Dohvati podatke o korisniku
-        fetch('/api/me', {
-            credentials: 'include' // Važno za session cookie
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Niste logirani');
-                }
-                return response.json();
-            })
-            .then(data => {
-                setUserData(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                setLoading(false);
-                navigate('/login', { replace: true });
-            });
-    }, [navigate]);
+        if (!loading && !user) {
+            navigate("/login", { replace: true });
+        }
+    }, [user, loading, navigate]);
 
     let body;
-    if (userData && !loading) {
+    if (user && !loading) {
         let user_data;
-        if (userData["uloga"] === "ADMIN") {
+        if (user["uloga"] === "ADMIN") {
             user_data = <div></div>;
-        } else if (userData["uloga"] === "POLAZNIK") {
+        } else if (user["uloga"] === "POLAZNIK") {
             user_data =
                 <div>
-                    <h4>Email: {userData["email"]}</h4>
+                    <h4>Email: {user["email"]}</h4>
                 </div>;
-        } else if (userData["uloga"] === "VLASNIK") {
+        } else if (user["uloga"] === "VLASNIK") {
             user_data =
                 <div>
-                    <h4>Naziv tvrtke: {userData["naziv_tvrtke"]}</h4>
-                    <h4>Adresa: {userData["adresa"]}</h4>
-                    <h4>Grad: {userData["grad"]}</h4>
-                    <h4>Telefon: {userData["telefon"]}</h4>
+                    <h4>Naziv tvrtke: {user["naziv_tvrtke"]}</h4>
+                    <h4>Adresa: {user["adresa"]}</h4>
+                    <h4>Grad: {user["grad"]}</h4>
+                    <h4>Telefon: {user["telefon"]}</h4>
                 </div>;
         }
 
@@ -62,17 +47,17 @@ function ProfilePage() {
                 <h1>Moj profil</h1>
                 <div className={"profile-page-content"}>
 
-                    <a className="logout" href={"/api/auth/logout"}>
-                        <img src={logout} alt={"logout icon"}></img>
+                    <a className="logout" onClick={logout}>
+                        <img src={logoutImg} alt={"logout icon"}></img>
                     </a>
                     <div className="user-data">
                         <img src={profilna}></img>
                         <div className="ime-mail">
                             <div className="ime-uredi">
-                                <h3>{userData["username"]}</h3>
-                                <img src={edit}></img>
+                                <h3>{user["username"]}</h3>
+                                <img src={edit} alt={"edit"}></img>
                             </div>
-                            <h4>TIP: {userData["uloga"]}</h4>
+                            <h4>TIP: {user["uloga"]}</h4>
                             {user_data}
                         </div>
                     </div>

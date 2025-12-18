@@ -1,0 +1,41 @@
+.popup-background {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.popup-window {
+  padding: 3em 4em 3em 3em;
+  position: relative;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  background-color: white;
+  font-family: Montserrat, sans-serif;
+}
+.popup-window>img {
+  height: 1.65em;
+  position: absolute;
+  top: 0.85em;
+  right: 0.85em;
+  user-select: none;
+  cursor: pointer;
+}
+.popup-window>h1 {
+  color: #3d2cad;
+  font-weight: 600;
+  margin-bottom: 0.65em;
+  font-size: 2.5em;
+}
+.popup-window>p {
+  font-size: 1.1em;
+}

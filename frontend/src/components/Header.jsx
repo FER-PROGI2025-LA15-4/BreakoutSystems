@@ -20,7 +20,7 @@ function Header(props) {
                     <p>Početna</p>
                     <div></div>
                 </NavLink>
-                <NavLink to="/escape-rooms" className="header-nav-link">
+                <NavLink to="/escape-rooms" className={"header-nav-link" + (props.page === "escape-rooms" ? " header-nav-link-active" : "")}>
                     <p>Escape Rooms</p>
                     <div></div>
                 </NavLink>
