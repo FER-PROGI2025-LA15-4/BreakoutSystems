@@ -1,1 +1,0 @@
-horor, ostalo, obiteljski, znanstvena_fantastika, fantasy, kriminalistika, povijesni
