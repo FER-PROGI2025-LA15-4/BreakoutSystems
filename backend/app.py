@@ -5,10 +5,11 @@ from flask_login import LoginManager, login_required, current_user
 from matplotlib.rcsetup import validate_string_or_None
 
 from config import Config
-from models import db, Korisnik, Polaznik, Vlasnik, EscapeRoom
+from models import db, Korisnik, Polaznik, Vlasnik, EscapeRoom, Tim, ClanTima
 from auth import auth_bp, init_oauth
 import sqlite3
 import os
+from sqlalchemy import select, ColumnElement
 
 # FRONTEND DOKUMENTACIJA
 #
@@ -119,7 +120,7 @@ def serve_react(path):
 
 @app.route('/api/print-all')
 def print_all_data():
-    with app.app_context():  # Obavezno za SQLAlchemy
+    with app.app_context():
         print("=== KORISNIK ===")
         for k in db.session.execute(db.select(Korisnik)).scalars():
             print(k.to_dict())
@@ -157,6 +158,34 @@ def get_categories():
     category_list = sorted(categories)
 
     return jsonify({"categories": category_list}), 200
+
+@app.route('/api/my-teams', methods=['GET'])
+@login_required
+def get_my_teams():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    stmt = (
+        select(Tim)
+        .join(ClanTima, ClanTima.ime_tima == Tim.ime)
+        .filter(ClanTima.username == current_user.username)
+    )
+
+    result = db.session.execute(stmt).scalars().all()
+    teams_list = []
+
+    for team in result:
+        members_stmt = select(ClanTima.username).filter_by(ime_tima=team.ime)
+        members = [username for (username,) in db.session.execute(members_stmt).all()]
+
+        teams_list.append({
+            "name": team.ime,
+            "logo": team.image_url,
+            "leader": team.voditelj_username,
+            "members": members
+        })
+
+    return jsonify({"teams": teams_list}), 200
 
 # ===== DATABASE SETUP =====
 

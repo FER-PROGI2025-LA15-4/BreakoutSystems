@@ -149,3 +149,50 @@ class EscapeRoom(db.Model):
 
     def __repr__(self):
         return f"<EscapeRoom {self.naziv} ({self.grad})>"
+
+
+class Tim(db.Model):
+    __tablename__ = 'Tim'
+
+    ime = db.Column(db.String(255), primary_key=True)
+    image_url = db.Column(db.String(255), unique=True)
+    voditelj_username = db.Column(
+        db.String(255),
+        db.ForeignKey('Polaznik.username', ondelete='CASCADE'),
+        nullable=False
+    )
+
+    clanovi = db.relationship('ClanTima', back_populates='tim', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<Tim {self.ime}>"
+
+    def to_dict(self):
+        return {
+            "name": self.ime,
+            "logo": self.image_url,
+            "leader": self.voditelj_username,
+            "members": [clan.username for clan in self.clanovi]
+        }
+
+
+class ClanTima(db.Model):
+    __tablename__ = 'ClanTima'
+
+    ime_tima = db.Column(
+        db.String(255),
+        db.ForeignKey('Tim.ime', ondelete='CASCADE'),
+        primary_key=True
+    )
+    username = db.Column(
+        db.String(255),
+        db.ForeignKey('Polaznik.username', ondelete='CASCADE'),
+        primary_key=True
+    )
+    accepted = db.Column(db.Boolean, default=False, nullable=False)
+
+    tim = db.relationship('Tim', back_populates='clanovi')
+    polaznik = db.relationship('Polaznik')
+
+    def __repr__(self):
+        return f"<ClanTima {self.username} u timu {self.ime_tima}>"
