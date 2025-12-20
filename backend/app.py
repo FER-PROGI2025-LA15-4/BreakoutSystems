@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_required, current_user
 from matplotlib.rcsetup import validate_string_or_None
 
 from config import Config
-from models import db, Korisnik, Polaznik, Vlasnik
+from models import db, Korisnik, Polaznik, Vlasnik, EscapeRoom
 from auth import auth_bp, init_oauth
 import sqlite3
 import os
@@ -141,6 +141,15 @@ def debug_session():
         'session_data': dict(session),
         'reg_data': session.get('reg_data')
     }), 200
+
+# API za dohvat gradova
+@app.route('/api/cities', methods=['GET'])
+def get_cities():
+    cities = db.session.query(EscapeRoom.grad).distinct().scalars().all()
+    city_list = sorted(cities)
+
+    return jsonify({"cities": city_list}), 200
+
 
 
 # ===== DATABASE SETUP =====

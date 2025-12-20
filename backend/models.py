@@ -125,3 +125,27 @@ class Vlasnik(UserMixin, db.Model):
             "logoImgUrl": self.logoImgUrl,
             "uloga": "VLASNIK"
         }
+
+class EscapeRoom(db.Model):
+    __tablename__ = 'EscapeRoom'
+
+    room_id = db.Column(db.Integer, primary_key=True)
+    vlasnik_username = db.Column(
+        db.String(255),
+        db.ForeignKey('Vlasnik.username', ondelete='CASCADE'),
+        nullable=False
+    )
+    naziv = db.Column(db.String(255), nullable=False)
+    opis = db.Column(db.String(255), nullable=False)
+    geo_lat = db.Column(db.Float, nullable=False)
+    geo_long = db.Column(db.Float, nullable=False)
+    adresa = db.Column(db.String(255), nullable=False)
+    grad = db.Column(db.String(255), nullable=False)
+    inicijalna_tezina = db.Column(db.Float, nullable=False)
+    cijena = db.Column(db.Float, nullable=False)
+    minBrClanTima = db.Column(db.Integer, nullable=False)
+    maxBrClanTima = db.Column(db.Integer, nullable=False)
+    kategorija = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<EscapeRoom {self.naziv} ({self.grad})>"
