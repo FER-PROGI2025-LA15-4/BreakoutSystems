@@ -2,6 +2,8 @@
 # GLAVNA APLIKACIJA - Entry point projekta
 from flask import Flask, jsonify, request, send_from_directory,session
 from flask_login import LoginManager, login_required, current_user
+from matplotlib.rcsetup import validate_string_or_None
+
 from config import Config
 from models import db, Korisnik, Polaznik, Vlasnik
 from auth import auth_bp, init_oauth
@@ -79,12 +81,14 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(username):
     """Flask-Login koristi ovu funkciju da učita korisnika iz sessiona"""
-    if Polaznik.query.get(username):
-        return Polaznik.query.get(username)
-    if Vlasnik.query.get(username):
-        return Vlasnik.query.get(username)
+    user = db.session.get(Polaznik, username)
+    if user:
+        return user
+    vlasnik = db.session().get(Vlasnik, username)
+    if vlasnik:
+        return vlasnik
 
-    return Korisnik.query.get(username)
+    return db.session().get(Korisnik, username)
 
 # Inicijaliziraj OAuth
 oauth = init_oauth(app)
@@ -117,15 +121,15 @@ def serve_react(path):
 def print_all_data():
     with app.app_context():  # Obavezno za SQLAlchemy
         print("=== KORISNIK ===")
-        for user in Korisnik.query.all():
-            print(user.to_dict())
+        for k in db.session.execute(db.select(Korisnik)).scalars():
+            print(k.to_dict())
 
         print("\n=== POLAZNIK ===")
-        for p in Polaznik.query.all():
+        for p in db.session.execute(db.select(Polaznik)).scalars():
             print(p.to_dict())
 
         print("\n=== VLASNIK ===")
-        for v in Vlasnik.query.all():
+        for v in db.session.execute(db.select(Polaznik)).scalars():
             print(v.to_dict())
 
 

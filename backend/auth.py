@@ -111,7 +111,10 @@ def register():
         return jsonify({'error': 'Nevažeća uloga korisnika'}), 400
 
     # provjeri da li username već postoji
-    existing_user = Korisnik.query.filter_by(username=username).first()
+    existing_user = db.session.execute(
+        db.select(Korisnik).where(Korisnik.username == username)
+    ).scalar_one_or_none()
+
     if existing_user:
         return redirect('/register?auth_error=username_taken')
 
@@ -195,7 +198,9 @@ def callback():
         github_username = user_data.get('login')
 
         # Provjeri postojećeg usera
-        user = Korisnik.query.filter_by(oauth_id=oauth_id).first()
+        user = db.session.execute(
+            db.select(Korisnik).where(Korisnik.oauth_id == oauth_id)
+        ).scalar_one_or_none()
 
         if user:
             reg_data = session.get('reg_data')
@@ -239,7 +244,10 @@ def callback():
             # Kreiraj odgovarajuću podtablicu
             if reg_data['uloga'] == 'POLAZNIK':
                 # Provjeri da li email već postoji
-                existing_polaznik = Polaznik.query.filter_by(email=reg_data['email']).first()
+                existing_polaznik = db.session.execute(
+                    db.select(Polaznik).where(Polaznik.email == reg_data['email'])
+                ).scalar_one_or_none()
+
                 if existing_polaznik:
                     # Rollback - obriši kreiranog korisnika
                     db.session.delete(user)
