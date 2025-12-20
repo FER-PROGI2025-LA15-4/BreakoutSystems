@@ -150,7 +150,13 @@ def get_cities():
 
     return jsonify({"cities": city_list}), 200
 
+# API za dohvat kategorija
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    categories = db.session.query(EscapeRoom.kategorija).distinct().scalars().all()
+    category_list = sorted(categories)
 
+    return jsonify({"categories": category_list}), 200
 
 # ===== DATABASE SETUP =====
 
