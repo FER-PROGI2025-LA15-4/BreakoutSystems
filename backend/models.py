@@ -196,3 +196,58 @@ class ClanTima(db.Model):
 
     def __repr__(self):
         return f"<ClanTima {self.username} u timu {self.ime_tima}>"
+
+class EscapeRoomImage(db.Model):
+    __tablename__ = 'EscapeRoomImage'
+
+    image_url = db.Column(db.String(255), primary_key=True)
+    room_id = db.Column(
+        db.Integer,
+        db.ForeignKey('EscapeRoom.room_id', ondelete="CASCADE"),
+        nullable=False
+    )
+
+
+class Termin(db.Model):
+    __tablename__ = 'Termin'
+
+    room_id = db.Column(
+        db.Integer,
+        db.ForeignKey('EscapeRoom.room_id', ondelete="CASCADE"),
+        primary_key=True
+    )
+    datVrPoc = db.Column(db.String(255), primary_key=True)
+    ime_tima = db.Column(
+        db.String(255),
+        db.ForeignKey('Tim.ime', ondelete="CASCADE")
+    )
+    rezultatSekunde = db.Column(db.Integer)
+
+    clanovi = db.relationship("ClanNaTerminu", cascade="all, delete-orphan")
+
+class ClanNaTerminu(db.Model):
+    __tablename__ = 'ClanNaTerminu'
+
+    room_id = db.Column(db.Integer, primary_key=True)
+    datVrPoc = db.Column(db.String(255), primary_key=True)
+    username = db.Column(
+        db.String(255),
+        db.ForeignKey('Polaznik.username', ondelete="CASCADE"),
+        primary_key=True
+    )
+
+
+class OcjenaTezine(db.Model):
+    __tablename__ = 'OcjenaTezine'
+
+    room_id = db.Column(
+        db.Integer,
+        db.ForeignKey('EscapeRoom.room_id', ondelete="CASCADE"),
+        primary_key=True
+    )
+    username = db.Column(
+        db.String(255),
+        db.ForeignKey('Polaznik.username', ondelete="CASCADE"),
+        primary_key=True
+    )
+    vrijednost_ocjene = db.Column(db.Float, nullable=False)
