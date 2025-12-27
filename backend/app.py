@@ -2,11 +2,15 @@
 # GLAVNA APLIKACIJA - Entry point projekta
 from flask import Flask, jsonify, request, send_from_directory,session
 from flask_login import LoginManager, login_required, current_user
+from matplotlib.rcsetup import validate_string_or_None
+
 from config import Config
-from models import db, Korisnik, Polaznik, Vlasnik
+from models import (db, Korisnik, Polaznik, Vlasnik, EscapeRoom, Tim,
+                    ClanTima, EscapeRoomImage, Termin, ClanNaTerminu, OcjenaTezine)
 from auth import auth_bp, init_oauth
 import sqlite3
 import os
+from sqlalchemy import select, func
 
 # FRONTEND DOKUMENTACIJA
 #
@@ -79,12 +83,14 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(username):
     """Flask-Login koristi ovu funkciju da učita korisnika iz sessiona"""
-    if Polaznik.query.get(username):
-        return Polaznik.query.get(username)
-    if Vlasnik.query.get(username):
-        return Vlasnik.query.get(username)
+    user = db.session.get(Polaznik, username)
+    if user:
+        return user
+    vlasnik = db.session().get(Vlasnik, username)
+    if vlasnik:
+        return vlasnik
 
-    return Korisnik.query.get(username)
+    return db.session().get(Korisnik, username)
 
 # Inicijaliziraj OAuth
 oauth = init_oauth(app)
@@ -115,17 +121,17 @@ def serve_react(path):
 
 @app.route('/api/print-all')
 def print_all_data():
-    with app.app_context():  # Obavezno za SQLAlchemy
+    with app.app_context():
         print("=== KORISNIK ===")
-        for user in Korisnik.query.all():
-            print(user.to_dict())
+        for k in db.session.execute(db.select(Korisnik)).scalars():
+            print(k.to_dict())
 
         print("\n=== POLAZNIK ===")
-        for p in Polaznik.query.all():
+        for p in db.session.execute(db.select(Polaznik)).scalars():
             print(p.to_dict())
 
         print("\n=== VLASNIK ===")
-        for v in Vlasnik.query.all():
+        for v in db.session.execute(db.select(Polaznik)).scalars():
             print(v.to_dict())
 
 
@@ -137,6 +143,151 @@ def debug_session():
         'session_data': dict(session),
         'reg_data': session.get('reg_data')
     }), 200
+
+# API za dohvat gradova
+@app.route('/api/cities', methods=['GET'])
+def get_cities():
+    cities = db.session.query(EscapeRoom.grad).distinct().scalars().all()
+    city_list = sorted(cities)
+
+    return jsonify({"cities": city_list}), 200
+
+# API za dohvat kategorija
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    categories = db.session.query(EscapeRoom.kategorija).distinct().scalars().all()
+    category_list = sorted(categories)
+
+    return jsonify({"categories": category_list}), 200
+
+@app.route('/api/my-teams', methods=['GET'])
+@login_required
+def get_my_teams():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    stmt = (
+        select(Tim)
+        .join(ClanTima, ClanTima.ime_tima == Tim.ime)
+        .filter(ClanTima.username == current_user.username)
+    )
+
+    result = db.session.execute(stmt).scalars().all()
+    teams_list = []
+
+    for team in result:
+        members_stmt = select(ClanTima.username).filter_by(ime_tima=team.ime)
+        members = [username for (username,) in db.session.execute(members_stmt).all()]
+
+        teams_list.append({
+            "name": team.ime,
+            "logo": team.image_url,
+            "leader": team.voditelj_username,
+            "members": members
+        })
+
+    return jsonify({"teams": teams_list}), 200
+
+# API za filtriranje soba
+@app.route('/api/rooms/filter', methods=['GET'])
+def filter_rooms():
+    data = request.get_json() or {}
+
+    city = data.get("city")
+    category = data.get("category")
+    team = data.get("team")
+    players = data.get("players")
+
+
+    stmt = select(EscapeRoom)
+
+    if city:
+        stmt = stmt.filter(EscapeRoom.grad == city)
+
+    if category:
+        stmt = stmt.filter(EscapeRoom.kategorija == category)
+
+    rooms = db.session.execute(stmt).scalars().all()
+    result = []
+
+
+    team_filter = False
+    players_filter = False
+
+    if current_user.is_authenticated and team:
+        membership_stmt = select(ClanTima).filter_by(
+            ime_tima=team,
+            username=current_user.username
+        )
+        team_filter = db.session.execute(membership_stmt).first() is not None
+
+    if current_user.is_authenticated and team_filter and players and isinstance(players, list):
+        players_filter = True
+
+
+    for room in rooms:
+        if team and team_filter:
+            played_stmt = select(Termin).filter_by(
+                room_id=room.room_id,
+                ime_tima=team
+            )
+            if db.session.execute(played_stmt).first():
+                continue
+
+        if players and players_filter:
+            players_stmt = (
+                select(ClanNaTerminu)
+                .join(
+                    Termin,
+                    (Termin.room_id == ClanNaTerminu.room_id) &
+                    (Termin.datVrPoc == ClanNaTerminu.datVrPoc)
+                )
+                .filter(
+                    Termin.room_id == room.room_id,
+                    ClanNaTerminu.username.in_(players)
+                )
+            )
+            if db.session.execute(players_stmt).first():
+                continue
+
+
+        sum_rating = db.session.execute(
+            select(func.sum(OcjenaTezine.vrijednost_ocjene))
+            .filter_by(room_id=room.room_id)
+        ).scalar()
+
+        n_rooms = db.session.execute(
+            select(func.count(OcjenaTezine.vrijednost_ocjene))
+            .filter_by(room_id=room.room_id)
+        ).scalar()
+
+        if sum_rating is not None:
+            tezina = (room.inicijalna_tezina + sum_rating) / (n_rooms + 1)
+        else:
+            tezina = room.inicijalna_tezina
+
+        images_stmt = select(EscapeRoomImage.image_url).filter_by(
+            room_id=room.room_id
+        )
+        images = [url for (url,) in db.session.execute(images_stmt).all()]
+
+        result.append({
+            "room_id": room.room_id,
+            "naziv": room.naziv,
+            "opis": room.opis,
+            "geo_lat": room.geo_lat,
+            "geo_long": room.geo_long,
+            "adresa": room.adresa,
+            "grad": room.grad,
+            "tezina": round(tezina, 2),
+            "cijena": room.cijena,
+            "minBrClanTima": room.minBrClanTima,
+            "maxBrClanTima": room.maxBrClanTima,
+            "kategorija": room.kategorija,
+            "slike": images
+        })
+
+    return jsonify({"rooms": result}), 200
 
 
 # ===== DATABASE SETUP =====
