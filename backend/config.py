@@ -31,7 +31,7 @@ class Config:
     SESSION_COOKIE_SECURE = False  # Postavi na True u produkciji s HTTPS
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    PERMANENT_SESSION_LIFETIME = 3600000  # 1 sat
+    PERMANENT_SESSION_LIFETIME = 3600  # 1 sat
 
     # ===== GITHUB OAUTH CREDENTIALS =====
     #Šablonski postupak: ovo su stvari koje su postavljene u .env file da bi OAuth radio

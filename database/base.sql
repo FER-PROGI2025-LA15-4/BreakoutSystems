@@ -7,7 +7,7 @@ CREATE TABLE Korisnik (
 CREATE TABLE Polaznik (
     username VARCHAR(255) PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
-    profImgUrl VARCHAR(255) UNIQUE,
+    profImgUrl VARCHAR(255),
     FOREIGN KEY (username) REFERENCES Korisnik(username) ON DELETE CASCADE
 );
 
@@ -17,13 +17,13 @@ CREATE TABLE Vlasnik (
     adresa VARCHAR(255) NOT NULL,
     grad VARCHAR(255) NOT NULL,
     telefon VARCHAR(255) NOT NULL,
-    logoImgUrl VARCHAR(255) UNIQUE,
+    logoImgUrl VARCHAR(255),
     FOREIGN KEY (username) REFERENCES Korisnik(username) ON DELETE CASCADE
 );
 
 CREATE TABLE Tim (
     ime VARCHAR(255) PRIMARY KEY,
-    image_url VARCHAR(255) UNIQUE,
+    image_url VARCHAR(255),
     voditelj_username VARCHAR(255) NOT NULL,                                      -- korisnik koji rezervira i placa
     FOREIGN KEY (voditelj_username) REFERENCES Polaznik(username) ON DELETE CASCADE
 );

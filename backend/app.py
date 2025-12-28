@@ -1,176 +1,71 @@
 # app.py
-# GLAVNA APLIKACIJA - Entry point projekta
-from flask import Flask, jsonify, request, send_from_directory,session
-from flask_login import LoginManager, login_required, current_user
-from config import Config
-from models import db, Korisnik, Polaznik, Vlasnik
-from auth import auth_bp, init_oauth
-import sqlite3
 import os
-
-# FRONTEND DOKUMENTACIJA
-#
-# API ENDPOINTI
-#
-# 1. /api/auth/login [GET]
-#    - Pokreće GitHub OAuth login flow.
-#    - Frontend treba redirectati korisnika na ovaj endpoint.
-#    - Ako je korisnik već logiran:
-#        - Ako ima user_type, redirecta na /dashboard
-#        - Ako nema user_type, redirecta na /select-user-type
-#
-# 2. /api/auth/callback [GET]
-#    - GitHub OAuth callback.
-#    - Backend obrađuje login i kreira/aktualizira usera.
-#    - Nakon login-a redirecta na:
-#        - /select-user-type ako user_type nije postavljen
-#        - /dashboard ako user_type postoji
-#
-# 3. /api/auth/logout [GET]
-#    - Logout endpoint.
-#    - Nakon logout-a redirecta na login stranicu (/)
-#
-# 4. /api/me [GET]
-#    - Vraća podatke trenutno logiranog korisnika u JSON formatu.
-#    - Zaštićen endpoint, zahtijeva session cookie.
-#
-# 5. /api/select-user-type [POST]
-#    - Postavlja tip korisnika ('regular' ili 'creator').
-#    - Body: { "user_type": "regular" } ili { "user_type": "creator" }
-#    - Zaštićen endpoint, zahtijeva login.
-#    - Ako user već ima tip, vraća 400 grešku.
-#
-# REACT INTEGRACIJA
-#
-# - Sve rute koje nisu /api/* služe SPA frontend (React build).
-# - Koristiti fetch sa 'credentials: include' za sve zaštićene API pozive.
-# - Provjeru login statusa raditi GET /api/me
-#   - Ako status 200 => user logiran
-#   - Ako status 401 => user nije logiran
-#
-# FRONTEND NAVIGACIJA
-#
-# - LoginPage: pokazuje dugme za GitHub login (/api/auth/login)
-# - SelectUserType: ako user_type nije postavljen
-# - Dashboard: ako user_type postoji
-#
-# NAPOMENA
-#
-# - Svi API pozivi koriste session cookie za autentikaciju, nema tokena u headeru.
-# - Backend automatski redirecta logirane korisnike na odgovarajuće stranice.
-# - Ne mijenjati redirect URI, mora biti isti kao u GitHub OAuth App postavkama.
-
-
-
+import sqlite3
+from flask import Flask, jsonify, request, send_from_directory, session
+from flask_login import LoginManager, current_user,login_required
+from config import Config
+from auth import auth_bp, init_oauth, get_db_connection, DB_PATH
+from models import User
 
 app = Flask(__name__)
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
-
-# Učitaj konfiguraciju iz config.py
 app.config.from_object(Config)
 
-# Inicijaliziraj database
-db.init_app(app)
-
-# Inicijaliziraj Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
+init_oauth(app)
+app.register_blueprint(auth_bp)
+
+SCHEMA_SQL_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'base.sql')
+
+
 
 @login_manager.user_loader
 def load_user(username):
-    """Flask-Login koristi ovu funkciju da učita korisnika iz sessiona"""
-    if Polaznik.query.get(username):
-        return Polaznik.query.get(username)
-    if Vlasnik.query.get(username):
-        return Vlasnik.query.get(username)
-
-    return Korisnik.query.get(username)
-
-# Inicijaliziraj OAuth
-oauth = init_oauth(app)
-
-# Registriraj authentication blueprint
-app.register_blueprint(auth_bp)
-#app.register_blueprint(db_bp)
-
-
-# ===== API RUTE =====
-
-# ===== REACT ROUTING - SPA =====
+    db = get_db_connection()
+    user_row = db.execute("SELECT * FROM Korisnik WHERE username = ?", (username,)).fetchone()
+    db.close()
+    if user_row:
+        return User(dict(user_row))
+    return None
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react(path):
-    if path.startswith("api"):
-        return jsonify({"error": "Not Found"}), 404
-
-    if path == "":
-        path = "index.html"
-
+    if path.startswith("api"): return jsonify({"error": "Not Found"}), 404
+    if path == "": path = "index.html"
     full_path = os.path.join(app.frontend_dir, path)
     if os.path.exists(full_path) and os.path.isfile(full_path):
         return send_from_directory(app.frontend_dir, path)
-
     return send_from_directory(app.frontend_dir, "index.html")
-
-@app.route('/api/print-all')
-def print_all_data():
-    with app.app_context():  # Obavezno za SQLAlchemy
-        print("=== KORISNIK ===")
-        for user in Korisnik.query.all():
-            print(user.to_dict())
-
-        print("\n=== POLAZNIK ===")
-        for p in Polaznik.query.all():
-            print(p.to_dict())
-
-        print("\n=== VLASNIK ===")
-        for v in Vlasnik.query.all():
-            print(v.to_dict())
-
-
-# app.py (dodaj ovu rutu za debugging sessiona)
-@app.route('/api/debug-session')
-def debug_session():
-    """DEV ONLY - Debug session podataka"""
-    return jsonify({
-        'session_data': dict(session),
-        'reg_data': session.get('reg_data')
-    }), 200
-
-
-# ===== DATABASE SETUP =====
-
-def create_tables():
-    """Kreira database tablice ako ne postoje"""
-    with app.app_context():
-        db.create_all()
-
-
-# ===== ERROR HANDLERS =====
-
-@app.errorhandler(404)
-def page_not_found(e):
-    """Handler za 404 greške - vraća JSON umjesto HTML-a"""
-    return jsonify({'error': 'Endpoint ne postoji'}), 404
-
-
-@app.errorhandler(500)
-def internal_error(e):
-    """Handler za 500 greške"""
-    db.session.rollback()
-    return jsonify({'error': 'Greška na serveru'}), 500
 
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    """Handler kada user nije logiran"""
     return jsonify({'error': 'Unauthorized', 'authenticated': False}), 401
+
+def init_db():
+
+    db = get_db_connection()
+    sql_path = os.path.join(os.path.dirname(__file__), 'database', 'base.sql')
+    if os.path.exists(sql_path):
+        with open(sql_path, 'r', encoding='utf-8') as f:
+            db.executescript(f.read())
+
+    # test_sql = os.path.join(os.path.dirname(__file__), 'database', 'test_skripta.sql')
+    # if os.path.exists(test_sql):
+    #     try:
+    #         with open(test_sql, 'r', encoding='utf-8') as f:
+    #             db.executescript(f.read())
+    #     except Exception as e:
+    #         print(f"GREŠKA u test_skripta.sql: {e}")
+
+    db.close()
+
 
 
 if __name__ == '__main__':
-    # Kreiraj tablice pri prvom pokretanju
-    create_tables()
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    init_db()
 
-    # Pokreni development server
-    app.run(debug=True, port=int(os.environ.get("PORT", 5000)), host='0.0.0.0')
+    app.run(debug=True, port=5000, host='0.0.0.0')
