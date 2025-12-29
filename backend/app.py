@@ -2,7 +2,6 @@
 # GLAVNA APLIKACIJA - Entry point projekta
 from flask import Flask, jsonify, request, send_from_directory,session
 from flask_login import LoginManager, login_required, current_user
-from matplotlib.rcsetup import validate_string_or_None
 
 from config import Config
 from models import (db, Korisnik, Polaznik, Vlasnik, EscapeRoom, Tim,
