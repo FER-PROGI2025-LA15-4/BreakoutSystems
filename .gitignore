@@ -6,3 +6,6 @@ dist
 .env
 instance
 __pycache__/
+*.sqlite
+*.db
+

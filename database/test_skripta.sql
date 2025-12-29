@@ -77,7 +77,7 @@ INSERT INTO ClanTima (ime_tima, username, accepted) VALUES
 ('Tim Gamma', 'matej123', 1),
 ('Tim Gamma', 'elena123', 0);  -- pending 
 
-"""
+
 -- SLIKE ZA ESCAPE ROOMS (2-3 slike po sobi)
 INSERT INTO EscapeRoomImage (image_url, room_id) VALUES
 ('https://cdn.example.com/tesla1.jpg', 1),
@@ -111,7 +111,6 @@ INSERT INTO EscapeRoomImage (image_url, room_id) VALUES
 ('https://cdn.example.com/coldwar2.jpg', 13),
 ('https://cdn.example.com/madlab1.jpg', 14),
 ('https://cdn.example.com/madlab2.jpg', 14);
-"
 
 -- TERMINI 
 INSERT INTO Termin (room_id, datVrPoc, ime_tima, rezultatSekunde) VALUES
@@ -121,7 +120,7 @@ INSERT INTO Termin (room_id, datVrPoc, ime_tima, rezultatSekunde) VALUES
 (6, '2025-11-20 18:00:00', 'Tim Beta', 2800),  
 (3, '2025-11-22 20:00:00', 'Tim Gamma', 3300), 
 (5, '2025-11-25 19:00:00', 'Tim Alfa', 2950),  
-(9, '2025-12-01 17:00:00', 'Tim Gamma', 3100), 
+(9, '2025-12-01 17:00:00', 'Tim Gamma', 3100),
 
 
 -- Budući termini (rezervirani)
@@ -199,6 +198,3 @@ INSERT INTO OcjenaTezine (room_id, username, vrijednost_ocjene) VALUES
 (9, 'lucija123', 3.5),  
 (9, 'ivan123', 3.0),
 (9, 'matej123', 3.5);
-
-
-

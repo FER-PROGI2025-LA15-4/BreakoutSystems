@@ -51,7 +51,14 @@ function ProfilePage() {
                         <img src={logoutImg} alt={"logout icon"}></img>
                     </a>
                     <div className="user-data">
-                        <img src={profilna}></img>
+                        <img
+                            //Dodao Filip: Ucitanje slike ako postoji
+                            src={user["profImgUrl"] || user["logoImgUrl"] || profilna}
+                            alt="Profilna slika"
+                            onError={(e) => {
+                                e.target.src = profilna
+                            }}
+                        />
                         <div className="ime-mail">
                             <div className="ime-uredi">
                                 <h3>{user["username"]}</h3>
