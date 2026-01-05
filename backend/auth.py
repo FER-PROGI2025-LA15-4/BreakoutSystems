@@ -13,11 +13,11 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 oauth = OAuth()
 
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'database', 'escape_room.db')
-
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
+    db_path = Path(current_app.instance_path) / "escape_room.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     return conn
@@ -37,13 +37,13 @@ def init_oauth(app):
 
 def save_uploaded_file(file):
     if not file or not file.filename:
-        return "/static/images/default.png"
-    upload_folder = Path(current_app.static_folder) / "images"
+        return "/instance/images/default.png"
+    upload_folder = Path(current_app.instance_path) / "images"
     upload_folder.mkdir(parents=True, exist_ok=True)
     ext = Path(secure_filename(file.filename)).suffix or ".png"
     filename = f"{uuid.uuid4().hex}{ext}"
     file.save(upload_folder / filename)
-    return f"/static/images/{filename}"
+    return f"/instance/images/{filename}"
 
 @auth_bp.route('/login')
 def login():
@@ -93,45 +93,83 @@ def register():
 def callback():
     db = get_db_connection()
     try:
+        # GitHub OAuth – dohvat tokena i user info
         token = oauth.github.authorize_access_token()
         user_info = oauth.github.get('user', token=token).json()
         oauth_id = str(user_info['id'])
 
-        user_row = db.execute("SELECT * FROM Korisnik WHERE oauth_id = ?", (oauth_id,)).fetchone()
+        # Provjera postoji li korisnik s tim GitHub računom
+        user_row = db.execute(
+            "SELECT * FROM Korisnik WHERE oauth_id = ?",
+            (oauth_id,)
+        ).fetchone()
 
+        reg_data = session.get('reg_data')
+
+
+        # LOGIN FLOW
+        if not reg_data:
+            if user_row:
+                login_user(User(dict(user_row)), remember=True)
+                return redirect('/profile')
+            else:
+                return redirect('/login?auth_error=no_account')
+
+        # REGISTER FLOW
+        # GitHub račun već postoji
         if user_row:
             session.pop('reg_data', None)
-            login_user(User(dict(user_row)), remember=True)
-            return redirect('/profile')
+            return redirect('/register?auth_error=account')
+
+        # Kreiranje novog korisnika
+        db.execute(
+            "INSERT INTO Korisnik (username, oauth_id, uloga) VALUES (?, ?, ?)",
+            (reg_data['username'], oauth_id, reg_data['uloga'])
+        )
+
+        if reg_data['uloga'] == 'POLAZNIK':
+            db.execute(
+                "INSERT INTO Polaznik (username, email, profImgUrl) VALUES (?, ?, ?)",
+                (reg_data['username'], reg_data['email'], reg_data['imageUrl'])
+            )
         else:
-            reg_data = session.get('reg_data')
-            if not reg_data:
-                return redirect('/login?error=no_registration_data')
+            db.execute(
+                """
+                INSERT INTO Vlasnik
+                (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    reg_data['username'],
+                    reg_data['naziv_tvrtke'],
+                    reg_data['adresa'],
+                    reg_data['grad'],
+                    reg_data['telefon'],
+                    reg_data['imageUrl']
+                )
+            )
 
-            db.execute("INSERT INTO Korisnik (username, oauth_id, uloga) VALUES (?, ?, ?)",
-                       (reg_data['username'], oauth_id, reg_data['uloga']))
-
-            if reg_data['uloga'] == 'POLAZNIK':
-                db.execute("INSERT INTO Polaznik (username, email, profImgUrl) VALUES (?, ?, ?)",
-                           (reg_data['username'], reg_data['email'], reg_data['imageUrl']))
-            else:
-                db.execute(
-                    "INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl) VALUES (?, ?, ?, ?, ?, ?)",
-                    (reg_data['username'], reg_data['naziv_tvrtke'], reg_data['adresa'],
-                     reg_data['grad'], reg_data['telefon'], reg_data['imageUrl']))
-
-            db.commit()
-            session.permanent = True
-            login_user(User({'username': reg_data['username'], 'uloga': reg_data['uloga']}), remember=True)
-            session.pop('reg_data', None)
-            return redirect('/profile')
+        db.commit()
+        session.permanent = True
+        login_user(
+            User({
+                'username': reg_data['username'],
+                'uloga': reg_data['uloga']
+            }),
+            remember=True
+        )
+        session.pop('reg_data', None)
+        return redirect('/profile')
 
     except Exception as e:
         db.rollback()
         print(f"Auth Error: {e}")
-        return redirect(f'/?error=auth_failed&msg={str(e)}')
+        session.pop('reg_data', None)
+        return redirect('/login?auth_error=auth_failed')
+
     finally:
         db.close()
+
 
 @auth_bp.route('/logout')
 @login_required
