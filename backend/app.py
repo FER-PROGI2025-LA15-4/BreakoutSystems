@@ -1,15 +1,17 @@
 # app.py
 import os
 import sqlite3
+from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory, session
 from flask_login import LoginManager, current_user,login_required
 from config import Config
-from auth import auth_bp, init_oauth, get_db_connection, DB_PATH
+from auth import auth_bp, init_oauth, get_db_connection
 from models import User
 
 app = Flask(__name__)
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 app.config.from_object(Config)
+Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -39,6 +41,10 @@ def serve_react(path):
         return send_from_directory(app.frontend_dir, path)
     return send_from_directory(app.frontend_dir, "index.html")
 
+@app.route('/instance/images/<path:filename>')
+def serve_instance_images(filename):
+    image_dir = Path(app.instance_path) / "images"
+    return send_from_directory(image_dir, filename)
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -245,7 +251,6 @@ def filter_rooms():
 
 
 if __name__ == '__main__':
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    init_db()
-
+    with app.app_context():
+        init_db()
     app.run(debug=True, port=5000, host='0.0.0.0')

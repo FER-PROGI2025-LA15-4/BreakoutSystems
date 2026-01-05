@@ -13,11 +13,11 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 oauth = OAuth()
 
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'database', 'escape_room.db')
-
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
+    db_path = Path(current_app.instance_path) / "escape_room.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     return conn
@@ -37,13 +37,13 @@ def init_oauth(app):
 
 def save_uploaded_file(file):
     if not file or not file.filename:
-        return "/static/images/default.png"
-    upload_folder = Path(current_app.static_folder) / "images"
+        return "/instance/images/default.png"
+    upload_folder = Path(current_app.instance_path) / "images"
     upload_folder.mkdir(parents=True, exist_ok=True)
     ext = Path(secure_filename(file.filename)).suffix or ".png"
     filename = f"{uuid.uuid4().hex}{ext}"
     file.save(upload_folder / filename)
-    return f"/static/images/{filename}"
+    return f"/instance/images/{filename}"
 
 @auth_bp.route('/login')
 def login():
