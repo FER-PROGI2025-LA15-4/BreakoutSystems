@@ -13,6 +13,7 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('matej123', 'oauth_polaznik_333', 'POLAZNIK'),
 ('elena123', 'oauth_polaznik_444', 'POLAZNIK'),
 ('antonio123', 'oauth_polaznik_555', 'POLAZNIK'),
+('am', '40371578', 'POLAZNIK'),
 ('sara123', 'oauth_polaznik_666', 'POLAZNIK');
 
 -- VLASNICI
@@ -33,7 +34,8 @@ INSERT INTO Polaznik (username, email, profImgUrl) VALUES
 ('matej123', 'matej.babic@gmail.com', '...'),
 ('elena123', 'elena.kralj@icloud.com', '...'),
 ('antonio123', 'antonio.vukovic@protonmail.com', '...'),
-('sara123', 'sara.visic@email.com', '...');
+('sara123', 'sara.visic@email.com', '...'),
+('am', 'am@fer.hr', '...');
 
 -- ESCAPE ROOM 
 INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, inicijalna_tezina, cijena, minBrClanTima, maxBrClanTima, kategorija, vlasnik_username) VALUES
@@ -58,24 +60,29 @@ INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, i
 INSERT INTO Tim (ime, image_url, voditelj_username) VALUES
 ('Tim Alfa', '...', 'ivan123'),
 ('Tim Beta', '...', 'ana123'),
-('Tim Gamma', '...', 'lucija123');
+('Tim Gamma', '...', 'lucija123'),
+('Tim Delta', '...', 'am'),
+('Tim Epsilon', '...', 'sara123');
 
 
 
 
 -- ČLANOVI TIMA (prihvaćeni i pending zahtjevi)
 INSERT INTO ClanTima (ime_tima, username, accepted) VALUES
-('Tim Alfa', 'ivan123', 1),    -- voditelj
 ('Tim Alfa', 'matej123', 1),
 ('Tim Alfa', 'elena123', 1),
 ('Tim Alfa', 'sara123', 0),    -- pending 
-('Tim Beta', 'ana123', 1),     -- voditelj
 ('Tim Beta', 'josip123', 1),
 ('Tim Beta', 'antonio123', 1),
-('Tim Gamma', 'lucija123', 1), -- voditelj
 ('Tim Gamma', 'ivan123', 1),   -- u više timova
 ('Tim Gamma', 'matej123', 1),
-('Tim Gamma', 'elena123', 0);  -- pending 
+('Tim Gamma', 'elena123', 0),  -- pending
+('Tim Delta', 'antonio123', 0), -- pending
+('Tim Delta', 'sara123', 1),
+('Tim Epsilon', 'ivan123', 0),  -- pending
+('Tim Epsilon', 'lucija123', 1),
+('Tim Epsilon', 'matej123', 1),
+('Tim Epsilon', 'am', 1);
 
 
 -- SLIKE ZA ESCAPE ROOMS (2-3 slike po sobi)
@@ -187,12 +194,10 @@ INSERT INTO OcjenaTezine (room_id, username, vrijednost_ocjene) VALUES
 (6, 'ana123', 2.0),       
 (6, 'josip123', 2.5),
 (6, 'antonio123', 2.0),
-(6, 'lucija123', 2.5),
-(3, 'lucija123', 4.5),   
+(3, 'lucija123', 4.5),
 (3, 'ivan123', 4.0),
 (3, 'matej123', 4.5),
-(3, 'elena123', 5.0),
-(5, 'ivan123', 3.0),      
+(5, 'ivan123', 3.0),
 (5, 'matej123', 3.5),
 (5, 'elena123', 3.0),
 (9, 'lucija123', 3.5),  

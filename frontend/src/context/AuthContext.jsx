@@ -23,18 +23,16 @@ export const AuthProvider = ({ children }) => {
 
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // check if user is already logged in
     useEffect(() => {
         // check for auth_error in URL params
         const auth_error = searchParams.get("auth_error");
-        if (auth_error) {
+        if (auth_error !== null) {
             setAuthError(auth_error);  // save auth error message
             // remove auth_error from URL after reading it
             searchParams.delete("auth_error");
-            setSearchParams(searchParams);
-        } else {
-            setAuthError(null);
+            setSearchParams(searchParams, { replace: true });
         }
+        // check if user is already logged in
         const checkAuth = async () => {
             try {
                 const response = await fetch('/api/auth/me');

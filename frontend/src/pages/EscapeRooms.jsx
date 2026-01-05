@@ -53,7 +53,7 @@ function EscapeRoomsContent() {
                 setCitiesOpts(null);
             });
     }, []);
-    const handleCitySelect = (value) => setSelectedCity(value);
+    const handleCitySelect = (opt) => setSelectedCity(opt ? opt.value : null);
 
     const [categoriesOpts, setCategoriesOpts] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -65,7 +65,7 @@ function EscapeRoomsContent() {
                 setCategoriesOpts(null);
             });
     }, [])
-    const handleCategorySelect = (value) => setSelectedCategory(value);
+    const handleCategorySelect = (opt) => setSelectedCategory(opt ? opt.value : null);
 
     const [teams, setTeams] = useState(null);
     const [teamsOpts, setTeamsOpts] = useState(null);
@@ -84,17 +84,18 @@ function EscapeRoomsContent() {
             setTeamsOpts(null);
         }
     }, [user]);
-    const handleTeamSelect = (value) => setSelectedTeam(value);
+    const handleTeamSelect = (opt) => setSelectedTeam(opt ? opt.value : null);
 
     const [memberOpts, setMemberOpts] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState(null);
     useEffect(() => {
         setSelectedMembers(null);  // todo clear selected members when team changes
         if (selectedTeam) {
-            const team = teams.find((t) => t.name === selectedTeam.value);
+            const team = teams.find((t) => t.name === selectedTeam);
             if (team) {
                 let members = (team.members || []).concat(team.leader || []);
-                setMemberOpts(members.map((member) => ({ value: member.username, label: member.username })));
+                members = members.map((username) => ({ value: username, label: username }));
+                setMemberOpts(members);
             } else {
                 setMemberOpts(null);
             }
@@ -105,6 +106,8 @@ function EscapeRoomsContent() {
     const handleMembersSelect = (values) => {
         if (values && values.length === 0) {
             values = null;
+        } else {
+            values = values.map((v) => v.value);
         }
         setSelectedMembers(values);
     }
@@ -119,7 +122,6 @@ function EscapeRoomsContent() {
         }
         let geo_lat = 0;
         let geo_long = 0;
-        console.log("here1");
         for (let room of rooms) {
             geo_lat += room.geo_lat;
             geo_long += room.geo_long;
@@ -130,7 +132,11 @@ function EscapeRoomsContent() {
     }, [rooms]);
 
     const handleFilterClick = () => {
-        console.log("filter");
+        const city = selectedCity;
+        const category = selectedCategory;
+        const team = selectedTeam;
+        const members = selectedMembers;
+        console.log("filter", city, category, team, members);
     }
 
     return (
@@ -153,18 +159,20 @@ function EscapeRoomsContent() {
                         options={citiesOpts || []}
                         isLoading={citiesOpts === null}
                         isMulti={false}
+                        isClearable={true}
                         placeholder="Grad"
                         onChange={handleCitySelect}
-                        className="escape-rooms-form-city"
+                        className="escape-rooms-form-city escape-rooms-form-select"
                     />
                     <Select
                         components={animatedComponents}
                         options={categoriesOpts || []}
                         isLoading={categoriesOpts === null}
                         isMulti={false}
+                        isClearable={true}
                         placeholder="Žanr"
                         onChange={handleCategorySelect}
-                        className="escape-rooms-form-category"
+                        className="escape-rooms-form-category escape-rooms-form-select"
                     />
                     {user && <>
                         <Select
@@ -172,21 +180,23 @@ function EscapeRoomsContent() {
                             options={teamsOpts || []}
                             isLoading={teamsOpts === null}
                             isMulti={false}
+                            isClearable={true}
                             placeholder="Tim"
                             onChange={handleTeamSelect}
-                            className="escape-rooms-form-team"
+                            className="escape-rooms-form-team escape-rooms-form-select"
                         />
                         <Select
                             components={animatedComponents}
                             options={memberOpts || []}
                             isLoading={teamsOpts === null}  // the fetch for teams also fetches members
                             isMulti={true}
+                            isClearable={true}
                             placeholder="Članovi tima"
                             onChange={handleMembersSelect}
-                            className="escape-rooms-form-members"
+                            className="escape-rooms-form-members escape-rooms-form-select"
                         />
                     </>}
-                    <Button1 text={"Pretraži"} onClick={handleFilterClick}/>
+                    <Button1 text={"PRETRAŽI"} onClick={handleFilterClick}/>
                 </div>
 
             </section>
