@@ -47,20 +47,200 @@ def unauthorized():
 def init_db():
 
     db = get_db_connection()
-    sql_path = os.path.join(os.path.dirname(__file__), 'database', 'base.sql')
+    cursor = db.cursor()
+
+    # Only run script if there are no tables
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    if not tables:
+        run_base_sql()
+        run_test_sql()
+    db.close()
+
+
+def run_base_sql():
+    db = get_db_connection()
+    sql_path = os.path.join(os.path.dirname(__file__), '..', 'database', 'base.sql')
     if os.path.exists(sql_path):
         with open(sql_path, 'r', encoding='utf-8') as f:
             db.executescript(f.read())
 
-    # test_sql = os.path.join(os.path.dirname(__file__), 'database', 'test_skripta.sql')
-    # if os.path.exists(test_sql):
-    #     try:
-    #         with open(test_sql, 'r', encoding='utf-8') as f:
-    #             db.executescript(f.read())
-    #     except Exception as e:
-    #         print(f"GREŠKA u test_skripta.sql: {e}")
+def run_test_sql():
+    db = get_db_connection()
+    test_sql = os.path.join(os.path.dirname(__file__), '..', 'database', 'test_skripta.sql')
+    if os.path.exists(test_sql):
+        try:
+            with open(test_sql, 'r', encoding='utf-8') as f:
+                db.executescript(f.read())
+        except Exception as e:
+            print(f"GREŠKA u test_skripta.sql: {e}")
+
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    db = get_db_connection()
+    rows = db.execute(
+        "SELECT DISTINCT kategorija FROM EscapeRoom WHERE kategorija IS NOT NULL"
+    ).fetchall()
+    db.close()
+
+    categories = sorted([row["kategorija"] for row in rows])
+    return jsonify({"categories": categories}), 200
+
+@app.route('/api/my-teams', methods=['GET'])
+@login_required
+def get_my_teams():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+
+    teams = db.execute(
+        "SELECT DISTINCT t.ime, t.image_url, t.voditelj_username FROM Tim t JOIN ClanTima c ON c.ime_tima = t.ime WHERE c.username = ?", (current_user.username,)
+    ).fetchall()
+
+    result = []
+
+    for team in teams:
+        members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ?", (team["ime"],)).fetchall()
+
+        result.append({
+            "name": team["ime"],
+            "logo": team["image_url"],
+            "leader": team["voditelj_username"],
+            "members": [m["username"] for m in members]
+        })
 
     db.close()
+    return jsonify({"teams": result}), 200
+
+# API za dohvat gradova
+@app.route('/api/cities', methods=['GET'])
+def get_cities():
+    db = get_db_connection()
+
+    rows = (db.execute("SELECT DISTINCT grad FROM EscapeRoom WHERE grad IS NOT NULL ORDER BY grad")
+            .fetchall())
+
+    db.close()
+    cities = [row["grad"] for row in rows]
+    return jsonify({"cities": cities}), 200
+
+
+@app.route('/api/rooms/filter', methods=['GET'])
+def filter_rooms():
+    data = request.get_json() or {}
+
+    city = data.get("city")
+    category = data.get("category")
+    team = data.get("team")
+    players = data.get("players")
+
+    db = get_db_connection()
+
+    # --- base room query ---
+    sql = "SELECT * FROM EscapeRoom WHERE 1=1"
+    params = []
+
+    if city:
+        sql += " AND grad = ?"
+        params.append(city)
+
+    if category:
+        sql += " AND kategorija = ?"
+        params.append(category)
+
+    rooms = db.execute(sql, params).fetchall()
+    result = []
+
+    # --- team / players flags ---
+    team_filter = False
+    players_filter = False
+
+    if current_user.is_authenticated and team:
+        membership = db.execute("""
+            SELECT 1
+            FROM ClanTima
+            WHERE ime_tima = ? AND username = ?
+        """, (team, current_user.username)).fetchone()
+
+        team_filter = membership is not None
+
+    if (
+        current_user.is_authenticated
+        and team_filter
+        and players
+        and isinstance(players, list)
+        and len(players) > 0
+    ):
+        players_filter = True
+
+    # --- per-room filtering ---
+    for room in rooms:
+        room_id = room["room_id"]
+
+        if team and team_filter:
+            played = db.execute("""
+                SELECT 1
+                FROM Termin
+                WHERE room_id = ? AND ime_tima = ?
+            """, (room_id, team)).fetchone()
+
+            if played:
+                continue
+
+        if players_filter:
+            placeholders = ",".join("?" for _ in players)
+
+            overlap = db.execute(f"""
+                SELECT 1
+                FROM ClanNaTerminu c
+                JOIN Termin t
+                  ON t.room_id = c.room_id
+                 AND t.datVrPoc = c.datVrPoc
+                WHERE t.room_id = ?
+                  AND c.username IN ({placeholders})
+            """, (room_id, *players)).fetchone()
+
+            if overlap:
+                continue
+
+        rating = db.execute("""
+            SELECT
+                SUM(vrijednost_ocjene) AS total,
+                COUNT(vrijednost_ocjene) AS cnt
+            FROM OcjenaTezine
+            WHERE room_id = ?
+        """, (room_id,)).fetchone()
+
+        if rating["total"] is not None:
+            tezina = (room["inicijalna_tezina"] + rating["total"]) / (rating["cnt"] + 1)
+        else:
+            tezina = room["inicijalna_tezina"]
+
+        images = db.execute("""
+            SELECT image_url
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room_id,)).fetchall()
+
+        result.append({
+            "room_id": room_id,
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": round(tezina, 2),
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
 
 
 
