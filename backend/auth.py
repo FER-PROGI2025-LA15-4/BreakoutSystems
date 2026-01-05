@@ -35,7 +35,7 @@ def init_oauth(app):
     )
     return oauth
 
-def save_uploaded_file(file):
+#def save_uploaded_file(file):
     if not file or not file.filename:
         return "/instance/images/default.png"
     upload_folder = Path(current_app.instance_path) / "images"
@@ -44,6 +44,35 @@ def save_uploaded_file(file):
     filename = f"{uuid.uuid4().hex}{ext}"
     file.save(upload_folder / filename)
     return f"/instance/images/{filename}"
+
+def save_temp_file(file):
+    if not file or not file.filename:
+        return None
+    tmp_folder = Path(current_app.instance_path) / "tmp_images"
+    tmp_folder.mkdir(parents=True, exist_ok=True)
+    ext = Path(secure_filename(file.filename)).suffix or ".png"
+    filename = f"{uuid.uuid4().hex}{ext}"
+    file.save(tmp_folder / filename)
+    return filename
+
+def move_temp_image(tmp_filename):
+    if not tmp_filename:
+        return "/instance/images/default.png"
+    tmp_path = Path(current_app.instance_path) / "tmp_images" / tmp_filename
+    if not tmp_path.exists():
+        return "/instance/images/default.png"
+    images_folder = Path(current_app.instance_path) / "images"
+    images_folder.mkdir(parents=True, exist_ok=True)
+    final_path = images_folder / tmp_filename
+    tmp_path.rename(final_path)
+    return f"/instance/images/{tmp_filename}"
+
+
+def delete_image_file(filename):
+    if not filename or filename == "default.png":
+        return
+    path = Path(current_app.instance_path) / "images" / filename
+    path.unlink(missing_ok=True)
 
 @auth_bp.route('/login')
 def login():
@@ -72,7 +101,7 @@ def register():
     reg_data = {
         'username': username,
         'uloga': uloga,
-        'imageUrl': save_uploaded_file(request.files.get('image'))
+        'temp-image': save_temp_file(request.files.get('image'))
     }
 
     if uloga == "POLAZNIK":
@@ -118,6 +147,10 @@ def callback():
         # REGISTER FLOW
         # GitHub račun već postoji
         if user_row:
+            if reg_data.get('temp-image'):
+                tmp = Path(current_app.instance_path) / "tmp_images" / reg_data['temp-image']
+                tmp.unlink(missing_ok=True)
+                delete_image_file(reg_data['temp-image'])
             session.pop('reg_data', None)
             return redirect('/register?auth_error=account')
 
@@ -127,10 +160,11 @@ def callback():
             (reg_data['username'], oauth_id, reg_data['uloga'])
         )
 
+        image_url = move_temp_image(reg_data['temp-image'])
         if reg_data['uloga'] == 'POLAZNIK':
             db.execute(
                 "INSERT INTO Polaznik (username, email, profImgUrl) VALUES (?, ?, ?)",
-                (reg_data['username'], reg_data['email'], reg_data['imageUrl'])
+                (reg_data['username'], reg_data['email'], image_url)
             )
         else:
             db.execute(
@@ -145,7 +179,7 @@ def callback():
                     reg_data['adresa'],
                     reg_data['grad'],
                     reg_data['telefon'],
-                    reg_data['imageUrl']
+                    image_url
                 )
             )
 
