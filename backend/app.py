@@ -132,7 +132,7 @@ def get_cities():
     return jsonify({"cities": cities}), 200
 
 
-@app.route('/api/rooms/filter', methods=['GET'])
+@app.route('/api/rooms/filter', methods=['POST'])
 def filter_rooms():
     data = request.get_json() or {}
 

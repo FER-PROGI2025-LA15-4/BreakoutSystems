@@ -1,0 +1,9 @@
+.up-down-switch {
+  opacity: 100;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  user-select: none;
+}
+.up-down-switch-hidden {
+  opacity: 0;
+}

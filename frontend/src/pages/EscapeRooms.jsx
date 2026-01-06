@@ -36,6 +36,34 @@ async function fetchTeams() {
         return [];
     }
 }
+export async function fetchRoomsFiltered(city = null, category = null, team = null, members = null) {
+    const filters = {};
+    if (city) {
+        filters["city"] = city;
+    }
+    if (category) {
+        filters["category"] = category;
+    }
+    if (team) {
+        filters["team"] = team;
+    }
+    if (members) {
+        filters["players"] = members;
+    }
+    const response = await fetch("/api/rooms/filter", {
+        method: "POST",
+        body: JSON.stringify(filters),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (response.ok) {
+        const data = await response.json();
+        return data["rooms"];
+    } else {
+        return [];
+    }
+}
 
 
 function EscapeRoomsContent() {

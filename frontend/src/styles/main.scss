@@ -4,11 +4,13 @@
 @use "./components/button1.scss";
 @use "./components/popup.scss";
 @use "./components/room-tile.scss";
+@use "./components/up-down-switch.scss";
 @use "./pages/NotFound.scss";
 @use "./pages/Home.scss";
 @use "./pages/Profile.scss";
 @use "./pages/LoginRegister.scss";
 @use "./pages/EscapeRooms.scss";
+@use "./pages/Leaderboard.scss";
 
 @font-face {
   font-family: 'Montserrat';

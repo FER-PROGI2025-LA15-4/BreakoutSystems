@@ -4,7 +4,7 @@ import PageTemplate from "./PageTemplate";
 import loginLogo from "../assets/icons/sign-in.svg";
 import githubLogo from "../assets/icons/github-logo.svg";
 import registerLogo from "../assets/icons/address-card.svg";
-import {NavLink, useNavigate} from "react-router-dom";
+import {NavLink, useNavigate} from "react-router";
 import Popup from "../components/Popup";
 import {useAuth} from "../context/AuthContext";
 import {SyncLoader} from "react-spinners";
@@ -22,7 +22,7 @@ function LoginPage() {
     }, [user, loading, navigate]);
 
     const [popupVisible, setPopupVisible] = useState(false);
-    const errorMsgNoAccount = "nemate račun, registrirajte se prvo";
+    const errorMsgNoAccount = "Nemate korisnički račun, molimo registrirajte se!";
     const popup = <Popup title={"Oops, došlo je do greške!"} message={errorMsgNoAccount} onClose={() => setPopupVisible(false)} />;
 
     useEffect(() => {

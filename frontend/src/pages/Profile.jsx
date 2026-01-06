@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
 import logoutImg from '../assets/icons/logout.svg';

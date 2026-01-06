@@ -3,7 +3,7 @@ import { useState } from "react";
 import PageTemplate from "./PageTemplate";
 import githubLogo from "../assets/icons/github-logo.svg"
 import registerImage from "../assets/icons/user-settings.svg"
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {useAuth} from "../context/AuthContext";
 import Popup from "../components/Popup";
 import {SyncLoader} from "react-spinners";
@@ -22,8 +22,8 @@ function RegisterPage() {
 
     const [popupVisible, setPopupVisible] = useState(false);
     const [popupMessage, setPopupMessage] = useState("");
-    const errorMsgAccount = "već imate račun";
-    const errorMsgUsernameTaken = "korisničko ime je zauzeto, odaberite drugo";
+    const errorMsgAccount = "Već imate korisnički račun, molimo prijavite se!";
+    const errorMsgUsernameTaken = "Uneseno korisničko ime je zauzeto, molimo unesite drugo!";
     const popup = <Popup title={"Oops, došlo je do greške!"} message={popupMessage} onClose={() => setPopupVisible(false)} />;
 
     useEffect(() => {

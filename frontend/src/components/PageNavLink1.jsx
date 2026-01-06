@@ -1,7 +1,7 @@
 import React from "react";
 import RightArrowIcon from "../assets/icons/right-arrow.svg";
 import RightArrowIconDark from "../assets/icons/right-arrow-black.svg";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 function PageNavLink1(props) {
     let class_name = "page-nav-link-1";
