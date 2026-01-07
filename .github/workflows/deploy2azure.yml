@@ -77,4 +77,5 @@ jobs:
         with:
           app-name: 'breakoutsystems'
           slot-name: 'Production'
+          startup-command: "python backend/app.py"
           
