@@ -1,25 +1,26 @@
 import React from "react";
 import Button1 from "./Button1";
 
-function RoomTile({ room, className }) {
+function RoomTile({ room, className = "" }) {
+    // room: {room_id, naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, minBrClanTima, maxBrClanTima, kategorija, slike}
     let class_name = "room-tile";
     if (className) {
         class_name += " " + className;
     }
     return (
-        <div key={room.id} className={class_name}>
-            <img src={room.imageUrl} alt={room.name} />
-            <h3>{room.name}</h3>
-            <p>{room.description}</p>
+        <div key={room.room_id} className={class_name}>
+            <img src={room.slike[0]} alt={room.naziv} />
+            <h3>{room.naziv}</h3>
+            <p>{room.opis}</p>
             <p>
-                <strong>Žanr:</strong> {room.genre}
+                <strong>Žanr:</strong> {room.kategorija}
             </p>
             <p>
                 <strong>Težina:</strong>{" "}
-                {Array.from({ length: room.difficulty }).map((_, i) => "⭐")}
+                {Array.from({ length: room.tezina }).map((_, i) => "⭐")}
             </p>
             <p>
-                <strong>Lokacija:</strong> {room.location}
+                <strong>Grad:</strong> {room.grad}
             </p>
             <Button1 text={"DETALJI"} className={"room-tile-button"}/>
         </div>

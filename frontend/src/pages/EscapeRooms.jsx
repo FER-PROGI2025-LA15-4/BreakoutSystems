@@ -7,6 +7,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import {authFetch} from "../context/AuthContext";
 import Select from "react-select";
 import makeAnimated from 'react-select/animated';
+import MapController from "../components/MapController";
 
 
 async function fetchCities() {
@@ -64,7 +65,22 @@ export async function fetchRoomsFiltered(city = null, category = null, team = nu
         return [];
     }
 }
-
+export function calculateMapCenterZoom(rooms) {
+    let center = [45, 16.5];
+    let zoom = 7;
+    if (!rooms || rooms.length === 0) {
+        return { center, zoom };
+    }
+    let geo_lat = 0;
+    let geo_long = 0;
+    for (let room of rooms) {
+        geo_lat += room.geo_lat;
+        geo_long += room.geo_long;
+    }
+    geo_lat = geo_lat / rooms.length;
+    geo_long = geo_long / rooms.length;
+    return { center: [geo_lat, geo_long], zoom: 8 };
+}
 
 function EscapeRoomsContent() {
     const { user } = useAuth();
