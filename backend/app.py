@@ -253,4 +253,4 @@ def filter_rooms():
 if __name__ == '__main__':
     with app.app_context():
         init_db()
-    app.run(debug=True, port=int(os.environ.get("SERVER_PORT", 5000)), host='0.0.0.0')
+    app.run(debug=True, port=int(os.environ.get("PORT", 5000)), host='0.0.0.0')
