@@ -1,0 +1,80 @@
+name: Build and deploy to Azure Web App - breakoutsystems
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # required for actions/checkout
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install Python dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Install Node.js dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v6
+        with:
+          name: app
+          path: |
+            .
+            !frontend/node_modules/**
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write   # required for requesting the JWT
+      contents: read   # required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v6
+        with:
+          name: app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_721C28BD31BF48C18783C2606306CA6A }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BF9AD3BF13424BA3B0A905CDFF2364AF }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_50FF97387D9843D098B6964D2A6DCEB9 }}
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: 'breakoutsystems'
+          slot-name: 'Production'
+          
