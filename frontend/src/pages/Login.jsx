@@ -7,7 +7,7 @@ import registerLogo from "../assets/icons/address-card.svg";
 import {NavLink, useNavigate} from "react-router";
 import Popup from "../components/Popup";
 import {useAuth} from "../context/AuthContext";
-import {SyncLoader} from "react-spinners";
+import LoadingScreen from "../components/LoadingScreen";
 
 function LoginPage() {
     const name = "login";
@@ -59,10 +59,7 @@ function LoginPage() {
             </div>
         );
     } else {
-        body =
-            <div className="profile-page-loading">
-                <SyncLoader className={"profile-page-loader"}/>
-            </div>;
+        body = <LoadingScreen/>;
     }
 
     return <PageTemplate name={name} body={body} />;

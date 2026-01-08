@@ -6,7 +6,7 @@ import registerImage from "../assets/icons/user-settings.svg"
 import {useNavigate} from "react-router";
 import {useAuth} from "../context/AuthContext";
 import Popup from "../components/Popup";
-import {SyncLoader} from "react-spinners";
+import LoadingScreen from "../components/LoadingScreen";
 
 function RegisterPage() {
     const name = "register";
@@ -139,10 +139,7 @@ function RegisterPage() {
             </div>
         );
     } else {
-        body =
-            <div className="profile-page-loading">
-                <SyncLoader className={"profile-page-loader"}/>
-            </div>;
+        body = <LoadingScreen/>;
     }
 
     return <PageTemplate name={name} body={body} />;

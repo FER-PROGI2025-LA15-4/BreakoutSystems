@@ -5,26 +5,10 @@ import makeAnimated from 'react-select/animated';
 import UpDownSwitch from "../components/UpDownSwitch";
 import {fetchRoomsFiltered} from "./EscapeRooms";
 import {SyncLoader} from "react-spinners";
+import sortArr from "../utils/sortArray";
 
 async function fetchData(room_id) {
   return [];
-}
-
-function sortArr(array, key = (value) => value, direction = "asc") {
-  const localData = [...array];
-  for (let i = 0; i < localData.length - 1; i++) {
-    for (let j = i + 1; j < localData.length; j++) {
-      if (key(localData[i]) > key(localData[j])) {
-        const temp = localData[i];
-        localData[i] = localData[j];
-        localData[j] = temp;
-      }
-    }
-  }
-  if (direction === "desc") {
-    localData.reverse();
-  }
-  return localData;
 }
 
 function LeaderboardContent() {
@@ -130,7 +114,7 @@ function LeaderboardContent() {
           </tr>
         </thead>
         <tbody>
-          {loading && <tr><td colSpan={3}><div className={"leaderboard-loader-wrapper"}><SyncLoader className={"profile-page-loader"}/></div></td></tr>}
+          {loading && <tr><td colSpan={3}><div className={"leaderboard-loader-wrapper"}><SyncLoader/></div></td></tr>}
           {!loading && data.map((entry) => {
             return <tr>
               <td>{entry.rank}</td>

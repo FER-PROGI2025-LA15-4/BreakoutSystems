@@ -4,8 +4,8 @@ import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
 import logoutImg from '../assets/icons/logout.svg';
 import edit from '../assets/icons/edit-profile.png';
-import {SyncLoader} from "react-spinners";
 import {useAuth} from "../context/AuthContext";
+import LoadingScreen from "../components/LoadingScreen";
 
 function ProfilePage() {
     const name = "profile";
@@ -71,10 +71,7 @@ function ProfilePage() {
                 </div>
             </div>;
     } else {
-        body =
-            <div className="profile-page-loading">
-                <SyncLoader className={"profile-page-loader"}/>
-            </div>;
+        body = <LoadingScreen/>;
     }
 
     return <PageTemplate name={name} body={body} />;

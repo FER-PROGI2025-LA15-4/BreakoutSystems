@@ -52,6 +52,7 @@ CREATE TABLE EscapeRoom (
     maxBrClanTima INT NOT NULL,
     kategorija VARCHAR(255) NOT NULL,
     CHECK (minBrClanTima <= maxBrClanTima),
+    CHECK (kategorija IN ('Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo')),
     FOREIGN KEY (vlasnik_username) REFERENCES Vlasnik(username) ON DELETE CASCADE
 );
 

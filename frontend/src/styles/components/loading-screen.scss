@@ -1,0 +1,27 @@
+.loading-screen {
+  flex: 1 0 0;
+  width: 100%;
+  background-image: url('../assets/images/pocetna-background2.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 3em;
+}
+.loading-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 2;
+}
+.loading-screen-loader {
+  z-index: 5;
+}

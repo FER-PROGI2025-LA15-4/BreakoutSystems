@@ -5,8 +5,7 @@ import {SyncLoader} from "react-spinners";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import RoomTile from "../components/RoomTile";
 import MapController from "../components/MapController";
-import {calculateMapCenterZoom} from "./EscapeRooms";
-
+import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
 
 async function fetchPopularRooms() {
   const response = await fetch('/api/rooms/most_popular');
@@ -34,7 +33,7 @@ function HomeContent() {
   const [initPos, setInitPos] = useState([45, 16.5]);
   const [initZoom, setInitZoom] = useState(7);
   useEffect(() => {
-      const { center, zoom } = calculateMapCenterZoom(popularRooms);
+      const { center, zoom } = calculateMapCenterZoom(popularRooms.map((room) => [room.geo_lat, room.geo_long]));
       setInitPos(center);
       setInitZoom(zoom);
   }, [popularRooms]);

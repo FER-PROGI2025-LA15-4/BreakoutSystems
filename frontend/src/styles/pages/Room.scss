@@ -1,0 +1,138 @@
+.room-page {
+  width: 100%;
+  flex: 1 0 0;
+}
+
+.room-page-section-title {
+  position: relative;
+  color: white;
+
+  >p {
+    font-size: 1.2em;
+    padding: 4rem 5rem 0.5rem 5rem;
+  }
+  >h1 {
+    font-size: 4em;
+    padding: 0 5rem 12rem 5rem;
+    font-weight: 700;
+  }
+  >img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+    z-index: -1;
+  }
+}
+
+.room-page-section-content {
+  display: grid;
+  grid-template-columns: 65% 30%;
+  column-gap: 5%;
+  background-color: #f5f5f5;
+  padding: 0 5em;
+  align-items: stretch;
+
+  >.room-page-section-content-info {
+    background-color: white;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    row-gap: 1em;
+    padding: 2em;
+    margin: -5em 0;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.1);
+
+    >.room-page-gallery {
+      width: 100%;
+      border-radius: 50px;
+      align-self: center;
+    }
+    p {
+      font-size: 1.2em;
+      >strong {
+        font-weight: 600;
+      }
+    }
+    >.room-page-map {
+      width: 100%;
+      height: 50vh;
+    }
+  }
+
+  >.room-page-section-content-side {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+
+    >.room-page-owner {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      column-gap: 1em;
+      >img {
+        width: 7em;
+      }
+      >div {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        row-gap: 1em;
+      }
+    }
+
+    >.room-page-leaderboard {
+      border-radius: 10px;
+
+      >h4 {
+        color: white;
+        background-color: #3d2cae;
+        text-align: center;
+        padding: 1em;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+      }
+
+      li {
+        list-style: none;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        column-gap: 1em;
+
+        >.room-page-leaderboard-team {
+          flex: 1 0 0;
+        }
+
+        >img {
+          width: 2.25em;
+          padding: 0.5em;
+        }
+      }
+    }
+  }
+}
+
+.room-page-section-reservation {
+  position: relative;
+
+  >img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+    z-index: -1;
+  }
+  >h4 {
+    color: #f2e037;
+    font-size: 2em;
+    padding: 8rem 5rem 5rem 5rem;
+  }
+}
