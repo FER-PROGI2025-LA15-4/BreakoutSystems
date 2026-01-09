@@ -13,29 +13,35 @@ async function fetchPopularRooms() {
     const data = await response.json();
     return data["rooms"];
   } else {
-    return [];
+    return null;
   }
 }
 
 
 function HomeContent() {
-  const [popularRooms, setPopularRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [popularRooms, setPopularRooms] = useState(null);
   useEffect(() => {
-    setLoading(true);
     fetchPopularRooms()
       .then((rooms) => {
-        setPopularRooms(rooms);
-        setLoading(false);
+        if (rooms !== null) {
+          setPopularRooms(rooms);
+        }
       });
   }, []);
 
   const [initPos, setInitPos] = useState([45, 16.5]);
   const [initZoom, setInitZoom] = useState(7);
   useEffect(() => {
-      const { center, zoom } = calculateMapCenterZoom(popularRooms.map((room) => [room.geo_lat, room.geo_long]));
-      setInitPos(center);
-      setInitZoom(zoom);
+      if (popularRooms === null || popularRooms.length === 0) {
+        const defaultCenter = [45, 16.5];
+        const defaultZoom = 7;
+        setInitPos(defaultCenter);
+        setInitZoom(defaultZoom);
+      } else {
+          const { center, zoom } = calculateMapCenterZoom(popularRooms.map((room) => [room.geo_lat, room.geo_long]));
+          setInitPos(center);
+          setInitZoom(zoom);
+      }
   }, [popularRooms]);
 
   return (
@@ -69,7 +75,7 @@ function HomeContent() {
         <h2>Odaberi svoju sljedeću avanturu!</h2>
         <p>Više od 100 Escape Roomova iz cijele Hrvatske! Odaberite i rezervirajte.</p>
 
-        {loading ? (
+        {popularRooms === null ? (
           <SyncLoader />
         ) : (
           <div className="room-grid">
@@ -88,12 +94,12 @@ function HomeContent() {
         <MapContainer className="map-content" center={initPos} zoom={initZoom} scrollWheelZoom={true} attributionControl={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
             <MapController center={initPos} zoom={initZoom}/>
-            {
+            {popularRooms !== null && (
                 popularRooms.map((room) => {
                     return <Marker position={[room.geo_lat, room.geo_long]}>
                         <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
                     </Marker>;
-                })
+                }))
             }
         </MapContainer>
       </section>
