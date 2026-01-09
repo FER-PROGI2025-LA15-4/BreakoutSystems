@@ -54,7 +54,7 @@ function RegisterPage() {
                 <div className="login-container register-form-container">
                     <img src={registerImage} alt="login logo"/>
                     <h2>Registracija</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    <p>Napravi besplatan račun — okupi ekipu, prati odigrane Escape roomove i zauzmi poziciju na ljestvici.</p>
 
                     <form action={"/api/auth/register"} method="POST" encType={"multipart/form-data"} className="register-form">
                         <div className={"register-form-element"}>
@@ -63,7 +63,7 @@ function RegisterPage() {
                         </div>
 
                         <div className={"register-form-element-radio"}>
-                            <p>Uloga</p><br/>
+                            <p>Uloga</p>
                             <label id="radio">
                                 <input
                                     name="uloga"
@@ -73,7 +73,7 @@ function RegisterPage() {
                                     onChange={handleRadioChange}
                                 />
                                 Igrač
-                            </label><br/>
+                            </label>
                             <label id="radio">
                                 <input
                                     name="uloga"

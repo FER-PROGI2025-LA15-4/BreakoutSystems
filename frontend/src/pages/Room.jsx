@@ -3,20 +3,13 @@ import PageTemplate from "./PageTemplate";
 import {useParams} from "react-router";
 import {NotFoundContent} from "./NotFound";
 import LoadingScreen from "../components/LoadingScreen";
-import horor_img1 from "../assets/images/pocetna-background2.png";
-import horor_img2 from "../assets/images/pocetna-background2.png";
-import sf_img1 from "../assets/images/pocetna-background2.png";
-import sf_img2 from "../assets/images/pocetna-background2.png";
-import povijest_img1 from "../assets/images/pocetna-background2.png";
-import povijest_img2 from "../assets/images/pocetna-background2.png";
-import fantasy_img1 from "../assets/images/pocetna-background2.png";
-import fantasy_img2 from "../assets/images/pocetna-background2.png";
-import krimi_img1 from "../assets/images/pocetna-background2.png";
-import krimi_img2 from "../assets/images/pocetna-background2.png";
-import obitelj_img1 from "../assets/images/pocetna-background2.png";
-import obitelj_img2 from "../assets/images/pocetna-background2.png";
-import ostalo_img1 from "../assets/images/pocetna-background2.png";
-import ostalo_img2 from "../assets/images/pocetna-background2.png";
+import horor_img1 from "../assets/images/horror-background.png";
+import sf_img1 from "../assets/images/sf-background.jpg";
+import povijest_img1 from "../assets/images/history-background.png";
+import fantasy_img1 from "../assets/images/fantasy-background.png";
+import krimi_img1 from "../assets/images/crime-background.png";
+import obitelj_img1 from "../assets/images/family-background.png";
+import ostalo_img1 from "../assets/images/other-background.png";
 import sortArr from "../utils/sortArray";
 import ImageGallery from "react-image-gallery";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
@@ -66,7 +59,7 @@ function RoomContent(room) {
         cijena: 150,
         minBrClanTima: 2,
         maxBrClanTima: 6,
-        kategorija: "Horor",
+        kategorija: "Ostalo",
         slike: [
             "https://picsum.photos/4000/3000",
             "https://picsum.photos/4000/3000",
@@ -118,35 +111,28 @@ function RoomContent(room) {
         { team: "tim10", score: 750 },
     ];
 
-    let img1, img2;
+    let img1;
     switch (room.kategorija) {
         case "Horor":
             img1 = horor_img1;
-            img2 = horor_img2;
             break;
         case "SF":
             img1 = sf_img1;
-            img2 = sf_img2;
             break;
         case "Povijest":
             img1 = povijest_img1;
-            img2 = povijest_img2;
             break;
         case "Fantasy":
             img1 = fantasy_img1;
-            img2 = fantasy_img2;
             break;
         case "Krimi":
             img1 = krimi_img1;
-            img2 = krimi_img2;
             break;
         case "Obitelj":
             img1 = obitelj_img1;
-            img2 = obitelj_img2;
             break;
         default:
             img1 = ostalo_img1;
-            img2 = ostalo_img2;
             break;
     }
 
@@ -224,7 +210,7 @@ function RoomContent(room) {
                 </div>
             </section>
             <section className={"room-page-section-reservation"}>
-                <img src={img2} alt="background image" />
+                <img src={img1} alt="background image" />
                 <h4>Rezervirajte termin</h4>
             </section>
         </div>
