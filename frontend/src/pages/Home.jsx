@@ -59,8 +59,14 @@ function HomeContent() {
           organizatore.
         </p>
         <p>
-          <strong>Pretraži</strong> sobe, <strong>rezerviraj</strong> termin, <strong>plati</strong> online
-            i <strong>prati rezultate</strong> svog tima na ljestvici. Tvoja sljedeća avantura počinje ovdje!
+          Na jednom mjestu možeš <strong>pretraživati</strong> sobe, <strong>usporediti</strong> teme, težine i cijene te
+          brzo <strong>pronaći</strong> izazov koji odgovara tvojoj ekipi. Kad odabereš
+          sobu, <strong>rezervacija</strong> i plaćanje su jednostavni i brzi.
+        </p>
+        <p>
+          Okupi ekipu, <strong>prati odigrane avanture</strong> i gledaj kako napredujete iz igre u igru.
+          Nakon igre možeš <strong>ocijeniti težinu sobe</strong> i pomoći drugima pri odabiru.
+          Ako se voliš natjecati, tu su i ljestvice po sobama i globalne ljestvice – <strong>pokaži koji je tim njabolji!</strong>
         </p>
       </section>
 
@@ -83,7 +89,11 @@ function HomeContent() {
       <section className="map-section">
         <div className="map-text">
           <h2>Sve na jednom mjestu</h2>
-          <p>Pogledajte lokacije svih Escape Roomova i odaberite svoje sljedeći izazov! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <p>
+            Pogledaj lokacije svih Escape Roomova i planiraj svoju sljedeću
+            avanturu — bilo da tražiš nešto <i>usput</i> dok putuješ,
+            želiš organizirati team building ili samo želiš ideju za sljedeći izlazak.
+          </p>
         </div>
         <MapContainer className="map-content" center={initPos} zoom={initZoom} scrollWheelZoom={true} attributionControl={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>

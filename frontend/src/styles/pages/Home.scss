@@ -70,6 +70,7 @@
 
   p {
     margin: 1em 0;
+    line-height: 1.5em;
   }
   strong { font-weight: 500; }
 }
@@ -201,7 +202,7 @@ $cta-owner-bg-secondary: #3a178e;
     }
     p {
       font-size: 1.2em;
-      line-height: 1.5em;
+      line-height: 1.8em;
     }
   }
   .map-content {
@@ -240,23 +241,28 @@ $cta-owner-bg-secondary: #3a178e;
   .info {
     width: 70%;
     p {
-      font-size: 1em;
+      font-size: 0.9em;
     }
   }
   .map-section > .map-text {
     margin-left: 0;
-    padding: 0 4em 3em 4em;
+    padding: 0 1em 3em 4em;
   }
   .map-section > .map-content {
     margin-left: 5%;
     margin-bottom: 2.5em;
   }
   .featured {
-    padding-left: 2%;
-    padding-right: 2%;
+    padding: 0 3%;
     margin-bottom: 3em;
   }
   .cta-owner {
-    padding: 0 2%;
+    padding: 0 3%;
+    >h2 {
+      font-size: 2em;
+    }
+    >p {
+      font-size: 1em;
+    }
   }
 }

@@ -14,10 +14,11 @@
 }
 .copyright {
   text-align: center;
-  border-top: 2px solid rgb(234, 234, 234);
-  padding: 10px 0;
+  border-top: 1.5px solid rgb(234, 234, 234);
+  padding: 10px 0 25px 0;
   background-color: white;
   color: rgba(0,0,0,0.4);
+  font-size: 0.8em;
 }
 .footer-msg {
   display: flex;
@@ -44,7 +45,7 @@
 @media (max-width: 830px) {
   .footer {
     flex-direction: column;
-    padding: 10px 0;
+    padding: 10px 1em;
     p {
       text-align: center;
       font-size: 1em;
