@@ -9,6 +9,7 @@ import Select from "react-select";
 import makeAnimated from 'react-select/animated';
 import MapController from "../components/MapController";
 import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
+import sortArr from "../utils/sortArray";
 
 
 async function fetchCities() {
@@ -67,70 +68,48 @@ export async function fetchRoomsFiltered(city = null, category = null, team = nu
     }
 }
 
+
 function EscapeRoomsContent() {
     const { user } = useAuth();
     const animatedComponents = makeAnimated();
 
-    const [citiesOpts, setCitiesOpts] = useState(null);
+    const [cities, setCities] = useState(null);
     const [selectedCity, setSelectedCity] = useState(null);
     useEffect(() => {
         fetchCities()
             .then((newCities) => {
-                setCitiesOpts(newCities.map((city) => ({ value: city, label: city })));
-            })
-            .catch((err) => {
-                setCitiesOpts(null);
+                setCities(newCities);
             });
     }, []);
     const handleCitySelect = (opt) => setSelectedCity(opt ? opt.value : null);
 
-    const [categoriesOpts, setCategoriesOpts] = useState(null);
+    const [categories, setCategories] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState(null);
     useEffect(() => {
         fetchCategories()
             .then((newCategories) => {
-                setCategoriesOpts(newCategories.map((cat) => ({ value: cat, label: cat })));
-            }).catch((err) => {
-                setCategoriesOpts(null);
+                setCategories(newCategories);
             });
     }, [])
     const handleCategorySelect = (opt) => setSelectedCategory(opt ? opt.value : null);
 
     const [teams, setTeams] = useState(null);
-    const [teamsOpts, setTeamsOpts] = useState(null);
     const [selectedTeam, setSelectedTeam] = useState(null);
     useEffect(() => {
         if (user) {
             fetchTeams()
                 .then((newTeams) => {
                     setTeams(newTeams);
-                    setTeamsOpts(newTeams.map((team) => ({ value: team.name, label: team.name })));
-                }).catch((err) => {
-                    setTeams(null);
-                    setTeamsOpts(null);
                 });
         } else {
-            setTeamsOpts(null);
+            setTeams(null);
         }
     }, [user]);
-    const handleTeamSelect = (opt) => setSelectedTeam(opt ? opt.value : null);
+    const handleTeamSelect = (opt) => setSelectedTeam(opt ? opt.team : null);
 
-    const [memberOpts, setMemberOpts] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState(null);
     useEffect(() => {
         setSelectedMembers(null);  // todo clear selected members when team changes
-        if (selectedTeam) {
-            const team = teams.find((t) => t.name === selectedTeam);
-            if (team) {
-                let members = (team.members || []).concat(team.leader || []);
-                members = members.map((username) => ({ value: username, label: username }));
-                setMemberOpts(members);
-            } else {
-                setMemberOpts(null);
-            }
-        } else {
-            setMemberOpts(null);
-        }
     }, [selectedTeam]);
     const handleMembersSelect = (values) => {
         if (values && values.length === 0) {
@@ -143,12 +122,19 @@ function EscapeRoomsContent() {
 
     const [rooms, setRooms] = useState(null);
 
-    const [initMapPos, setInitMapPos] = useState([0, 0]);
+    const [initPos, setInitPos] = useState([0, 0]);
     const [initZoom, setInitZoom] = useState(7);
     useEffect(() => {
-        const { coords, zoom } = calculateMapCenterZoom(rooms.map((room) => [room.geo_lat, room.geo_long]));
-        setInitMapPos(coords);
-        setInitZoom(zoom);
+        if (rooms === null || rooms.length === 0) {
+            const defaultCenter = [45, 16.5];
+            const defaultZoom = 7;
+            setInitPos(defaultCenter);
+            setInitZoom(defaultZoom);
+        } else {
+            const { center, zoom } = calculateMapCenterZoom(rooms.map((room) => [room.geo_lat, room.geo_long]));
+            setInitPos(center);
+            setInitZoom(zoom);
+        }
     }, [rooms]);
 
     const handleFilterClick = () => {
@@ -176,8 +162,8 @@ function EscapeRoomsContent() {
                 <div>
                     <Select
                         components={animatedComponents}
-                        options={citiesOpts || []}
-                        isLoading={citiesOpts === null}
+                        options={cities ? cities.map((city) => ({ value: city, label: city })) : []}
+                        isLoading={cities === null}
                         isMulti={false}
                         isClearable={true}
                         placeholder="Grad"
@@ -186,8 +172,8 @@ function EscapeRoomsContent() {
                     />
                     <Select
                         components={animatedComponents}
-                        options={categoriesOpts || []}
-                        isLoading={categoriesOpts === null}
+                        options={categories ? categories.map((cat) => ({ value: cat, label: cat })) : []}
+                        isLoading={categories === null}
                         isMulti={false}
                         isClearable={true}
                         placeholder="Žanr"
@@ -197,8 +183,8 @@ function EscapeRoomsContent() {
                     {user && <>
                         <Select
                             components={animatedComponents}
-                            options={teamsOpts || []}
-                            isLoading={teamsOpts === null}
+                            options={teams ? teams.map((team) => ({ value: team.name, label: team.name, team: team })) : []}
+                            isLoading={teams === null}
                             isMulti={false}
                             isClearable={true}
                             placeholder="Tim"
@@ -207,8 +193,8 @@ function EscapeRoomsContent() {
                         />
                         <Select
                             components={animatedComponents}
-                            options={memberOpts || []}
-                            isLoading={teamsOpts === null}  // the fetch for teams also fetches members
+                            options={selectedTeam ? sortArr(selectedTeam.members.concat([selectedTeam.leader])) : []}
+                            isLoading={teams === null}  // the fetch for teams also fetches members
                             isMulti={true}
                             isClearable={true}
                             placeholder="Članovi tima"
@@ -221,9 +207,9 @@ function EscapeRoomsContent() {
 
             </section>
             <section className={"escape-rooms-map-section"}>
-                <MapContainer className="escape-rooms-page-map" center={initMapPos} zoom={13} scrollWheelZoom={true} attributionControl={false}>
+                <MapContainer className="escape-rooms-page-map" center={initPos} zoom={initZoom} scrollWheelZoom={true} attributionControl={false}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                    <Marker position={initMapPos}>
+                    <Marker position={initPos}>
                         <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
                     </Marker>
                 </MapContainer>
