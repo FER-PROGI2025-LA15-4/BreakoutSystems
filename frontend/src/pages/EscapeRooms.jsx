@@ -10,6 +10,8 @@ import makeAnimated from 'react-select/animated';
 import MapController from "../components/MapController";
 import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
 import sortArr from "../utils/sortArray";
+import {Rating} from "react-simple-star-rating";
+import RoomMapPopup from "../components/RoomMapPopup";
 
 
 async function fetchCities() {
@@ -109,10 +111,10 @@ function EscapeRoomsContent() {
 
     const [selectedMembers, setSelectedMembers] = useState(null);
     useEffect(() => {
-        setSelectedMembers(null);  // todo clear selected members when team changes
+        setSelectedMembers(null);
     }, [selectedTeam]);
     const handleMembersSelect = (values) => {
-        if (values && values.length === 0) {
+        if (!values || values.length === 0) {
             values = null;
         } else {
             values = values.map((v) => v.value);
@@ -121,8 +123,32 @@ function EscapeRoomsContent() {
     }
 
     const [rooms, setRooms] = useState(null);
+    const [roomsLoading, setRoomsLoading] = useState(true);
+    useEffect(() => {
+        setRoomsLoading(true);
+        fetchRoomsFiltered()
+            .then((newRooms) => {
+                setRooms(newRooms);
+                setRoomsLoading(false);
+            });
+    }, []);
 
-    const [initPos, setInitPos] = useState([0, 0]);
+    const handleFilterClick = () => {
+        if (!roomsLoading) {
+            const city = selectedCity;
+            const category = selectedCategory;
+            const team = selectedTeam ? selectedTeam.name : null;
+            const members = selectedMembers;
+            setRoomsLoading(true);
+            fetchRoomsFiltered(city, category, team, members)
+                .then((newRooms) => {
+                    setRooms(newRooms);
+                    setRoomsLoading(false);
+                });
+        }
+    }
+
+    const [initPos, setInitPos] = useState([45, 16.5]);
     const [initZoom, setInitZoom] = useState(7);
     useEffect(() => {
         if (rooms === null || rooms.length === 0) {
@@ -136,14 +162,6 @@ function EscapeRoomsContent() {
             setInitZoom(zoom);
         }
     }, [rooms]);
-
-    const handleFilterClick = () => {
-        const city = selectedCity;
-        const category = selectedCategory;
-        const team = selectedTeam;
-        const members = selectedMembers;
-        console.log("filter", city, category, team, members);
-    }
 
     return (
         <div className="escape-rooms-page">
@@ -193,7 +211,8 @@ function EscapeRoomsContent() {
                         />
                         <Select
                             components={animatedComponents}
-                            options={selectedTeam ? sortArr(selectedTeam.members.concat([selectedTeam.leader])) : []}
+                            value={selectedMembers ? selectedMembers.map((member) => ({ value: member, label: member })) : []}
+                            options={selectedTeam ? sortArr(selectedTeam.members.concat([selectedTeam.leader])).map((member) => ({ value: member, label: member })) : []}
                             isLoading={teams === null}  // the fetch for teams also fetches members
                             isMulti={true}
                             isClearable={true}
@@ -209,9 +228,12 @@ function EscapeRoomsContent() {
             <section className={"escape-rooms-map-section"}>
                 <MapContainer className="escape-rooms-page-map" center={initPos} zoom={initZoom} scrollWheelZoom={true} attributionControl={false}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                    <Marker position={initPos}>
-                        <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
-                    </Marker>
+                    <MapController center={initPos} zoom={initZoom}/>
+                    {rooms !== null && rooms.map((room) =>
+                        <Marker position={[room.geo_lat, room.geo_long]}>
+                            <RoomMapPopup room={room} />
+                        </Marker>
+                    )}
                 </MapContainer>
             </section>
             <section>
