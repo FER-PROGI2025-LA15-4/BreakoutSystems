@@ -9,6 +9,7 @@
   box-shadow: rgba(0, 0, 0, 0.5) 0 0 6px 0;
   overflow: hidden;
   padding: 20px;
+  max-width: 30em;
 
   img {
     margin-bottom: 20px;
@@ -20,8 +21,9 @@
     font-size: 1.6rem;
     font-weight: 600;
   }
-  p {
+  >p {
     text-align: left;
+    vertical-align: center;
     padding: 0 0 5px 0;
     font-size: 1.1rem;
     line-height: 2rem;

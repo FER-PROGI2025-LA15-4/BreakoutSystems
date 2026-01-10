@@ -10,7 +10,7 @@
   user-select: none;
 
   >h2 {
-    text-align: center;
+    text-align: left;
     align-self: stretch;
   }
   >div {
@@ -29,5 +29,6 @@
   >h5 {
     font-weight: 400;
     font-size: 15px;
+    vertical-align: center;
   }
 }

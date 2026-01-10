@@ -189,7 +189,7 @@ function RoomContent(room) {
                         {room.adresa}, {room.grad}
                     </p>
 
-                    <MapContainer className={"room-page-map"} center={[room.geo_lat, room.geo_long]} zoom={10} scrollWheelZoom={true} attributionControl={false}>
+                    <MapContainer className={"room-page-map"} center={[room.geo_lat, room.geo_long]} zoom={10} scrollWheelZoom={false} attributionControl={false}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
                         <Marker position={[room.geo_lat, room.geo_long]}/>
                     </MapContainer>

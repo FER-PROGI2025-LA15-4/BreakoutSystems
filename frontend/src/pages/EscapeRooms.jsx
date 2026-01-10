@@ -12,6 +12,8 @@ import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
 import sortArr from "../utils/sortArray";
 import {Rating} from "react-simple-star-rating";
 import RoomMapPopup from "../components/RoomMapPopup";
+import {SyncLoader} from "react-spinners";
+import UpDownSwitch from "../components/UpDownSwitch";
 
 
 async function fetchCities() {
@@ -123,15 +125,13 @@ function EscapeRoomsContent() {
     }
 
     const [rooms, setRooms] = useState(null);
-    const [roomsLoading, setRoomsLoading] = useState(true);
+    const [roomsLoading, setRoomsLoading] = useState(false);
+    const [sortType, setSortType] = useState({ attribute: "cijena", direction: "asc" });
+    useEffect(() => handleFilterClick(), []);
     useEffect(() => {
-        setRoomsLoading(true);
-        fetchRoomsFiltered()
-            .then((newRooms) => {
-                setRooms(newRooms);
-                setRoomsLoading(false);
-            });
-    }, []);
+        if (rooms === null) return;
+        setRooms(sortArr(rooms, (room) => room[sortType.attribute], sortType.direction));
+    }, [sortType]);
 
     const handleFilterClick = () => {
         if (!roomsLoading) {
@@ -142,10 +142,19 @@ function EscapeRoomsContent() {
             setRoomsLoading(true);
             fetchRoomsFiltered(city, category, team, members)
                 .then((newRooms) => {
+                    newRooms = sortArr(newRooms, (room) => room[sortType.attribute], sortType.direction);
                     setRooms(newRooms);
                     setRoomsLoading(false);
                 });
         }
+    }
+    const handleSortChangeAttribute = (opt) => {
+        const attribute = opt.value;
+        setSortType({ attribute: attribute, direction: sortType.direction });
+    }
+    const handleSortChangeDirection = () => {
+        const newDirection = sortType.direction === "asc" ? "desc" : "asc";
+        setSortType({ attribute: sortType.attribute, direction: newDirection });
     }
 
     const [initPos, setInitPos] = useState([45, 16.5]);
@@ -162,6 +171,17 @@ function EscapeRoomsContent() {
             setInitZoom(zoom);
         }
     }, [rooms]);
+
+    let tilesSection;
+    if (roomsLoading || rooms === null) {
+        tilesSection = <SyncLoader/>;
+    } else {
+        if (rooms.length === 0) {
+            tilesSection = <p>Nema soba koje odgovaraju odabranim kriterijima.</p>;
+        } else {
+            tilesSection = <>{rooms.map((room) => <RoomTile room={room}/>)}</>;
+        }
+    }
 
     return (
         <div className="escape-rooms-page">
@@ -226,7 +246,7 @@ function EscapeRoomsContent() {
 
             </section>
             <section className={"escape-rooms-map-section"}>
-                <MapContainer className="escape-rooms-page-map" center={initPos} zoom={initZoom} scrollWheelZoom={true} attributionControl={false}>
+                <MapContainer className="escape-rooms-page-map" center={initPos} zoom={initZoom} scrollWheelZoom={false} attributionControl={false}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
                     <MapController center={initPos} zoom={initZoom}/>
                     {rooms !== null && rooms.map((room) =>
@@ -236,8 +256,21 @@ function EscapeRoomsContent() {
                     )}
                 </MapContainer>
             </section>
-            <section>
-                -- Escape Room Tiles --
+            <section className={rooms && rooms.length > 0 && !roomsLoading ? "escape-rooms-tiles" : "escape-rooms-tiles-empty"}>
+                {rooms && rooms.length > 0 && !roomsLoading && (<div className={"escape-rooms-tiles-sort"}>
+                    <UpDownSwitch className={"escape-rooms-tiles-sort-direction"} visible={true} direction={sortType.direction === "asc" ? "up" : "down"} onClick={handleSortChangeDirection}/>
+                    <Select
+                        components={animatedComponents}
+                        value={{ value: sortType.attribute, label: sortType.attribute === "cijena" ? "Cijena" : "Težina" }}
+                        options={[{ value: "cijena", label: "Cijena" }, { value: "tezina", label: "Težina" }]}
+                        isLoading={false}
+                        isMulti={false}
+                        isClearable={false}
+                        onChange={handleSortChangeAttribute}
+                        className="escape-rooms-form-city escape-rooms-form-select"
+                    />
+                </div>)}
+                <div className={"escape-rooms-tiles-flex"}>{tilesSection}</div>
             </section>
         </div>
   );
