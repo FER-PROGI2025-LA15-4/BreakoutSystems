@@ -101,7 +101,7 @@ function HomeContent() {
             želiš organizirati team building ili samo želiš ideju za sljedeći izlazak.
           </p>
         </div>
-        <MapContainer className="map-content" center={initPos} zoom={initZoom} scrollWheelZoom={true} attributionControl={false}>
+        <MapContainer className="map-content" center={initPos} zoom={initZoom} scrollWheelZoom={false} attributionControl={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
             <MapController center={initPos} zoom={initZoom}/>
             {popularRooms !== null && (

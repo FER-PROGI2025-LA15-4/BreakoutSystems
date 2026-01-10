@@ -17,7 +17,7 @@ export default function calculateMapCenterZoom(coords) {
     geo_long = geo_long / coords.length;
 
     // set placeholder zoom level (maybe improve later to calculate based on spread of coordinates)
-    let zoom_level = 8;
+    let zoom_level = 7;
 
     return { center: [geo_lat, geo_long], zoom: zoom_level };
 }

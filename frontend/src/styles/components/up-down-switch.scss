@@ -4,6 +4,8 @@
   transition: opacity 0.2s ease;
   user-select: none;
 }
-.up-down-switch-hidden {
-  opacity: 0;
+@media screen and (hover: hover) {
+  .up-down-switch-hidden {
+    opacity: 0;
+  }
 }
