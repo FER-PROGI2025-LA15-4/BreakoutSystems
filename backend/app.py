@@ -256,13 +256,9 @@ def get_room(room_id):
         db.close()
         return jsonify({"error": "Room not found"}), 404
 
-    rating = db.execute("""
-        SELECT
-            SUM(vrijednost_ocjene) AS total,
-            COUNT(vrijednost_ocjene) AS cnt
-        FROM OcjenaTezine
-        WHERE room_id = ?
-    """, (room_id,)).fetchone()
+    rating = db.execute("SELECT SUM(vrijednost_ocjene) AS total, COUNT(vrijednost_ocjene) AS cnt FROM OcjenaTezine WHERE room_id = ?", (room_id,)).fetchone()
+
+    print(rating["total"])
 
     if rating["total"] is not None:
         tezina = (room["inicijalna_tezina"] + rating["total"]) / (rating["cnt"] + 1)
