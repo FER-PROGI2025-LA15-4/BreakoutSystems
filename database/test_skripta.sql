@@ -48,7 +48,7 @@ INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, i
 (7, 'Izgubljeni u svemiru', 'Svemirski brod gubi kisik. Popravite sustave i vratite se na Zemlju prije nego što bude prekasno.', 45.8029140, 15.9615480, 'Tratinska 18', 'Zagreb', 4, 65.00, 2, 6, 'SF', 'petra123'),
 (8, 'Kuća duhova', 'Vila obitelji Horvat skriva mračnu tajnu. Preživite noć u najukletijoj kući u gradu.',  45.3266580, 14.4430530, 'Trg Ivana Koblera 1', 'Rijeka', 5, 80.00, 2, 4, 'Horor', 'tomislav123'),
 (9, 'Vitezovi Okruglog stola', 'Srednjovjekovna avantura u dvorcu. Pronađite Excalibur i spriječite rat.', 43.5101470, 16.4378410, 'Ulica kralja Tomislava 3', 'Split', 3, 60.00, 3, 7, 'Fantasy', 'maja123'),
-(10, 'Zatvorska pobuna', 'Optuženi ste za zločin koji niste počinili. Pobjednite prije smaknuća u zoru.', 45.3291500, 14.4413490, 'Ulica Ivana Dežmana 6', 'Rijeka', 4, 65.00, 2, 5, 'Krimi', 'tomislav123'),
+(10, 'Zatvorska pobuna', 'Optuženi ste za zločin koji niste počinili. Pobjegnite prije smaknuća u zoru.', 45.3291500, 14.4413490, 'Ulica Ivana Dežmana 6', 'Rijeka', 4, 65.00, 2, 5, 'Krimi', 'tomislav123'),
 (11, 'Podmornica kapetana Nema', 'Istražite potonulu podmornicu i otkrijte tajne dubina oceana.', 43.5085640, 16.4557870, 'Ulica Matice hrvatske 7', 'Split', 3, 70.00, 2, 6, 'Ostalo', 'maja123'),
 (12, 'Djed Mrazova radionica', 'Pomozite vilenjacima spasiti Božić! Idealno za najmlađe istraživače.', 45.8064080, 15.9227310, 'Ulica Joze Martinovića 9', 'Zagreb', 1, 40.00, 4, 10, 'Obitelj', 'petra123'),
 (13, 'Hladni rat', 'Berlin, 1961. Morate prijeći Zid prije nego što vas otkrije Stasi.', 45.3388650, 14.4141550, 'Ulica Eugena Kovačića 88', 'Rijeka', 4, 70.00, 2, 5, 'Povijest', 'katarina123'),
