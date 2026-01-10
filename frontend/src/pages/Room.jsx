@@ -45,39 +45,7 @@ async function fetchLeaderboard(room_id) {
 }
 
 
-function RoomContent(room) {
-    // todo: remove placeholders
-    room = {
-        room_id: 1,
-        naziv: "Kuća u tišini",
-        opis: "lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet",
-        geo_lat: 45.7,
-        geo_long: 16,
-        adresa: "Ulica 123",
-        grad: "Zagreb",
-        tezina: 3.8,
-        cijena: 150,
-        minBrClanTima: 2,
-        maxBrClanTima: 6,
-        kategorija: "Ostalo",
-        slike: [
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-            "https://picsum.photos/4000/3000",
-        ],
-    };
-
+function RoomContent({ room }) {
     // const [owner, setOwner] = useState(null);
     // useEffect(() => {
     //     fetchOwner(room.room_id).then(response => {
@@ -235,10 +203,10 @@ function RoomPage() {
     if (loading) {
         body = <LoadingScreen />;
     } else {
-        if (false) {  // room === null
+        if (room === null) {
             body = <NotFoundContent/>;
         } else {
-            body = <RoomContent room={null}/>;  // room
+            body = <RoomContent room={room}/>;
         }
     }
     return <PageTemplate name={name} body={body}/>;
