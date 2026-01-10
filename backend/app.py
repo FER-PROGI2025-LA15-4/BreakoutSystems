@@ -81,6 +81,7 @@ def run_test_sql():
         except Exception as e:
             print(f"GREŠKA u test_skripta.sql: {e}")
 
+
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     db = get_db_connection()
@@ -158,7 +159,6 @@ def filter_rooms():
     rooms = db.execute(sql, params).fetchall()
     result = []
 
-    # --- team / players flags ---
     team_filter = False
     players_filter = False
 
@@ -180,7 +180,6 @@ def filter_rooms():
     ):
         players_filter = True
 
-    # --- per-room filtering ---
     for room in rooms:
         room_id = room["room_id"]
 
@@ -248,6 +247,42 @@ def filter_rooms():
     db.close()
     return jsonify({"rooms": result}), 200
 
+@app.route('/api/rooms/<int:room_id>', methods=['GET'])
+def get_room(room_id):
+    db = get_db_connection()
+    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
+
+    if room is None:
+        db.close()
+        return jsonify({"error": "Room not found"}), 404
+
+    rating = db.execute("SELECT SUM(vrijednost_ocjene) AS total, COUNT(vrijednost_ocjene) AS cnt FROM OcjenaTezine WHERE room_id = ?", (room_id,)).fetchone()
+
+    print(rating["total"])
+
+    if rating["total"] is not None:
+        tezina = (room["inicijalna_tezina"] + rating["total"]) / (rating["cnt"] + 1)
+    else:
+        tezina = room["inicijalna_tezina"]
+
+    images = db.execute("SELECT image_url FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
+
+    db.close()
+    return jsonify({
+        "room_id": room_id,
+        "naziv": room["naziv"],
+        "opis": room["opis"],
+        "geo_lat": room["geo_lat"],
+        "geo_long": room["geo_long"],
+        "adresa": room["adresa"],
+        "grad": room["grad"],
+        "tezina": round(tezina, 2),
+        "cijena": room["cijena"],
+        "minBrClanTima": room["minBrClanTima"],
+        "maxBrClanTima": room["maxBrClanTima"],
+        "kategorija": room["kategorija"],
+        "slike": [img["image_url"] for img in images]
+    }), 200
 
 
 if __name__ == '__main__':
