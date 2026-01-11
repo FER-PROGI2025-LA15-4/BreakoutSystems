@@ -317,15 +317,15 @@ def get_room(room_id):
 def get_leaderboard():
     db = get_db_connection()
     room_id = request.args.get('room_id')
-    sql = "SELECT t.ime_tima, t.rezultatSekunde FROM Termin t "
+    sql = "SELECT ime_tima, rezultatSekunde FROM Termin WHERE datVrPoc < CURRENT_TIMESTAMP"
 
     params = []
 
     if room_id is not None:
-        sql+= "AND t.room_id = ?"
+        sql+= " AND room_id = ?"
         params.append(room_id)
 
-    sql += " ORDER BY t.rezultatSekunde ASC NULLS LAST"
+    sql += " ORDER BY rezultatSekunde ASC NULLS LAST"
 
     rows = db.execute(sql, params).fetchall()
     db.close()
@@ -404,7 +404,7 @@ def get_leaderboard():
             leaderboard.append({
                 "rank": rank,
                 "ime_tima": pair[0],
-                "bodovi": pair[1]
+                "bodovi": round(pair[1], 2)
             })
             rank += 1
 
