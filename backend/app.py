@@ -93,6 +93,36 @@ def get_categories():
     categories = sorted([row["kategorija"] for row in rows])
     return jsonify({"categories": categories}), 200
 
+@app.route('/api/rooms/<int:room_id>/owner', methods=['GET'])
+def get_owner(room_id):
+
+    db = get_db_connection()
+
+    owner = db.execute("""
+        SELECT
+            v.naziv_tvrtke,
+            v.adresa,
+            v.grad,
+            v.telefon,
+            v.logoImgUrl
+        FROM EscapeRoom e
+        JOIN Vlasnik v ON v.username = e.vlasnik_username
+        WHERE e.room_id = ?
+    """, (room_id,)).fetchone()
+
+    db.close()
+
+    if owner is None:
+        return jsonify({"error": "Room not found"}), 404
+
+    return jsonify({
+        "naziv_tvrtke": owner["naziv_tvrtke"],
+        "adresa": owner["adresa"],
+        "grad": owner["grad"],
+        "telefon": owner["telefon"],
+        "logoImgUrl": owner["logoImgUrl"]
+    }), 200
+
 @app.route('/api/my-teams', methods=['GET'])
 @login_required
 def get_my_teams():
