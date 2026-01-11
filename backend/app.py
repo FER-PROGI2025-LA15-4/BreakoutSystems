@@ -263,6 +263,11 @@ def filter_rooms():
             WHERE room_id = ?
         """, (room_id,)).fetchall()
 
+        for img in images:
+            if img["cover"] == True:
+                images.remove(img)
+                images.insert(0, img)
+
         result.append({
             "room_id": room_id,
             "naziv": room["naziv"],
@@ -299,6 +304,10 @@ def get_room(room_id):
         tezina = room["inicijalna_tezina"]
 
     images = db.execute("SELECT image_url FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
+    for img in images:
+        if img["cover"] == True:
+            images.remove(img)
+            images.insert(0, img)
 
     db.close()
     return jsonify({
