@@ -267,6 +267,7 @@ def filter_rooms():
             if img["cover"] == True:
                 images.remove(img)
                 images.insert(0, img)
+                break
 
         result.append({
             "room_id": room_id,
@@ -308,6 +309,7 @@ def get_room(room_id):
         if img["cover"] == True:
             images.remove(img)
             images.insert(0, img)
+            break
 
     db.close()
     return jsonify({
