@@ -337,24 +337,18 @@ def get_leaderboard():
     # rank, ime tima, bodovi na globalnoj
     # rank, ime tima i vrijeme na lokalnoj za sobu
     leaderboard = []
-    rank = 1
     if room_id is not None: #lokalni leaderboard za sobu
         for row in rows:
             if row[1] is not None:  # tim je završio sobu
-                minutes = row[1] // 60
-                seconds = row[1] % 60
                 leaderboard.append({
-                    "rank": rank,
                     "ime_tima": row[0],
-                    "vrijeme": f"{minutes}:{seconds:02d}"
+                    "score": row[1]
                 })
             else: #tim nije završio sobu
                 leaderboard.append({
-                    "rank": rank,
                     "ime_tima": row[0],
-                    "vrijeme": None
+                    "score": None
                 })
-            rank += 1
 
     # globalni leaderboard
     # za svaki tim:
@@ -406,11 +400,9 @@ def get_leaderboard():
 
         for pair in score_per_team:
             leaderboard.append({
-                "rank": rank,
                 "ime_tima": pair[0],
-                "bodovi": round(pair[1], 2)
+                "score": round(pair[1], 2)
             })
-            rank += 1
 
         db.close()
 
