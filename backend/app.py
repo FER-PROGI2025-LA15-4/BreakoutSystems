@@ -263,6 +263,11 @@ def filter_rooms():
             WHERE room_id = ?
         """, (room_id,)).fetchall()
 
+        for img in images:
+            if img["cover"] == True:
+                images.remove(img)
+                images.insert(0, img)
+
         result.append({
             "room_id": room_id,
             "naziv": room["naziv"],
@@ -299,6 +304,10 @@ def get_room(room_id):
         tezina = room["inicijalna_tezina"]
 
     images = db.execute("SELECT image_url FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
+    for img in images:
+        if img["cover"] == True:
+            images.remove(img)
+            images.insert(0, img)
 
     db.close()
     return jsonify({
@@ -368,7 +377,7 @@ def get_leaderboard():
 
         for room in escape_rooms: #za svaku sobu izračunaj prosječno vrijeme
             room_id = room["room_id"]
-            avg_time = db.execute("SELECT AVG(rezultatSekunde) FROM Termin WHERE datVrPoc < CURRENT_TIMESTAMP AND room_id = ?", (room_id,)).fetchone()
+            avg_time = db.execute("SELECT AVG(rezultatSekunde) FROM Termin WHERE room_id = ?", (room_id,)).fetchone()
             avg_times_for_rooms.update({room_id: avg_time[0]})
 
             # za svaku sobu izračunaj prosječnu ocjenu
@@ -385,7 +394,7 @@ def get_leaderboard():
         for team in teams:
             ime_tima = team["ime_tima"]
             score = 0
-            results = db.execute("SELECT room_id, rezultatSekunde FROM Termin WHERE datVrPoc < CURRENT_TIMESTAMP AND ime_tima = ?", (ime_tima,)).fetchall()
+            results = db.execute("SELECT room_id, rezultatSekunde FROM Termin WHERE ime_tima = ?", (ime_tima,)).fetchall()
             for r in results:
                 room_id = r["room_id"]
                 if r["rezultatSekunde"] is not None:
