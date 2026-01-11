@@ -8,7 +8,13 @@ import {SyncLoader} from "react-spinners";
 import sortArr from "../utils/sortArray";
 
 async function fetchData(room_id) {
-  return [];
+  const response = await fetch(`/api/leaderboard${room_id ? `?room_id=${room_id}` : ""}`);
+  if (response.ok) {
+    const data = await response.json();
+    return data["leaderboard"];
+  } else {
+    return [];
+  }
 }
 
 function LeaderboardContent() {

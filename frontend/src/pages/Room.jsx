@@ -46,19 +46,13 @@ async function fetchLeaderboard(room_id) {
 
 
 function RoomContent({ room }) {
-    // const [owner, setOwner] = useState(null);
-    // useEffect(() => {
-    //     fetchOwner(room.room_id).then(response => {
-    //         setOwner(response);
-    //     })
-    // }, [room]);
-    const owner = {
-        naziv_tvrtke: "Escape Room Zagreb",
-        adresa: "Ilica 10",
-        grad: "Zagreb",
-        telefon: "+385 1 234 5678",
-        logoImgURL: "https://picsum.photos/200/200",
-    };
+    const [owner, setOwner] = useState(null);
+    useEffect(() => {
+        fetchOwner(room.room_id).then(response => {
+            console.log(response);
+            setOwner(response);
+        })
+    }, [room]);
 
     // const [leaderboard, setLeaderboard] = useState(null);
     // useEffect(() => {
@@ -153,14 +147,16 @@ function RoomContent({ room }) {
                         <h4>Kako rezervirati?</h4>
                         <p>Registrirajte se, osnujte svoj tim i rezervirajte neki od slobodnih termina.</p>
                     </div>
-                    <div className={"room-page-owner"}>
-                        <img src={owner.logoImgURL} alt="owner logo" />
-                        <div>
-                            <h4>{owner.naziv_tvrtke}</h4>
-                            <p>{owner.adresa}, {owner.grad}</p>
-                            <p>Tel: {owner.telefon}</p>
+                    {owner &&
+                        <div className={"room-page-owner"}>
+                            {owner.logoImgUrl && <img src={owner.logoImgUrl} alt="owner logo" />}
+                            <div>
+                                <h4>{owner.naziv_tvrtke}</h4>
+                                <p>{owner.adresa}, {owner.grad}</p>
+                                <p>Tel: {owner.telefon}</p>
+                            </div>
                         </div>
-                    </div>
+                    }
                     {leaderboard && leaderboard.length > 0 && (
                         <div className={"room-page-leaderboard"}>
                             <h4>Leaderboard</h4>
