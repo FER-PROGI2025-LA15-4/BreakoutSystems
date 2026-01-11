@@ -371,7 +371,7 @@ def get_leaderboard():
     else:
         db = get_db_connection()
         escape_rooms = db.execute("SELECT * FROM EscapeRoom").fetchall()
-        teams = db.execute("SELECT DISTINCT ime_tima FROM Termin").fetchall()
+        teams = db.execute("SELECT ime FROM Tim").fetchall()
 
         avg_times_for_rooms = {}
         avg_weight_for_rooms = {}
@@ -394,7 +394,7 @@ def get_leaderboard():
 
         # izračun bodova za svaki tim
         for team in teams:
-            ime_tima = team["ime_tima"]
+            ime_tima = team["ime"]
             score = 0
             results = db.execute("SELECT room_id, rezultatSekunde FROM Termin WHERE ime_tima = ?", (ime_tima,)).fetchall()
             for r in results:
