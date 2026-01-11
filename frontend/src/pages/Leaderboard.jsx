@@ -39,8 +39,23 @@ function LeaderboardContent() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    fetchData(roomId)
+    const localRoomId = roomId;
+    fetchData(localRoomId)
         .then(fetchedData => {
+          for (const entry of fetchedData) {
+            if (entry.score === null) {
+              entry.score = Number.MAX_SAFE_INTEGER;
+            }
+          }
+          fetchedData = sortArr(fetchedData, (value) => value.score, localRoomId ? "asc" : "desc");
+          let rank = 1;
+          for (const i in fetchedData) {
+            if (parseInt(i) === 0 || fetchedData[parseInt(i) - 1]["score"] === fetchedData[i]["score"]) {
+              fetchedData[i].rank = rank;
+            } else {
+              fetchedData[i].rank = ++rank;
+            }
+          }
           setData(fetchedData);
           setSortType({ field: "rank", direction: "asc" });  // this triggers sorting useEffect (which sets loading to false)
         });
@@ -99,10 +114,10 @@ function LeaderboardContent() {
               <div>
                 <p>Tim</p>
                 <UpDownSwitch
-                    direction={sortType.field === "team" && sortType.direction === "desc" ? "down" : "up"}
-                    visible={sortType.field === "team"}
+                    direction={sortType.field === "ime_tima" && sortType.direction === "desc" ? "down" : "up"}
+                    visible={sortType.field === "ime_tima"}
                     className={"leaderboard-table-sort-switch"}
-                    onClick={() => handleSortClick("team")}
+                    onClick={() => handleSortClick("ime_tima")}
                 />
               </div>
             </th>
@@ -124,7 +139,7 @@ function LeaderboardContent() {
           {!loading && data.map((entry) => {
             return <tr>
               <td>{entry.rank}</td>
-              <td>{entry.team}</td>
+              <td>{entry.ime_tima}</td>
               <td>{entry.score}</td>
             </tr>;
           })}
