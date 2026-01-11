@@ -133,7 +133,11 @@ def get_my_teams():
     db = get_db_connection()
 
     teams = db.execute(
-        "SELECT DISTINCT t.ime, t.image_url, t.voditelj_username FROM Tim t JOIN ClanTima c ON c.ime_tima = t.ime WHERE c.username = ?", (current_user.username,)
+        """SELECT DISTINCT t.ime, t.image_url, t.voditelj_username 
+        FROM Tim t JOIN ClanTima c 
+        ON c.ime_tima = t.ime 
+        WHERE c.username = ? 
+        OR t.voditelj_username = ?""", (current_user.username, current_user.username,)
     ).fetchall()
 
     result = []
