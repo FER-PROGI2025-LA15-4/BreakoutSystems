@@ -258,7 +258,7 @@ def filter_rooms():
             tezina = room["inicijalna_tezina"]
 
         images = db.execute("""
-            SELECT image_url
+            SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
         """, (room_id,)).fetchall()
@@ -304,7 +304,7 @@ def get_room(room_id):
     else:
         tezina = room["inicijalna_tezina"]
 
-    images = db.execute("SELECT image_url FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
+    images = db.execute("SELECT * FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
     for img in images:
         if img["cover"] == True:
             images.remove(img)
