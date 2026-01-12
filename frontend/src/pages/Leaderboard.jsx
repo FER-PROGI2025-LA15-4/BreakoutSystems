@@ -140,7 +140,7 @@ function LeaderboardContent() {
             return <tr>
               <td>{entry.rank}</td>
               <td>{entry.ime_tima}</td>
-              <td>{entry.score}</td>
+              <td>{roomId ? (entry.score === Number.MAX_SAFE_INTEGER ? "-" : entry.score) : entry.score}</td>
             </tr>;
           })}
         </tbody>

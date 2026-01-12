@@ -218,7 +218,7 @@ function EscapeRoomsContent() {
                         onChange={handleCategorySelect}
                         className="escape-rooms-form-category escape-rooms-form-select"
                     />
-                    {user && <>
+                    {user && user.uloga === "POLAZNIK" && <>
                         <Select
                             components={animatedComponents}
                             options={teams ? teams.map((team) => ({ value: team.name, label: team.name, team: team })) : []}

@@ -1,17 +1,17 @@
-import React, { useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router";
 import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
 import logoutImg from '../assets/icons/logout.svg';
-import edit from '../assets/icons/edit-profile.png';
 import {useAuth} from "../context/AuthContext";
 import LoadingScreen from "../components/LoadingScreen";
 
-function ProfilePage() {
+
+export default function ProfilePage() {
     const name = "profile";
     
     const navigate = useNavigate();
-    const { user, loading, logout } = useAuth();
+    const { user, loading } = useAuth();
 
     useEffect(() => {
         if (!loading && !user) {
@@ -21,55 +21,7 @@ function ProfilePage() {
 
     let body;
     if (user && !loading) {
-        let user_data;
-        if (user["uloga"] === "ADMIN") {
-            user_data = <div></div>;
-        } else if (user["uloga"] === "POLAZNIK") {
-            user_data =
-                <div>
-                    <h4>Email: {user["email"]}</h4>
-                </div>;
-        } else if (user["uloga"] === "VLASNIK") {
-            user_data =
-                <div>
-                    <h4>Naziv tvrtke: {user["naziv_tvrtke"]}</h4>
-                    <h4>Adresa: {user["adresa"]}</h4>
-                    <h4>Grad: {user["grad"]}</h4>
-                    <h4>Telefon: {user["telefon"]}</h4>
-                </div>;
-        }
-
-        body =
-            <div className={"profile-page"}>
-                <div className={"profile-page-circle"}>
-                    <div></div>
-                </div>
-                <h1>Moj profil</h1>
-                <div className={"profile-page-content"}>
-
-                    <a className="logout" onClick={logout}>
-                        <img src={logoutImg} alt={"logout icon"}></img>
-                    </a>
-                    <div className="user-data">
-                        <img
-                            //Dodao Filip: Ucitanje slike ako postoji
-                            src={user["profImgUrl"] || user["logoImgUrl"] || profilna}
-                            alt="Profilna slika"
-                            onError={(e) => {
-                                e.target.src = profilna
-                            }}
-                        />
-                        <div className="ime-mail">
-                            <div className="ime-uredi">
-                                <h3>{user["username"]}</h3>
-                                <img src={edit} alt={"edit"}></img>
-                            </div>
-                            <h4>TIP: {user["uloga"]}</h4>
-                            {user_data}
-                        </div>
-                    </div>
-                </div>
-            </div>;
+        body = <ProfilePageContent/>;
     } else {
         body = <LoadingScreen/>;
     }
@@ -77,4 +29,91 @@ function ProfilePage() {
     return <PageTemplate name={name} body={body} />;
 }
 
-export default ProfilePage;
+function ProfilePageContent() {
+    const { user, logout } = useAuth();
+    if (!user) return null;
+
+    let tabs = [];
+    if (user.uloga === "ADMIN") {
+        tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
+
+    } else if (user.uloga === "VLASNIK") {
+        tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
+        tabs.push({ name: "Moje sobe", component: <MyRoomsTab/> });
+        tabs.push({ name: "Unos rezultata", component: <ResultEntryTab/> });
+        tabs.push({ name: "Pretplata", component: <SubscriptionTab/> });
+    } else {  // uloga POLAZNIK
+        tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
+        tabs.push({ name: "Moji timovi", component: <MyTeamsTab/> });
+        tabs.push({ name: "Povijest igara", component: <GameHistoryTab/> });
+    }
+    const [currentTab, setCurrentTab] = useState(0);
+    const handleTabClick = (tabInd) => {
+        if (tabInd !== currentTab) {
+            setCurrentTab(tabInd);
+        }
+    };
+
+    return (
+        <div className={"profile-page"}>
+            <div className={"profile-page-circle"}><div></div></div>
+            <h1>Moj profil</h1>
+            <div className={"profile-page-content"}>
+                <div className="profile-page-user-info">
+                    <img
+                        src={user["profImgUrl"] || user["logoImgUrl"] || profilna}
+                        alt="profilna slika"
+                        className={user.uloga === "VLASNIK" ? "profile-page-user-info-logo-square" : "profile-page-user-info-logo-circle"}
+                    />
+                    <div className="profile-page-user-info-text">
+                        <h3>{user["username"]}</h3>
+                        <h4>{user["email"]}</h4>
+                        <h4>{user["uloga"]}</h4>
+                    </div>
+                    <img src={logoutImg} alt={"logout icon"} onClick={logout} className={"profile-page-logout"} />
+                </div>
+                <div className={"profile-page-tabs"}>
+                    {tabs.map((tab, index) => {
+                        return <div
+                            className={currentTab === index ? "active-tab" : "inactive-tab"}
+                            key={index}
+                            onClick={() => handleTabClick(index)}
+                        >{tab.name}</div>;
+                    })}
+                </div>
+                <div className={"profile-page-tab"}>{tabs[currentTab].component}</div>
+            </div>
+        </div>
+    );
+}
+
+function PersonalInfoTab() {
+    const { user } = useAuth();
+
+    return <p>personal</p>;
+}
+function MyTeamsTab() {
+    const { user } = useAuth();
+
+    return <p>teams</p>;
+}
+function GameHistoryTab() {
+    const { user } = useAuth();
+
+    return <p>history</p>;
+}
+function MyRoomsTab() {
+    const { user } = useAuth();
+
+    return <p>rooms</p>;
+}
+function ResultEntryTab() {
+    const { user } = useAuth();
+
+    return <p>results</p>;
+}
+function SubscriptionTab() {
+    const { user } = useAuth();
+
+    return <p>subscription</p>;
+}

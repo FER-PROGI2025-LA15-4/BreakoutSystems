@@ -27,15 +27,15 @@ INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl) 
 
 -- POLAZNICI
 INSERT INTO Polaznik (username, email, profImgUrl) VALUES
-('ivan123', 'ivan.peric@gmail.com', '...'),
-('ana123', 'ana.kovac@yahoo.com', '...'),
-('josip123', 'josip.horvat@hotmail.com', '....'),
-('lucija123', 'lucija.novak@outlook.com', '...'),
-('matej123', 'matej.babic@gmail.com', '...'),
-('elena123', 'elena.kralj@icloud.com', '...'),
-('antonio123', 'antonio.vukovic@protonmail.com', '...'),
-('sara123', 'sara.visic@email.com', '...'),
-('am', 'am@fer.hr', '...');
+('ivan123', 'ivan.peric@gmail.com', 'https://picsum.photos/500/501'),
+('ana123', 'ana.kovac@yahoo.com', 'https://picsum.photos/500/502'),
+('josip123', 'josip.horvat@hotmail.com', 'https://picsum.photos/500/503'),
+('lucija123', 'lucija.novak@outlook.com', 'https://picsum.photos/500/504'),
+('matej123', 'matej.babic@gmail.com', 'https://picsum.photos/500/505'),
+('elena123', 'elena.kralj@icloud.com', 'https://picsum.photos/500/506'),
+('antonio123', 'antonio.vukovic@protonmail.com', 'https://picsum.photos/500/507'),
+('sara123', 'sara.visic@email.com', 'https://picsum.photos/500/508'),
+('am', 'am@fer.hr', 'https://picsum.photos/500/509');
 
 -- ESCAPE ROOM 
 INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, inicijalna_tezina, cijena, minBrClanTima, maxBrClanTima, kategorija, vlasnik_username) VALUES
