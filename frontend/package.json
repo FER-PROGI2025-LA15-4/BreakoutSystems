@@ -6,6 +6,11 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/list": "^6.1.19",
+    "@fullcalendar/react": "^6.1.19",
     "leaflet": "^1.9.4",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

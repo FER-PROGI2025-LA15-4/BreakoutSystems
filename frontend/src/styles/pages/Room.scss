@@ -151,6 +151,7 @@
 
 .room-page-section-reservation {
   position: relative;
+  padding-bottom: 5rem;
 
   >img {
     width: 100%;
@@ -160,9 +161,139 @@
     z-index: -1;
   }
   >h4 {
-    color: #f2e037;
+    color: white;
     font-size: 2em;
-    padding: 8rem 5rem 5rem 5rem;
+    font-weight: 700;
+    padding: 10rem 5rem 2rem 5rem;
+  }
+  >.room-page-reservation-content {
+    display: grid;
+    grid-template-columns: minmax(260px, 32%) 1fr;
+    gap: 2.5rem;
+    padding: 0 5rem 3rem 5rem;
+    align-items: stretch;
+  }
+  .room-page-reservation-panel,
+  .room-page-reservation-calendar {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 2rem;
+    color: #1c1c1c;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+  }
+  .room-page-reservation-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .room-page-reservation-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    >label {
+      font-weight: 600;
+    }
+  }
+  .room-page-reservation-select {
+    width: 100%;
+  }
+  .room-page-reservation-selected {
+    font-size: 1.05em;
+    font-weight: 500;
+  }
+  .room-page-reservation-hint {
+    font-size: 0.95em;
+    opacity: 0.8;
+  }
+  .room-page-reservation-button {
+    align-self: flex-start;
+  }
+  .room-page-reservation-button.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .room-page-reservation-note {
+    font-size: 0.95em;
+  }
+  .room-page-reservation-calendar {
+    .fc {
+      font-size: 0.95em;
+    }
+    .fc-daygrid-event {
+      margin: 2px 4px;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .fc .fc-button-primary {
+      background-color: #f1f1f1;
+      border-color: #d7d7d7;
+      color: #1c1c1c;
+      box-shadow: none;
+    }
+    .fc .fc-button-primary:hover,
+    .fc .fc-button-primary:focus {
+      background-color: #e6e6e6;
+      border-color: #cfcfcf;
+      color: #1c1c1c;
+    }
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+      background-color: #dadada;
+      border-color: #c8c8c8;
+      color: #1c1c1c;
+    }
+    .fc .fc-button-primary:disabled {
+      opacity: 0.6;
+    }
+    .room-page-calendar-list-title {
+      color: inherit;
+    }
+    .fc-list-event,
+    .fc-list-event td {
+      background-color: transparent;
+    }
+    .fc-list-event-dot {
+      display: none;
+    }
+    .fc-list-event-time,
+    .fc-list-event-title a {
+      color: #1c1c1c;
+    }
+    .fc-list-event:hover td {
+      background-color: #3d2cae;
+      color: white;
+      font-weight: 600;
+    }
+    .fc-list-event:hover .fc-list-event-title a,
+    .fc-list-event:hover .fc-list-event-time {
+      color: white;
+    }
+  }
+  .room-page-calendar-event-selected.fc-list-event td {
+    background-color: #3d2cae;
+    color: white;
+    font-weight: 700;
+  }
+  .room-page-calendar-event-selected.fc-list-event .fc-list-event-title a,
+  .room-page-calendar-event-selected.fc-list-event .fc-list-event-time {
+    color: white;
+  }
+  .room-page-calendar-event {
+    background-color: #6658c3;
+    border: none;
+  }
+  .room-page-calendar-event:hover {
+    background-color: #3d2caecc;
+    border: none;
+  }
+  .room-page-calendar-event-selected {
+    background-color: #3d2cae;
+    border: none;
+    color: white;
+  }
+  .room-page-calendar-time-only {
+    font-weight: 600;
   }
 }
 
@@ -210,7 +341,12 @@
 
   .room-page-section-reservation {
     >h4 {
-      padding: 5rem;
+      padding: 3rem 2rem 1.5rem 2rem;
+      font-size: 2em;
+    }
+    >.room-page-reservation-content {
+      grid-template-columns: 1fr;
+      padding: 0 2rem 3rem 2rem;
     }
   }
 }
