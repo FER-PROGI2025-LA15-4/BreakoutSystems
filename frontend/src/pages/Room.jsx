@@ -108,14 +108,13 @@ function RoomContent({ room }) {
             </section>
             <section className={"room-page-section-content"}>
                 <div className={"room-page-section-content-info"}>
+                    <p className="opis">
+                        {room.opis}
+                    </p>
+
                     <div className={"room-page-gallery"}>
                         <ImageGallery lazyLoad={true} items={room.slike.map((img) => ({ original: img, thumbnail: img, loading: "lazy", thumbnailLoading: "lazy" }))}/>
                     </div>
-
-                    <p>
-                        <strong>Opis:</strong><br/>
-                        {room.opis}
-                    </p>
 
                     <p>
                         <strong>Težina: </strong>
@@ -143,7 +142,7 @@ function RoomContent({ room }) {
                     </MapContainer>
                 </div>
                 <div className={"room-page-section-content-side"}>
-                    <div>
+                    <div className="upute">
                         <h4>Kako rezervirati?</h4>
                         <p>Registrirajte se, osnujte svoj tim i rezervirajte neki od slobodnih termina.</p>
                     </div>
