@@ -18,6 +18,7 @@ CREATE TABLE Vlasnik (
     grad VARCHAR(255) NOT NULL,
     telefon VARCHAR(255) NOT NULL,
     logoImgUrl VARCHAR(255),
+    clanarinaDoDatVr VARCHAR(255),
     FOREIGN KEY (username) REFERENCES Korisnik(username) ON DELETE CASCADE
 );
 
@@ -80,14 +81,6 @@ CREATE TABLE ClanNaTerminu (
     PRIMARY KEY (room_id, datVrPoc, username),
     FOREIGN KEY (room_id, datVrPoc) REFERENCES Termin(room_id, datVrPoc) ON DELETE CASCADE,
     FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE
-);
-
-CREATE TABLE PlacenaClanarina (
-    room_id INT,
-    datVrUplate VARCHAR(255) DEFAULT CURRENT_TIMESTAMP,
-    brMjeseci INT NOT NULL CHECK (brMjeseci in (1, 12)),
-    PRIMARY KEY (room_id, datVrUplate),
-    FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE
 );
 
 CREATE TABLE OcjenaTezine (

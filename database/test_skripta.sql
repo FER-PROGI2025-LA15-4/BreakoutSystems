@@ -17,13 +17,13 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('sara123', 'oauth_polaznik_666', 'POLAZNIK');
 
 -- VLASNICI
-INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl) VALUES
-('marko123', 'Mystery Masters d.o.o.', 'Ilica 98', 'Zagreb', '0953554728', 'https://picsum.photos/500/501'),
-('petra123', 'Mystic Company d.o.o.', 'Ozaljska 34', 'Zagreb', '0981324562', 'https://picsum.photos/500/502'),
-('maja123', 'Split Adventures d.o.o.', 'Poljička cesta 25', 'Split', '0987654321', 'https://picsum.photos/500/503'),
-('tomislav123', 'Rijeka Rooms d.o.o.', 'Trg Ivana Koblera 1', 'Rijeka', '0911122334', 'https://picsum.photos/500/504'),
-('katarina123', 'Rijeka Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Rijeka', '0955566778', null),
-('am', 'Karlovac Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Karlovac', '0995558888', null);
+INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl, clanarinaDoDatVr) VALUES
+('marko123', 'Mystery Masters d.o.o.', 'Ilica 98', 'Zagreb', '0953554728', 'https://picsum.photos/500/501', '2026-02-15T00:00:00'),
+('petra123', 'Mystic Company d.o.o.', 'Ozaljska 34', 'Zagreb', '0981324562', 'https://picsum.photos/500/502', '2026-02-15T00:00:00'),
+('maja123', 'Split Adventures d.o.o.', 'Poljička cesta 25', 'Split', '0987654321', 'https://picsum.photos/500/503', '2026-02-15T00:00:00'),
+('tomislav123', 'Rijeka Rooms d.o.o.', 'Trg Ivana Koblera 1', 'Rijeka', '0911122334', 'https://picsum.photos/500/504', '2026-02-15T00:00:00'),
+('katarina123', 'Rijeka Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Rijeka', '0955566778', null, '2026-02-15T00:00:00'),
+('am', 'Karlovac Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Karlovac', '0995558888', null, '2026-02-15T00:00:00');
 
 -- POLAZNICI
 INSERT INTO Polaznik (username, email, profImgUrl) VALUES
@@ -60,7 +60,7 @@ INSERT INTO Tim (ime, image_url, voditelj_username) VALUES
 ('Tim Alfa', '...', 'ivan123'),
 ('Tim Beta', '...', 'ana123'),
 ('Tim Gamma', '...', 'lucija123'),
-('Tim Delta', '...', 'am'),
+('Tim Delta', '...', 'lucija123'),
 ('Tim Epsilon', '...', 'sara123');
 
 
@@ -81,7 +81,7 @@ INSERT INTO ClanTima (ime_tima, username, accepted) VALUES
 ('Tim Epsilon', 'ivan123', 0),  -- pending
 ('Tim Epsilon', 'lucija123', 1),
 ('Tim Epsilon', 'matej123', 1),
-('Tim Epsilon', 'am', 1);
+('Tim Epsilon', 'antonio123', 1);
 
 
 -- SLIKE ZA ESCAPE ROOMS (2-3 slike po sobi)
@@ -164,23 +164,6 @@ INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES
 (9, '2025-12-01 17:00:00', 'lucija123'),
 (9, '2025-12-01 17:00:00', 'ivan123'),
 (9, '2025-12-01 17:00:00', 'matej123');
-
--- PLAĆENE ČLANARINE (pretplate vlasnika)
-INSERT INTO PlacenaClanarina (room_id, datVrUplate, brMjeseci) VALUES
-(1, '2025-01-05 10:00:00', 12),  -- godišnja
-(2, '2025-01-05 10:00:00', 12),
-(3, '2025-02-01 14:00:00', 1),   -- mjesečna
-(4, '2025-01-10 09:00:00', 12),
-(5, '2025-03-15 11:00:00', 1),
-(6, '2025-01-20 13:00:00', 12),
-(7, '2025-01-20 13:30:00', 12),
-(8, '2025-02-01 15:00:00', 1),
-(9, '2025-01-25 10:00:00', 12),
-(10, '2025-02-05 16:00:00', 1),
-(11, '2025-01-30 11:00:00', 12),
-(12, '2025-02-10 14:00:00', 12),
-(13, '2025-03-01 09:00:00', 1),
-(14, '2025-01-15 12:00:00', 12);
 
 -- OCJENE TEŽINE 
 INSERT INTO OcjenaTezine (room_id, username, vrijednost_ocjene) VALUES

@@ -187,5 +187,11 @@ function ResultEntryTab() {
 function SubscriptionTab() {
     const { user } = useAuth();
 
-    return <p>subscription</p>;
+    if (!user || user.uloga !== "VLASNIK") {
+        return null;
+    }
+
+    return <div className={"profile-page-subscription-tab"}>
+        <p>Status vaše pretplate: {user.clanarinaDoDatVr}</p>
+    </div>;
 }

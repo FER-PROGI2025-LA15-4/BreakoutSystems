@@ -46,7 +46,7 @@ async function fetchLeaderboard(room_id) {
     const response = await fetch(`/api/leaderboard?room_id=${room_id}&limit=10`);
     if (response.ok) {
         let data = await response.json();
-        data = sortArr(data, (entry) => entry.score, "asc");
+        data = sortArr(data["leaderboard"], (entry) => entry.score, "asc");
         return data;
     } else {
         return null;
@@ -171,24 +171,12 @@ function RoomContent({ room }) {
         };
     }, [room]);
 
-    // const [leaderboard, setLeaderboard] = useState(null);
-    // useEffect(() => {
-    //     fetchLeaderboard(room.room_id).then(data => {
-    //         setLeaderboard(data);
-    //     });
-    // }, [room]);
-    const leaderboard = [
-        { team: "tim1", score: 350 },
-        { team: "tim2", score: 300 },
-        { team: "tim3", score: 400 },
-        { team: "tim4", score: 450 },
-        { team: "tim5", score: 500 },
-        { team: "tim6", score: 550 },
-        { team: "tim7", score: 600 },
-        { team: "tim8", score: 650 },
-        { team: "tim9", score: 3695 },
-        { team: "tim10", score: 750 },
-    ];
+    const [leaderboard, setLeaderboard] = useState(null);
+    useEffect(() => {
+        fetchLeaderboard(room.room_id).then(data => {
+            setLeaderboard(data);
+        });
+    }, [room]);
 
     let img1;
     switch (room.kategorija) {
@@ -322,7 +310,7 @@ function RoomContent({ room }) {
                                 {leaderboard.map((entry, index) => (
                                     <li key={index}>
                                         <img src={diamond_img} alt="diamond icon" />
-                                        <p className={"room-page-leaderboard-team"}>{entry.team}</p>
+                                        <p className={"room-page-leaderboard-team"}>{entry.ime_tima}</p>
                                         <p>{Math.floor(entry.score / 3600).toString(10).padStart(2, '0')}:{(Math.floor(entry.score / 60) % 60).toString(10).padStart(2, '0')}:{(entry.score % 60).toString(10).padStart(2, '0')}</p>
                                     </li>
                                 ))}
