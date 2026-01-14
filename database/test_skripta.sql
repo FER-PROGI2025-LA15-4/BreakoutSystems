@@ -13,7 +13,7 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('matej123', 'oauth_polaznik_333', 'POLAZNIK'),
 ('elena123', 'oauth_polaznik_444', 'POLAZNIK'),
 ('antonio123', 'oauth_polaznik_555', 'POLAZNIK'),
-('am', '40371578', 'POLAZNIK'),
+('am', '40371578', 'VLASNIK'),
 ('sara123', 'oauth_polaznik_666', 'POLAZNIK');
 
 -- VLASNICI
@@ -22,8 +22,8 @@ INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl) 
 ('petra123', 'Mystic Company d.o.o.', 'Ozaljska 34', 'Zagreb', '0981324562', 'https://picsum.photos/500/502'),
 ('maja123', 'Split Adventures d.o.o.', 'Poljička cesta 25', 'Split', '0987654321', 'https://picsum.photos/500/503'),
 ('tomislav123', 'Rijeka Rooms d.o.o.', 'Trg Ivana Koblera 1', 'Rijeka', '0911122334', 'https://picsum.photos/500/504'),
-('katarina123', 'Rijeka Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Rijeka', '0955566778', null);
-
+('katarina123', 'Rijeka Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Rijeka', '0955566778', null),
+('am', 'Karlovac Escape d.o.o.', 'Ulica Eugena Kovačića 88', 'Karlovac', '0995558888', null);
 
 -- POLAZNICI
 INSERT INTO Polaznik (username, email, profImgUrl) VALUES
@@ -34,8 +34,7 @@ INSERT INTO Polaznik (username, email, profImgUrl) VALUES
 ('matej123', 'matej.babic@gmail.com', 'https://picsum.photos/500/505'),
 ('elena123', 'elena.kralj@icloud.com', 'https://picsum.photos/500/506'),
 ('antonio123', 'antonio.vukovic@protonmail.com', 'https://picsum.photos/500/507'),
-('sara123', 'sara.visic@email.com', 'https://picsum.photos/500/508'),
-('am', 'am@fer.hr', 'https://picsum.photos/500/509');
+('sara123', 'sara.visic@email.com', 'https://picsum.photos/500/508');
 
 -- ESCAPE ROOM 
 INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, inicijalna_tezina, cijena, minBrClanTima, maxBrClanTima, kategorija, vlasnik_username) VALUES

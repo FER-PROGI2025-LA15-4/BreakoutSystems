@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
 import logoutImg from '../assets/icons/logout.svg';
-import {useAuth} from "../context/AuthContext";
+import {authFetch, useAuth} from "../context/AuthContext";
 import LoadingScreen from "../components/LoadingScreen";
 
 
@@ -35,8 +35,6 @@ function ProfilePageContent() {
 
     let tabs = [];
     if (user.uloga === "ADMIN") {
-        tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
-
     } else if (user.uloga === "VLASNIK") {
         tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
         tabs.push({ name: "Moje sobe", component: <MyRoomsTab/> });
@@ -67,7 +65,7 @@ function ProfilePageContent() {
                     />
                     <div className="profile-page-user-info-text">
                         <h3>{user["username"]}</h3>
-                        <h4>{user["email"]}</h4>
+                        {user.uloga === "POLAZNIK" && <h4>{user["email"]}</h4>}
                         <h4>{user["uloga"]}</h4>
                     </div>
                     <img src={logoutImg} alt={"logout icon"} onClick={logout} className={"profile-page-logout"} />
@@ -88,9 +86,83 @@ function ProfilePageContent() {
 }
 
 function PersonalInfoTab() {
-    const { user } = useAuth();
+    const { user, refresh } = useAuth();
 
-    return <p>personal</p>;
+    if (!user) return null;
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        try {
+            await authFetch('/api/auth/edit', {
+                method: 'POST',
+                body: formData
+            });
+        } catch (e) {
+
+        } finally {
+            refresh();
+        }
+    }
+
+    let content;
+    if (user.uloga === "ADMIN") {
+        return null;
+    } else if (user.uloga === "VLASNIK") {
+        content = <div className={"profile-page-personal-info-tab"}>
+            <p>Korisničko ime: {user.username}</p>
+            <p>Uloga: {user.uloga}</p>
+
+            <form onSubmit={handleSubmit} encType={"multipart/form-data"}>
+                <div>
+                    <label htmlFor={"naziv_tvrtke"}>Naziv tvrtke</label>
+                    <input type="text" id={"naziv_tvrtke"} name={"naziv_tvrtke"} defaultValue={user.naziv_tvrtke} required={true} />
+                </div>
+
+                <div className={"register-form-owner-address"}>
+                    <div>
+                        <label htmlFor={"adresa"}>Adresa tvrtke</label>
+                        <input type="text" id={"adresa"} name={"adresa"} defaultValue={user.adresa} required={true}/>
+                    </div>
+                    <div>
+                        <label htmlFor={"grad"}>Grad</label>
+                        <input type="text" id={"grad"} name={"grad"} defaultValue={user.grad} required={true}/>
+                    </div>
+                </div>
+
+                <div>
+                    <label htmlFor={"telefon"}>Telefonski broj tvrtke </label>
+                    <input type="text" id={"telefon"} name={"telefon"} defaultValue={user.telefon} pattern={"(\\+[1-9][0-9]{0,2}|00[1-9][0-9]{0,2}|0)[1-9][0-9]{7,14}"} required={true}/>
+                </div>
+
+                <div className="slika-profila">
+                    <label htmlFor="image">Promjena logotipa tvrtke</label>
+                    <input type="file" id="image" name="image" accept="image/*"/>
+                </div>
+                <input type="submit" value={"Spremi promjene"}/>
+            </form>
+        </div>;
+    } else {
+        content = <div className={"profile-page-personal-info-tab"}>
+            <p>Korisničko ime: {user.username}</p>
+            <p>Uloga: {user.uloga}</p>
+
+            <form onSubmit={handleSubmit} encType={"multipart/form-data"}>
+                <div>
+                    <label htmlFor="email">Email</label>
+                    <input type="email" id="email" name="email" defaultValue={user.email} required={true}/>
+                </div>
+                <div className="slika-profila">
+                    <label htmlFor="image">Promjena profilne slike</label>
+                    <input type="file" id="image" name="image" accept="image/*"/>
+                </div>
+                <input type="submit" value={"Spremi promjene"}/>
+            </form>
+        </div>;
+    }
+
+    return content;
 }
 function MyTeamsTab() {
     const { user } = useAuth();

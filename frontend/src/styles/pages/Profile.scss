@@ -111,6 +111,7 @@
     margin-top: 2em;
     margin-bottom: 1em;
     user-select: none;
+    gap: 1px;
 
     >.active-tab {
       text-align: center;
@@ -133,4 +134,8 @@
 
 .profile-page-tab {
   border: 1px solid deeppink;
+}
+
+.profile-page-personal-info-tab {
+
 }
