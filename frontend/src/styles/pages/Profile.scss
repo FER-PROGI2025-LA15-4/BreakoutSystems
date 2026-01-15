@@ -59,7 +59,8 @@
   justify-content: space-evenly;
   align-content: flex-start;
   padding: 3em;
-  z-index: 1;
+  position: relative;
+  z-index: 3;
 
   >.profile-page-user-info {
     display: flex;
@@ -92,7 +93,6 @@
       }
     }
     >.profile-page-logout {
-      margin-left: 5em;
       cursor: pointer;
       width: 2.5em;
     }
@@ -142,35 +142,52 @@
     flex-wrap: nowrap;
     gap: 15px;
 
-    .slika-profila{
+    >div {
       display: flex;
-      flex-direction: row;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35em;
+    }
+
+    .slika-profila{
+      flex-direction: column;
+      align-items: flex-start;
       margin-top: 0;
       gap: 0.5em
     }
 
     label {
-      margin-right: 0.5em;
+      margin-right: 0;
+      font-weight: 500;
     }
 
     input {
       padding: 5px 5px;
       font-size: 1em;
       font-family: Montserrat, sans-serif;
+      width: 100%;
+      min-width: 14em;
     }
 
-    input#email, input#naziv_tvrtke{
-      min-width: 300px;
-    }
-
-    .register-form-owner-address{
+    .owner-address{
       margin: 0;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 15px;
+
+      >div {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35em;
+        flex: 1 1 14em;
+      }
     }
 
     input[type=submit] {
       font-family: Montserrat, sans-serif;
-      font-size: 0.8em;
+      font-size: 1em;
       font-weight: 500;
       background-color: #42d2f5;
       color: #fff;
@@ -185,9 +202,466 @@
 }
 
 .profile-page-subscription-tab {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 30px;
 
+  >.profile-page-subscription-tab-status {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 0.1em;
+    font-size: 1em;
+
+    >img {
+      width: 2em;
+      margin-left: 0.75em;
+      margin-bottom: 0.1em;
+    }
+  }
+  >.profile-page-subscription-tab-options {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 4em;
+    padding: 0 3em;
+
+    >.profile-page-subscription-tab-option {
+      background-color: rgb(241, 241, 241);
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: center;
+      min-width: 15em;
+      max-width: 20em;
+      gap: 1.5em;
+
+      div.tip-clanarine {
+        width: 100%;
+        background-color: #42d2f5;
+        padding: 1em 0;
+        text-align: center;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+      }
+
+      h4{
+        font-size: 1.2em;
+        font-weight: 600;
+        color: white;
+      }
+
+      >.profile-page-subscription-tab-option-price {
+        color: rgb(18, 18, 18);
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 0.25em;
+
+        s {
+          font-size: 0.95em;
+          color: rgb(120, 120, 120);
+          margin-right: 0.35em;
+          position: relative;
+          top: 0;
+          align-self: flex-end;
+        }
+
+        .price-euros {
+          font-size: 3em;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        .price-currency,
+        .price-cents {
+          font-size: 0.9em;
+          font-weight: 600;
+          line-height: 1;
+          vertical-align: super;
+          position: relative;
+          align-self: flex-start;
+        }
+      }
+
+      p{
+        font-size: 0.9em;
+        color: rgb(80, 80, 80);
+        padding: 0 1em;
+        text-align: center;
+      }
+
+      button{
+        font-family: Montserrat, sans-serif;
+        font-size: 1em;
+        font-weight: 400;
+        background-color: #f0de37;
+        color: black;
+        border-radius: 999px;
+        width: fit-content;
+        padding: 10px 25px;
+        border: none;
+        cursor: pointer;
+        margin: 0.5em 0 1.5em 0;
+      }
+    }
+  }
 }
 
 .profile-page-result-entry-tab {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 15px;
 
+  form {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 15px;
+    margin-top: 5px;
+  }
+
+  input#finished {
+    margin-right: 0.5em;
+  }
+
+  .timePicker {
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 400;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .profile-timepicker-label {
+    font-weight: 400;
+    color: black;
+    font-size: 1em;
+  }
+  .profile-timepicker-input {
+    border: 1px solid #d7d7d7;
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+  }
+
+  input[type=submit] {
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    background-color: #42d2f5;
+    color: #fff;
+    border-radius: 999px;
+    width: fit-content;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+}
+
+.new-room {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.75em;
+  cursor: pointer;
+  margin-bottom: 1.25em;
+
+  img {
+    width: 3em;
+  }
+}
+
+.my-rooms-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.5em;
+
+  img {
+    width: 200px;
+  }
+
+  >div {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75em;
+    text-align: center;
+    font-size: 0.9em;
+    width: 230px;
+    padding: 15px;
+    box-shadow: 0 0 7px rgba(0,0,0,0.5);
+    border-radius: 5px;
+
+    h3{
+      font-size: 1.2em;
+      font-weight: 600;
+    }
+
+    button{
+      font-family: Montserrat, sans-serif;
+      font-size: 1em;
+      font-weight: 400;
+      background-color: #42d2f5;
+      color: black;
+      border-radius: 999px;
+      width: fit-content;
+      padding: 7px 25px;
+      border: none;
+      cursor: pointer;
+    }
+  }
+}
+
+.profile-page-new-room-form{
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 1em;
+  font-size: 1em;
+  width: max-content;
+  max-width: 100%;
+  align-items: flex-start;
+
+  .grouped-polje{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2em;
+  }
+
+  .polje{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  .mapa{
+    width: min(50em, 100%);
+    height: min(50em, 70vw);
+    margin: 2em 0;
+  }
+
+  label#tezina{
+    margin-bottom: 5px;
+  }
+
+  input, textarea {
+    padding: 5px 5px;
+    font-size: 1em;
+    font-family: Montserrat, sans-serif;
+    width: 100%;
+    min-width: 14em;
+  }
+  input[type=submit] {
+    width: auto;
+    min-width: 0;
+    display: inline-block;
+    margin-right: 1em;
+  }
+
+  textarea{
+    height: 100px;
+    resize: vertical;
+  }
+
+  button, .dodaj{
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    background-color: #42d2f5;
+    color: #fff;
+    border-radius: 999px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+}
+
+.image-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  margin: 2em 0;
+}
+
+.image-editor-controls {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75em;
+
+  button {
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    background-color: #42d2f5;
+    color: #fff;
+    border-radius: 999px;
+    padding: 5px 16px;
+    border: none;
+    cursor: pointer;
+    margin: 0;
+  }
+}
+
+.image-editor-count {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.image-editor-input {
+  display: none;
+}
+
+.image-editor-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.75em;
+  width: max-content;
+  max-width: 100%;
+
+  .image-editor-remove {
+    padding: 5px 7px;
+    border-radius: 9999px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    color: black;
+    cursor: pointer;
+    line-height: 0.8;
+    background-color: #f0de37;
+  }
+
+  .image-editor-order {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    background-color: #f0de37;
+    color: #1c1c1c;
+    border-radius: 999px;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    font-weight: 600;
+  }
+}
+
+.image-editor-thumb {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f1f1f1;
+  border: 1px solid #d7d7d7;
+  cursor: grab;
+  width: 120px;
+  height: 120px;
+  flex: 0 0 auto;
+}
+
+.image-editor-img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.image-editor-meta {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.7em;
+}
+
+@media (max-width: 768px) {
+  .profile-page > h1 {
+    font-size: 2.5em;
+  }
+  .profile-page-personal-info-tab{
+    div, div.slika-profila {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  .profile-page-content > .profile-page-user-info > .profile-page-logout {
+    margin-left: 2em;
+  }
+
+  .profile-page-content > .profile-page-user-info > .profile-page-user-info-text {
+    h3 {
+      font-size: 1.5em;
+    }
+    h4 {
+      font-size: 1em;
+    }
+  }
+
+  .my-rooms-list {
+    justify-content: center;
+  }
+
+  .profile-page-new-room-form{
+    width: 100%;
+
+    .grouped-polje{
+      flex-direction: column;
+      gap: 1em;
+    }
+
+    .polje{
+      width: 100%;
+    }
+
+    .mapa{
+      height: 60vw;
+      min-height: 260px;
+    }
+
+    .buttons{
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75em;
+    }
+  }
+
+  .image-editor-grid {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .image-editor-thumb {
+    width: 100px;
+    height: 100px;
+  }
 }

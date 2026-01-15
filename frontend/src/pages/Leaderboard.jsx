@@ -153,7 +153,7 @@ function LeaderboardContent() {
                 <tr key={`${entry.ime_tima}-${entry.rank}`} className={rowClass}>
                   <td><span className="leaderboard-rank-badge">{entry.rank}</span></td>
                   <td>{entry.ime_tima}</td>
-                  <td>{roomId ? (entry.score === Number.MAX_SAFE_INTEGER ? "-" : entry.score) : entry.score}</td>
+                  <td>{roomId ? (entry.score === Number.MAX_SAFE_INTEGER ? "-" : Math.floor(entry.score / 3600).toString(10).padStart(2, '0') + ":" + (Math.floor(entry.score / 60) % 60).toString(10).padStart(2, '0') + ":" + (entry.score % 60).toString(10).padStart(2, '0')) : entry.score}</td>
                 </tr>
               );
             })}

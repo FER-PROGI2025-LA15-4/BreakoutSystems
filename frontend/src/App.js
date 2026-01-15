@@ -11,13 +11,13 @@ import RoomPage from "./pages/Room";
 import {AuthProvider} from "./context/AuthContext";
 import { createTheme, MantineProvider } from '@mantine/core';
 
+
 function App() {
     return (
         <MantineProvider theme={createTheme({})}>
             <BrowserRouter>
                 <AuthProvider>
                     <Routes>
-
                         {/* početna stranica */}
                         <Route index element={<HomePage />} />
 

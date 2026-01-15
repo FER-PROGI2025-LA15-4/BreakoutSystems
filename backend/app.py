@@ -1,9 +1,7 @@
 # app.py
 import os
-import sqlite3
-from json.encoder import INFINITY
 from pathlib import Path
-from flask import Flask, jsonify, request, send_from_directory, session
+from flask import Flask, jsonify, request, send_from_directory
 from flask_login import LoginManager, current_user,login_required
 from mistune.plugins.footnotes import md_footnotes_hook
 
@@ -22,11 +20,6 @@ from datetime import datetime, timedelta
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INSTANCE_PATH = PROJECT_ROOT / "instance"
-
-stripe.api_key = Config.STRIPE_SECRET_KEY
-
-if not stripe.api_key:
-    raise RuntimeError("stripe secret key not configured")
 
 app = Flask(
     __name__,
@@ -105,13 +98,6 @@ def run_test_sql():
                 db.executescript(f.read())
         except Exception as e:
             print(f"GREŠKA u test_skripta.sql: {e}")
-
-
-@app.route("/config/stripe")
-def stripe_config():
-    return {
-        "publishableKey": Config.STRIPE_PUBLIC_KEY
-    }
 
 @app.route("/api/owner/enter-result", methods=["POST"])
 @login_required
@@ -647,6 +633,75 @@ def get_owner_team_info():
 
     db.close()
     return jsonify(result), 200
+
+#ovdje dodati stripe kljuc
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+
+@app.route('/api/start-payment', methods=['POST'])
+@login_required
+def test_stripe_payment():
+    data = request.get_json()
+    tip_pretplate = data.get('tip')  # 'mjesečna' ili 'godišnja'
+
+    # Određivanje cijene
+    iznos = 1099 if tip_pretplate == 'mjesečna' else 9999  # u centima (15€ ili 150€)
+    naziv = f"Escape Room - {tip_pretplate.capitalize()} članarina"
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {'name': naziv},
+                    'unit_amount': iznos,
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            # URL na koji se korisnik vraća nakon uspjeha
+            success_url=request.host_url + f'profile?payment_status=true&session_id={{CHECKOUT_SESSION_ID}}',
+            cancel_url=request.host_url + 'profile?payment_status=false',
+        )
+        return jsonify({'url': checkout_session.url})
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+
+@app.route('/api/confirm-payment', methods=['POST'])
+@login_required
+def confirm_payment():
+    data = request.get_json()
+    session_id = data.get('session_id')
+
+    try:
+        # Provjeravamo session kod Stripea
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        if session.payment_status == 'paid':
+            username = session.client_reference_id
+            tip = session.metadata.get('tip_pretplate')
+            dana = 30 if tip == 'mjesečna' else 365
+
+            db = get_db_connection()
+            # Logika: Ako već ima članarinu, produlji je. Ako nema, kreni od danas.
+            db.execute("""
+                UPDATE Vlasnik 
+                SET clanarinaDoDatVr = datetime(
+                    COALESCE(MAX(clanarinaDoDatVr, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP), 
+                    '+' || ? || ' days'
+                )
+                WHERE username = ?
+            """, (dana, username))
+
+            db.commit()
+            db.close()
+            return jsonify({"status": "success", "message": f"Članarina produljena za {dana} dana."})
+
+        return jsonify({"status": "failed"}), 400
+    except Exception as e:
+        return jsonify(error=str(e)), 500
 
 def send_gmail(my_address: str, my_password: str, my_server: str, to_address: str, if_ssl: bool = True, if_tls: bool = False, subject: str = "", body: str = ""):
 

@@ -1,8 +1,6 @@
 # auth.py
-import os
 import uuid
 import sqlite3
-from http.cookiejar import cut_port_re
 from pathlib import Path
 from flask import Blueprint, redirect, url_for, request, jsonify, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
