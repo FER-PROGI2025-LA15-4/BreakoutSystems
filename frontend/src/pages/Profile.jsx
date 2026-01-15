@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useNavigate } from "react-router";
 import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
@@ -11,6 +11,11 @@ import sortArr from "../utils/sortArray";
 import { TimePicker } from '@mantine/dates';
 import Popup from "../components/Popup";
 import tick_icon from '../assets/icons/tick-circle.svg';
+import plus_icon from '../assets/icons/plus.svg';
+import {Rating} from "react-simple-star-rating";
+import {MapContainer, Marker, TileLayer} from "react-leaflet";
+import MapController from "../components/MapController";
+import RoomMapPopup from "../components/RoomMapPopup";
 
 export default function ProfilePage() {
     const name = "profile";
@@ -194,8 +199,105 @@ function GameHistoryTab() {
 }
 function MyRoomsTab() {
     const { user } = useAuth();
+    const animatedComponents = makeAnimated();
 
-    return <p>rooms</p>;
+    if (!user || user.uloga !== "VLASNIK") {
+        return null;
+    }
+
+    const [myRooms, setMyRooms] = useState(null);
+    useEffect(() => {
+        fetchMyRooms().then((response) => {
+            setMyRooms(response);
+        })
+    }, [user]);
+
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const handleRoomSelect = (opt) => {
+        setSelectedRoom(opt ? opt.value : null);
+    }
+
+    const [newRoomMode, setNewRoomMode] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e && e.preventDefault();
+        const fd = new FormData();
+
+        result.items.forEach((it) => {
+            if (it.isNew) {
+                order.push(`NEW_${newIndex}`);
+                newFiles.push(it.file);
+                newIndex += 1;
+            } else {
+                order.push(it.id);
+            }
+        });
+
+        fd.append("removed_ids", JSON.stringify(removedIds));
+        fd.append("order", JSON.stringify(order));
+        newFiles.forEach((file) => fd.append(fieldNewFiles, file, file.name));
+    };
+    const result = { items: [] };
+    const [selectedCategory, setSelectedCategory] = useState("Ostalo");
+    const [map, setMap] = useState(null);
+    const [latLng, setLatLng] = useState([0, 0]);
+    useEffect(() => {
+        if (map) {
+            map.on('click', (e) => {
+                setLatLng(e.latlng);
+            });
+        }
+    }, [map]);
+
+    let body;
+    if (newRoomMode) {
+        body = <form onSubmit={handleSubmit}>
+            <input type="text" placeholder="Naziv sobe" name={"naziv"} required={true} />
+            <input type="text" placeholder="Opis sobe" name={"opis"} required={true} />
+            <input type="number" placeholder="Minimalan broj članova tima" name={"minBrClanTima"} required={true} min={1}/>
+            <input type="number" placeholder="Maksimalan broj članova tima" name={"maxBrClanTima"} required={true} min={1} />
+            <input type="number" placeholder="Cijena (€)" step="0.01" name={"cijena"} required={true} min={0.01}/>
+            <input type="text" placeholder="Adresa" name={"adresa"} required={true} />
+            <input type="text" placeholder="Grad" name={"grad"} required={true} />
+            <ImageEditor initialImages={myRooms[1].slike} result={result}/>
+            <Select
+                components={animatedComponents}
+                value={({ value: selectedCategory, label: selectedCategory })}
+                options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
+                isClearable={false}
+                placeholder="Kategorija"
+                onChange={(opt) => setSelectedCategory(opt ? opt.value : "Ostalo")}
+                className="profile-page-result-entry-tab-select-room"
+            />
+            <Rating size={30} readonly={false} allowFraction={true} initialValue={0}/>
+            <MapContainer className={""} style={{ width: 500, height: 500 }} center={[0, 0]} zoom={0} scrollWheelZoom={false} attributionControl={false} ref={setMap}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                <Marker position={latLng}/>
+            </MapContainer>
+            <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
+            <input type="submit" value={"Dodaj sobu"} />
+        </form>;
+    } else if (selectedRoom) {
+        body = <p>room details</p>;
+    } else {
+        body = <>
+            <div>
+                <img src={plus_icon} alt="plus icon" onClick={() => setNewRoomMode(true)} />
+                <p>select a room</p>
+            </div>
+            {myRooms && <>
+                {myRooms.map((room) => (
+                <div key={room.room_id} onClick={() => handleRoomSelect(room)}>
+                    <img src={room.slike[0]} alt={"room img"} />
+                    <h3>{room.naziv}</h3>
+                    <button onClick={() => handleRoomSelect(room)}>DETALJI</button>
+                </div>
+                ))}
+            </>}
+        </>;
+    }
+
+    return <div>{body}</div>;
 }
 function ResultEntryTab() {
     const { user } = useAuth();
@@ -213,10 +315,8 @@ function ResultEntryTab() {
 
     const [myRooms, setMyRooms] = useState(null);
     useEffect(() => {
-        console.log("here");
         fetchMyRooms().then((response) => {
             setMyRooms(response);
-            console.log("her2");
         })
     }, [user]);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -446,4 +546,160 @@ async function fetchTeamInfo(ime_tima) {
     } else {
         return null;
     }
+}
+
+// javascript
+function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] } }) {
+    const fileInputRef = useRef(null);
+    const dragIndexRef = useRef(null);
+
+    const normalizeInitial = (imgs) => {
+        return (imgs || []).map((img, i) => {
+            if (typeof img === "string") {
+                return { key: `srv-url-${i}-${String(img).slice(-8)}`, id: null, file: null, src: img, isNew: false };
+            }
+            const id = img && (img.id ?? img.image_id ?? null);
+            const url = img && (img.url ?? img.src ?? img);
+            return { key: `srv-${id ?? i}-${Math.random().toString(36).slice(2,8)}`, id: id, file: null, src: url, isNew: false };
+        });
+    };
+
+    const [items, setItems] = useState(() => normalizeInitial(initialImages));
+
+    useEffect(() => {
+        result.items = items;
+    }, [items]);
+
+    useEffect(() => {
+        setItems(normalizeInitial(initialImages));
+    }, [JSON.stringify(initialImages)]);
+
+    useEffect(() => {
+        return () => {
+            items.forEach((it) => {
+                if (it.isNew && it.src && it.src.startsWith("blob:")) URL.revokeObjectURL(it.src);
+            });
+        };
+    }, [items]);
+
+    const addFiles = (fileList) => {
+        const files = Array.from(fileList).slice(0, Math.max(0, maxFiles - items.length));
+        if (files.length === 0) return;
+        const newItems = files.map((file, idx) => {
+            const key = `new-${Date.now()}-${Math.random().toString(36).slice(2)}-${idx}`;
+            return { key, id: null, file, src: URL.createObjectURL(file), isNew: true };
+        });
+        setItems((prev) => [...prev, ...newItems]);
+    };
+
+    const handleInputChange = (e) => {
+        addFiles(e.target.files);
+        e.target.value = null;
+    };
+
+    const removeAt = (index) => {
+        setItems((prev) => {
+            const copy = [...prev];
+            const [removed] = copy.splice(index, 1);
+            if (!removed) return prev;
+            if (removed.isNew) {
+                if (removed.src && removed.src.startsWith("blob:")) URL.revokeObjectURL(removed.src);
+            }
+            return copy;
+        });
+    };
+
+    // drag-and-drop handlers for reorder
+    const onDragStart = (e, index) => {
+        dragIndexRef.current = index;
+        try {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(index));
+            // use the element itself as drag image (best-effort)
+            if (e.currentTarget && e.dataTransfer.setDragImage) {
+                e.dataTransfer.setDragImage(e.currentTarget, 10, 10);
+            }
+        } catch (err) {}
+    };
+    const onDragOver = (e) => {
+        e.preventDefault();
+        try { e.dataTransfer.dropEffect = "move"; } catch (err) {}
+    };
+    const onDrop = (e, dropIndex) => {
+        e.preventDefault();
+        let dragIndex = dragIndexRef.current;
+        if (dragIndex === null || dragIndex === undefined) {
+            try {
+                const d = e.dataTransfer.getData("text/plain");
+                if (d) dragIndex = Number(d);
+            } catch (err) {}
+        }
+        if (dragIndex === null || dragIndex === undefined || isNaN(dragIndex)) return;
+        if (dragIndex === dropIndex) return;
+        setItems((prev) => {
+            const copy = [...prev];
+            const [moved] = copy.splice(dragIndex, 1);
+            copy.splice(dropIndex, 0, moved);
+            return copy;
+        });
+        dragIndexRef.current = null;
+    };
+    const onDragEnd = () => {
+        dragIndexRef.current = null;
+    };
+
+    const styles = {
+        container: { border: "1px dashed #bbb", padding: 12, borderRadius: 6 },
+        controls: { display: "flex", gap: 8, marginBottom: 8, alignItems: "center" },
+        grid: { display: "flex", gap: 8, flexWrap: "wrap" },
+        thumb: { width: 120, height: 90, position: "relative", borderRadius: 6, overflow: "hidden", border: "1px solid #ddd", cursor: "grab" },
+        img: { width: "100%", height: "100%", objectFit: "cover", display: "block", userSelect: "none", WebkitUserDrag: "none" },
+        removeBtn: { position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,0.6)", color: "#fff", border: "none", borderRadius: 4, padding: "2px 6px", cursor: "pointer" },
+        orderHint: { position: "absolute", left: 6, bottom: 6, background: "rgba(0,0,0,0.5)", color: "#fff", padding: "2px 6px", fontSize: 12, borderRadius: 4 },
+        metaExisting: { position: "absolute", left: 6, top: 6, background: "rgba(255,255,255,0.8)", color: "#000", padding: "2px 6px", fontSize: 11, borderRadius: 4 },
+    };
+
+    return (
+        <div style={styles.container}>
+            <div style={styles.controls}>
+                <button type="button" onClick={() => fileInputRef.current.click()}>Add images</button>
+                <span style={{ color: "#666" }}>{items.length} / {maxFiles}</span>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={handleInputChange}
+                />
+            </div>
+
+            <div style={styles.grid}>
+                {items.map((it, idx) => (
+                    <div
+                        key={it.key}
+                        style={styles.thumb}
+                        draggable
+                        onDragStart={(e) => onDragStart(e, idx)}
+                        onDragOver={onDragOver}
+                        onDrop={(e) => onDrop(e, idx)}
+                        onDragEnd={onDragEnd}
+                        title="Drag to reorder"
+                    >
+                        <img
+                            src={it.src}
+                            alt={`preview-${idx}`}
+                            style={styles.img}
+                            draggable={false}
+                            onDragStart={(e) => onDragStart(e, idx)}
+                            onDragEnd={onDragEnd}
+                        />
+                        {!it.isNew && it.id !== null && <div style={styles.metaExisting}>#{it.id}</div>}
+                        <button type="button" aria-label="Remove image" onClick={() => removeAt(idx)} style={styles.removeBtn}>×</button>
+                        <div style={styles.orderHint}>{idx + 1}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
