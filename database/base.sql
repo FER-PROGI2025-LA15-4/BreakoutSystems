@@ -69,6 +69,7 @@ CREATE TABLE Termin (
     datVrPoc VARCHAR(255),
     ime_tima VARCHAR(255),
     rezultatSekunde INT,
+    notified BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY(room_id, datVrPoc),
     FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE,
     FOREIGN KEY (ime_tima) REFERENCES Tim(ime) ON DELETE CASCADE

@@ -5,10 +5,19 @@ from json.encoder import INFINITY
 from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory, session
 from flask_login import LoginManager, current_user,login_required
+from mistune.plugins.footnotes import md_footnotes_hook
+
 from config import Config
 from auth import auth_bp, init_oauth, get_db_connection
 from models import User
 import stripe
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from smtplib import SMTP, SMTP_SSL
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -639,7 +648,77 @@ def get_owner_team_info():
     db.close()
     return jsonify(result), 200
 
+def send_gmail(my_address: str, my_password: str, my_server: str, to_address: str, if_ssl: bool = True, if_tls: bool = False, subject: str = "", body: str = ""):
+
+    # generating email
+    e_mail = MIMEMultipart()
+    e_mail["From"] = my_address
+    e_mail["To"] = ", ".join(to_address)
+    e_mail["Subject"] = subject
+    e_mail.attach(MIMEText(body))
+
+
+    # sending email
+    if if_ssl:
+        with SMTP_SSL(my_server) as smtp:
+            try:
+                smtp.ehlo()
+                smtp.login(my_address, my_password)
+                smtp.send_message(e_mail, my_address, to_address)
+                mail_sent = True
+            except:
+                mail_sent = False
+    elif if_tls:
+        with SMTP(my_server) as smtp:
+            try:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.login(my_address, my_password)
+                smtp.send_message(e_mail, my_address, to_address)
+                mail_sent = True
+            except:
+                mail_sent = False
+    else:
+        with SMTP(my_server) as smtp:
+            try:
+                smtp.ehlo()
+                smtp.login(my_address, my_password)
+                smtp.send_message(e_mail, my_address, to_address)
+                mail_sent = True
+            except:
+                mail_sent = False
+
+    if mail_sent:
+        ret_message = "E-Mail sent successfully!"
+    else:
+        ret_message = "E-Mail failed to send!"
+
+    return mail_sent, ret_message
+
+def send_reminder():
+
+    subject = "Podsjetnik o rezervaciji"
+    body = "Imate rezerviran termin"
+
+    db = get_db_connection()
+    now = datetime.now()
+    window_start = now + timedelta(hours=23)
+    window_end = now + timedelta(hours=25)
+    teams = db.execute("SELECT ime_tima FROM Termin WHERE datVrPoc BETWEEN ? AND ?", (window_start.isoformat(), window_end.isoformat(),)).fetchall()
+
+    for team in teams:
+        leader = db.execute("SELECT voditelj_username FROM Tim WHERE ime_tima = ?", (team["ime_tima"],)).fetchone()
+        members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ?", (team["ime_tima"],)).fetchall()
+        members.append(leader)
+        for member in members:
+            address = db.execute("SELECT email FROM Polaznik WHERE username = ?", (member["username"],)).fetchone()
+            send_gmail(my_address="breakoutsystems@gmail.com", my_password=Config.GMAIL_PASSWORD,
+                       my_server="smtp.gmail.com", to_address=address, if_ssl=True, if_tls=False, subject=subject, body=body)
+
 if __name__ == '__main__':
     with app.app_context():
         init_db()
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)), host='0.0.0.0')
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(send_reminder, 'interval', hours=1)
+    scheduler.start()
