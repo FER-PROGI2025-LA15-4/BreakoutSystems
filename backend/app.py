@@ -10,6 +10,12 @@ from auth import auth_bp, init_oauth, get_db_connection
 from models import User
 import stripe
 
+
+stripe.api_key = Config.STRIPE_SECRET_KEY
+
+if not stripe.api_key:
+    raise RuntimeError("stripe secret key not configured")
+
 app = Flask(__name__)
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 app.config.from_object(Config)
@@ -83,6 +89,40 @@ def run_test_sql():
         except Exception as e:
             print(f"GREŠKA u test_skripta.sql: {e}")
 
+
+@app.route("/config/stripe")
+def stripe_config():
+    return {
+        "publishableKey": Config.STRIPE_PUBLIC_KEY
+    }
+
+@app.route("/api/owner/enter-result", methods=["POST"])
+@login_required
+def enter_result():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    data = request.get_json() or {}
+    room_id = data.get("appointmentRoomId")
+    dat_vr_poc = data.get("appointmentDatVrPoc")
+    members = data.get("teamMembers")
+    result = data.get("resultSeconds")
+
+    db = get_db_connection()
+
+    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?", (room_id, current_user.username,)).fetchone()
+    if not room:
+        return jsonify({'error': 'forbidden access'}), 403
+    cursor = db.cursor()
+    cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?", (result, room_id, dat_vr_poc))
+    if cursor.rowcount == 0:
+        return jsonify({'error': 'appointment not found'}), 400
+    for member in members:
+        cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)", (room_id, dat_vr_poc, member))
+
+    db.commit()
+    db.close()
+    return jsonify({"success": True}), 200
 
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
@@ -168,6 +208,51 @@ def get_cities():
     db.close()
     cities = [row["grad"] for row in rows]
     return jsonify({"cities": cities}), 200
+
+@app.route('/api/my-rooms', methods=['GET'])
+@login_required
+def get_my_rooms():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+
+    rooms = db.execute("SELECT * FROM EscapeRoom WHERE vlasnik_username = ?", (current_user.username,)).fetchall()
+
+    result = []
+    for room in rooms:
+        room_id = room["room_id"]
+
+        images = db.execute("""
+            SELECT *
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room_id,)).fetchall()
+
+        for img in images:
+            if img["cover"] == True:
+                images.remove(img)
+                images.insert(0, img)
+
+        result.append({
+            "room_id": room_id,
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": room["inicijalna_tezina"],
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
+
 
 
 @app.route('/api/rooms/filter', methods=['POST'])

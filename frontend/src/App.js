@@ -9,14 +9,16 @@ import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import RoomPage from "./pages/Room";
 import {AuthProvider} from "./context/AuthContext";
+import { createTheme, MantineProvider } from '@mantine/core';
 //STRIPE TEST
 import StripeTest from "./pages/StripeTest"; // pazi da je putanja točna
 
 function App() {
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <Routes>
+        <MantineProvider theme={createTheme({})}>
+            <BrowserRouter>
+                <AuthProvider>
+                    <Routes>
 
                     {/* STRIPE DUMMY PAGE */}
                     <Route path="stripe-test" element={<StripeTest />} />
@@ -24,30 +26,31 @@ function App() {
                     {/* početna stranica */}
                     <Route index element={<HomePage />} />
 
-                    {/* escape rooms stranica */}
-                    <Route path="escape-rooms" element={<EscapeRoomsPage />} />
+                        {/* escape rooms stranica */}
+                        <Route path="escape-rooms" element={<EscapeRoomsPage />} />
 
-                    {/* stranica za pojedini escape room */}
-                    <Route path={"escape-rooms/:room_id"} element={<RoomPage/>} />
+                        {/* stranica za pojedini escape room */}
+                        <Route path={"escape-rooms/:room_id"} element={<RoomPage/>} />
 
-                    {/* leaderboard stranica */}
-                    <Route path="leaderboard" element={<LeaderboardPage />} />
+                        {/* leaderboard stranica */}
+                        <Route path="leaderboard" element={<LeaderboardPage />} />
 
-                    {/* profil stranica */}
-                    <Route path="profile" element={<ProfilePage />} />
+                        {/* profil stranica */}
+                        <Route path="profile" element={<ProfilePage />} />
 
-                    {/* login stranica */}
-                    <Route path="login" element={<LoginPage />} />
+                        {/* login stranica */}
+                        <Route path="login" element={<LoginPage />} />
 
-                    {/* register stranica */}
-                    <Route path="register" element={<RegisterPage />} />
+                        {/* register stranica */}
+                        <Route path="register" element={<RegisterPage />} />
 
-                    {/* stranica 404 */}
-                    <Route path="*" element={<NotFoundPage />} />
+                        {/* stranica 404 */}
+                        <Route path="*" element={<NotFoundPage />} />
 
-                </Routes>
-            </AuthProvider>
-        </BrowserRouter>
+                    </Routes>
+                </AuthProvider>
+            </BrowserRouter>
+        </MantineProvider>
     );
 }
 

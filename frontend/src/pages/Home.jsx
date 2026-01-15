@@ -6,6 +6,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import RoomTile from "../components/RoomTile";
 import MapController from "../components/MapController";
 import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
+import RoomMapPopup from "../components/RoomMapPopup";
 
 async function fetchPopularRooms() {
   const response = await fetch('/api/rooms/most_popular');
@@ -107,7 +108,7 @@ function HomeContent() {
             {popularRooms !== null && (
                 popularRooms.map((room) => {
                     return <Marker position={[room.geo_lat, room.geo_long]}>
-                        <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
+                        <RoomMapPopup room={room} />
                     </Marker>;
                 }))
             }

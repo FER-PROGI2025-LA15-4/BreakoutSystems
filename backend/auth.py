@@ -58,10 +58,10 @@ def save_temp_file(file):
 
 def move_temp_image(tmp_filename):
     if not tmp_filename:
-        return "/instance/images/default.png"
+        return None
     tmp_path = Path(current_app.instance_path) / "tmp_images" / tmp_filename
     if not tmp_path.exists():
-        return "/instance/images/default.png"
+        return None
     images_folder = Path(current_app.instance_path) / "images"
     images_folder.mkdir(parents=True, exist_ok=True)
     final_path = images_folder / tmp_filename
@@ -70,7 +70,7 @@ def move_temp_image(tmp_filename):
 
 
 def delete_image_file(filename):
-    if not filename or filename == "default.png":
+    if not filename:
         return
     path = Path(current_app.instance_path) / "images" / filename
     path.unlink(missing_ok=True)
