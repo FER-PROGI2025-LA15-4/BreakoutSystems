@@ -1,7 +1,7 @@
 
 -- KORISNICI
 INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
-('marko123', '40371578', 'VLASNIK'),
+('marko123', '213290578', 'VLASNIK'),
 ('petra123', 'oauth_vlasnik_456', 'VLASNIK'),
 ('maja123', 'oauth_vlasnik_678', 'VLASNIK'),
 ('tomislav123', 'oauth_vlasnik_901', 'VLASNIK'),

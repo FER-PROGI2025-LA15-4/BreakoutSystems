@@ -259,9 +259,11 @@ function ResultEntryTab() {
         setSelectedMembers(values);
     }
 
+    const [teamFinished, setTeamFinished] = useState(false);
     const [timeValue, setTimeValue] = useState('23:59:59');
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         if (!selectedAppointment) {
             alert("Odaberite termin.");
             return;
@@ -342,8 +344,26 @@ function ResultEntryTab() {
                 onChange={handleMembersSelect}
                 className="profile-page-result-entry-tab-select-members"
             />
-            <TimePicker label="Enter time" withSeconds value={timeValue} onChange={setTimeValue} />
-            <button onClick={handleSubmit}>Unesi rezultat</button>
+            <form onSubmit={handleSubmit}>
+                <label for="finished">
+                    <input type="checkbox" id="finished" onChange={(e) => setTeamFinished(e.target.checked)} />
+                    Tim je završio sobu
+                </label>
+                {teamFinished && (
+                    <TimePicker
+                        label="Vrijeme rješavanja:"
+                        className="timePicker"
+                        classNames={{
+                            label: "profile-timepicker-label",
+                            input: "profile-timepicker-input"
+                        }}
+                        withSeconds
+                        value={timeValue}
+                        onChange={setTimeValue}
+                    />
+                )}
+                <input type="submit" value={"Unesi rezultat"} />
+            </form>
         </>}
     </div>;
 }
