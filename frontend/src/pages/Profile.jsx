@@ -8,7 +8,8 @@ import LoadingScreen from "../components/LoadingScreen";
 import Select from "react-select";
 import makeAnimated from 'react-select/animated';
 import sortArr from "../utils/sortArray";
-
+import { TimePicker } from '@mantine/dates';
+import Popup from "../components/Popup";
 
 export default function ProfilePage() {
     const name = "profile";
@@ -90,6 +91,12 @@ function ProfilePageContent() {
 
 function PersonalInfoTab() {
     const { user, refresh } = useAuth();
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
 
     if (!user) return null;
 
@@ -98,12 +105,17 @@ function PersonalInfoTab() {
         const form = e.target;
         const formData = new FormData(form);
         try {
-            await authFetch('/api/auth/edit', {
+            const response = await authFetch('/api/auth/edit', {
                 method: 'POST',
                 body: formData
             });
+            if (response.ok) {
+                setPopup({ isOpen: true, title: "Uspjeh!", message: "Podaci su uspješno ažurirani." });
+            } else {
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            }
         } catch (e) {
-
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
         } finally {
             refresh();
         }
@@ -114,6 +126,7 @@ function PersonalInfoTab() {
         return null;
     } else if (user.uloga === "VLASNIK") {
         content = <div className={"profile-page-personal-info-tab"}>
+            {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
             <p>Korisničko ime: {user.username}</p>
             <p>Uloga: {user.uloga}</p>
 
@@ -148,6 +161,7 @@ function PersonalInfoTab() {
         </div>;
     } else {
         content = <div className={"profile-page-personal-info-tab"}>
+            {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
             <p>Korisničko ime: {user.username}</p>
             <p>Uloga: {user.uloga}</p>
 
@@ -185,6 +199,12 @@ function MyRoomsTab() {
 function ResultEntryTab() {
     const { user } = useAuth();
     const animatedComponents = makeAnimated();
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
 
     if (!user || user.uloga !== "VLASNIK") {
         return null;
@@ -192,8 +212,10 @@ function ResultEntryTab() {
 
     const [myRooms, setMyRooms] = useState(null);
     useEffect(() => {
+        console.log("here");
         fetchMyRooms().then((response) => {
             setMyRooms(response);
+            console.log("her2");
         })
     }, [user]);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -237,46 +259,51 @@ function ResultEntryTab() {
         setSelectedMembers(values);
     }
 
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
+    const [timeValue, setTimeValue] = useState('23:59:59');
+
+    const handleSubmit = async () => {
         if (!selectedAppointment) {
             alert("Odaberite termin.");
             return;
         }
-        const form = e.target;
-        const formData = new FormData(form);
-        formData.append("appointmentId", selectedAppointment.appointment_id);
-        if (selectedMembers) {
-            formData.append("members", JSON.stringify(selectedMembers));
-        } else {
-            formData.append("members", JSON.stringify([]));
+
+        if (!selectedMembers || selectedMembers.length < selectedRoom.minBrClanTima || selectedMembers.length > selectedRoom.maxBrClanTima) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: `Molimo odaberite između ${selectedRoom.minBrClanTima} i ${selectedRoom.maxBrClanTima} članova tima.` });
         }
 
+        const [hours, minutes, seconds] = timeValue.split(':').map(Number);
+        const timeSeconds =  hours * 3600 + minutes * 60 + seconds;
+
         try {
-            const response = await authFetch('/api/owner/enter-result', {
-                method: 'POST',
-                body: formData
-            });
-            if (response.ok) {
-                alert("Rezultat uspješno unesen.");
-                // reset form
-                setSelectedRoom(null);
-                setSelectedAppointment(null);
-                setSelectedMembers(null);
-                form.reset();
-                // refresh appointments
-                fetchRoomAppointments(selectedRoom.room_id).then((response) => {
-                    setAppointments(sortArr(response.filter((app) => new Date(app.datVrPoc) <= new Date() && app.rezultatSekunde === null && app.ime_tima !== null)));
-                });
-            } else {
-                alert("Došlo je do pogreške prilikom unosa rezultata.");
-            }
+            authFetch("/api/owner/enter-result", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    appointmentRoomId: selectedAppointment.room_id,
+                    appointmentDatVrPoc: selectedAppointment.datVrPoc,
+                    teamMembers: selectedMembers,
+                    resultSeconds: timeSeconds
+                })
+            }).then((response) => {
+                if (response.ok) {
+                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Rezultat je uspješno unesen." });
+                    setSelectedRoom(null);
+                    setSelectedAppointment(null);
+                    setSelectedMembers(null);
+                    setTimeValue('23:59:59');
+                } else {
+                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+                }
+            })
         } catch (e) {
-            alert("Došlo je do pogreške prilikom unosa rezultata.");
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
         }
     }
 
     return <div className={"profile-page-result-entry-tab"}>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
         <Select
             components={animatedComponents}
             value={selectedRoom ? ({ value: selectedRoom, label: selectedRoom.naziv }) : null}
@@ -315,14 +342,9 @@ function ResultEntryTab() {
                 onChange={handleMembersSelect}
                 className="profile-page-result-entry-tab-select-members"
             />
+            <TimePicker label="Enter time" withSeconds value={timeValue} onChange={setTimeValue} />
+            <button onClick={handleSubmit}>Unesi rezultat</button>
         </>}
-
-        <form onSubmit={handleFormSubmit} className={"profile-page-result-entry-tab-form"}>
-            <input type={"time"} id={"result-time"} name={"result-time"} step={1} required={true} />
-            <input type="submit" value={"Unesi rezultat"} />
-        </form>
-
-
     </div>;
 }
 function SubscriptionTab() {

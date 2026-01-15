@@ -191,11 +191,11 @@ def get_my_rooms():
 
     db = get_db_connection()
 
-    rooms = db.execute("SELECT * FROM EscapeRoom WHERE username = ?", (current_user.username,)).fetchall()
+    rooms = db.execute("SELECT * FROM EscapeRoom WHERE vlasnik_username = ?", (current_user.username,)).fetchall()
 
     result = []
     for room in rooms:
-        room_id = rooms["room_id"]
+        room_id = room["room_id"]
 
         images = db.execute("""
             SELECT *
