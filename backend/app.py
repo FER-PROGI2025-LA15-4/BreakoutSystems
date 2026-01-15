@@ -11,15 +11,23 @@ from models import User
 import stripe
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+INSTANCE_PATH = PROJECT_ROOT / "instance"
+
 stripe.api_key = Config.STRIPE_SECRET_KEY
 
 if not stripe.api_key:
     raise RuntimeError("stripe secret key not configured")
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    instance_path=str(INSTANCE_PATH),
+    instance_relative_config=True
+)
+
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 app.config.from_object(Config)
-Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+INSTANCE_PATH.mkdir(parents=True, exist_ok=True)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
