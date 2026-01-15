@@ -420,7 +420,60 @@ def get_leaderboard():
     return jsonify({"leaderboard": leaderboard}), 200
 
 
+@app.route('/api/rooms/most_popular', methods=['GET'])
+def top3_most_popular_rooms():
+    db = get_db_connection()
 
+    rooms = db.execute("""
+        SELECT
+            er.room_id,
+            er.naziv,
+            er.opis,
+            er.geo_lat,
+            er.geo_long,
+            er.adresa,
+            er.grad,
+            er.inicijalna_tezina,
+            er.cijena,
+            er.minBrClanTima,
+            er.maxBrClanTima,
+            er.kategorija,
+            COUNT(t.ime_tima) AS broj_igranja
+        FROM EscapeRoom er
+        LEFT JOIN Termin t
+          ON er.room_id = t.room_id
+        GROUP BY er.room_id
+        ORDER BY broj_igranja DESC
+        LIMIT 3
+    """).fetchall()
+
+    result = []
+
+    for room in rooms:
+        images = db.execute("""
+            SELECT image_url
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room["room_id"],)).fetchall()
+
+        result.append({
+            "room_id": room["room_id"],
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": room["inicijalna_tezina"],
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
 
 
 if __name__ == '__main__':
