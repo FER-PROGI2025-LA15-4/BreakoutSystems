@@ -3,14 +3,10 @@ import os
 from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 from flask_login import LoginManager, current_user,login_required
-from mistune.plugins.footnotes import md_footnotes_hook
-
 from config import Config
 from auth import auth_bp, init_oauth, get_db_connection
 from models import User
 import stripe
-from email import encoders
-from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from smtplib import SMTP, SMTP_SSL
