@@ -96,7 +96,33 @@ def stripe_config():
         "publishableKey": Config.STRIPE_PUBLIC_KEY
     }
 
+@app.route("/api/owner/enter-result", methods=["POST"])
+@login_required
+def enter_result():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
 
+    data = request.get_json() or {}
+    room_id = data.get("appointmentRoomId")
+    dat_vr_poc = data.get("appointmentDatVrPoc")
+    members = data.get("teamMembers")
+    result = data.get("resultSeconds")
+
+    db = get_db_connection()
+
+    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?", (room_id, current_user.username,)).fetchone()
+    if not room:
+        return jsonify({'error': 'forbidden access'}), 403
+    cursor = db.cursor()
+    cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?", (result, room_id, dat_vr_poc))
+    if cursor.rowcount == 0:
+        return jsonify({'error': 'appointment not found'}), 400
+    for member in members:
+        cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)", (room_id, dat_vr_poc, member))
+
+    db.commit()
+    db.close()
+    return jsonify({"success": True}), 200
 
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
