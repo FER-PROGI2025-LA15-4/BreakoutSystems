@@ -124,6 +124,7 @@ def get_owner(room_id):
         "logoImgUrl": owner["logoImgUrl"]
     }), 200
 
+
 @app.route('/api/my-teams', methods=['GET'])
 @login_required
 def get_my_teams():
