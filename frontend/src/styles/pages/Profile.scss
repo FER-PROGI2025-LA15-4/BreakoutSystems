@@ -52,6 +52,7 @@
   background-color: white;
   border-radius: 20px;
   max-width: 80%;
+  min-width: 60%;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -67,13 +68,8 @@
     justify-content: center;
     align-items: center;
 
-    >.profile-page-user-info-logo-square {
-      height: 5em;
-      width: 5em;
-    }
     >.profile-page-user-info-logo-circle {
-      height: 5em;
-      width: 5em;
+      width: 6em;
       border-radius: 99999em;
     }
     >.profile-page-user-info-text {
@@ -158,11 +154,18 @@
       margin-right: 0.5em;
     }
 
-    input#email {
+    input {
       padding: 5px 5px;
       font-size: 1em;
       font-family: Montserrat, sans-serif;
+    }
+
+    input#email, input#naziv_tvrtke{
       min-width: 300px;
+    }
+
+    .register-form-owner-address{
+      margin: 0;
     }
 
     input[type=submit] {
