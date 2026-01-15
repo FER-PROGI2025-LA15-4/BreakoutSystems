@@ -164,13 +164,17 @@
       min-width: 300px;
     }
 
-    .register-form-owner-address{
+    .owner-address{
       margin: 0;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     input[type=submit] {
       font-family: Montserrat, sans-serif;
-      font-size: 0.8em;
+      font-size: 1em;
       font-weight: 500;
       background-color: #42d2f5;
       color: #fff;
@@ -225,5 +229,67 @@
 }
 
 .profile-page-result-entry-tab {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 15px;
 
+  form {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 15px;
+    margin-top: 5px;
+  }
+
+  input#finished {
+    margin-right: 0.5em;
+  }
+
+  .timePicker {
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 400;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .profile-timepicker-label {
+    font-weight: 400;
+    color: black;
+    font-size: 1em;
+  }
+  .profile-timepicker-input {
+    border: 1px solid #d7d7d7;
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+  }
+
+  input[type=submit] {
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    background-color: #42d2f5;
+    color: #fff;
+    border-radius: 999px;
+    width: fit-content;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+}
+
+  @media (max-width: 768px) {
+  .profile-page-personal-info-tab{
+    div, div.slika-profila {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 }

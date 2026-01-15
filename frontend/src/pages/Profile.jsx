@@ -137,7 +137,7 @@ function PersonalInfoTab() {
                     <input type="text" id={"naziv_tvrtke"} name={"naziv_tvrtke"} defaultValue={user.naziv_tvrtke} required={true} />
                 </div>
 
-                <div className={"register-form-owner-address"}>
+                <div className={"owner-address"}>
                     <div>
                         <label htmlFor={"adresa"}>Adresa tvrtke:</label>
                         <input type="text" id={"adresa"} name={"adresa"} defaultValue={user.adresa} required={true}/>
@@ -260,9 +260,11 @@ function ResultEntryTab() {
         setSelectedMembers(values);
     }
 
+    const [teamFinished, setTeamFinished] = useState(false);
     const [timeValue, setTimeValue] = useState('23:59:59');
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         if (!selectedAppointment) {
             alert("Odaberite termin.");
             return;
@@ -344,8 +346,26 @@ function ResultEntryTab() {
                 onChange={handleMembersSelect}
                 className="profile-page-result-entry-tab-select-members"
             />
-            <TimePicker label="Enter time" withSeconds value={timeValue} onChange={setTimeValue} />
-            <button onClick={handleSubmit}>Unesi rezultat</button>
+            <form onSubmit={handleSubmit}>
+                <label for="finished">
+                    <input type="checkbox" id="finished" onChange={(e) => setTeamFinished(e.target.checked)} />
+                    Tim je završio sobu
+                </label>
+                {teamFinished && (
+                    <TimePicker
+                        label="Vrijeme rješavanja:"
+                        className="timePicker"
+                        classNames={{
+                            label: "profile-timepicker-label",
+                            input: "profile-timepicker-input"
+                        }}
+                        withSeconds
+                        value={timeValue}
+                        onChange={setTimeValue}
+                    />
+                )}
+                <input type="submit" value={"Unesi rezultat"} />
+            </form>
         </>}
     </div>;
 }
