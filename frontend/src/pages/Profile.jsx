@@ -150,11 +150,11 @@ function PersonalInfoTab() {
 
             <form onSubmit={handleSubmit} encType={"multipart/form-data"}>
                 <div>
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="email">Email:</label>
                     <input type="email" id="email" name="email" defaultValue={user.email} required={true}/>
                 </div>
                 <div className="slika-profila">
-                    <label htmlFor="image">Promjena profilne slike</label>
+                    <label htmlFor="image">Promjena profilne slike:</label>
                     <input type="file" id="image" name="image" accept="image/*"/>
                 </div>
                 <input type="submit" value={"Spremi promjene"}/>
