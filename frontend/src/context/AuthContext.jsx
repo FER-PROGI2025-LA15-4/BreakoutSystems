@@ -70,6 +70,24 @@ export const AuthProvider = ({ children }) => {
         window.location.href = "/api/auth/login";
     };
 
+    // refresh user data function
+    const refresh = () => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUser(data);
+                } else {
+                    setUser(null);
+                }
+            } catch (error) {
+                setUser(null);
+            }
+        };
+        checkAuth();
+    }
+
     // logout function
     const logout = async () => {
         try {
@@ -86,6 +104,7 @@ export const AuthProvider = ({ children }) => {
             authError,
             clearAuthError: () => setAuthError(null),
             login,
+            refresh,
             logout }}>
             {children}
         </AuthContext.Provider>

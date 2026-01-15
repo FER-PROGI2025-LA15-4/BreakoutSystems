@@ -26,14 +26,8 @@ function UpDownSwitch({ className = "", direction = "up", visible = false, onCli
     }, [visible, direction]);
 
     const [hover, setHover] = useState(false);
-    const handleMouseEnter = () => {
-        console.log("hover enter");
-        setHover(true);
-    }
-    const handleMouseLeave = () =>  {
-        console.log("hover leave");
-        setHover(false);
-    }
+    const handleMouseEnter = () => setHover(true);
+    const handleMouseLeave = () =>  setHover(false);
 
     const [classStr, setClassStr] = useState("up-down-switch");
     useEffect(() => {

@@ -2,7 +2,7 @@ import React from "react";
 import PageTemplate from "./PageTemplate";
 import PageNavLink1 from "../components/PageNavLink1";
 
-function NotFoundContent() {
+export function NotFoundContent() {
   return (
     <div className="nf-body" role="main">
         <div className="nf-body-container">

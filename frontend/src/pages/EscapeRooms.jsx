@@ -7,6 +7,13 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import {authFetch} from "../context/AuthContext";
 import Select from "react-select";
 import makeAnimated from 'react-select/animated';
+import MapController from "../components/MapController";
+import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
+import sortArr from "../utils/sortArray";
+import {Rating} from "react-simple-star-rating";
+import RoomMapPopup from "../components/RoomMapPopup";
+import {SyncLoader} from "react-spinners";
+import UpDownSwitch from "../components/UpDownSwitch";
 
 
 async function fetchCities() {
@@ -70,69 +77,46 @@ function EscapeRoomsContent() {
     const { user } = useAuth();
     const animatedComponents = makeAnimated();
 
-    const [citiesOpts, setCitiesOpts] = useState(null);
+    const [cities, setCities] = useState(null);
     const [selectedCity, setSelectedCity] = useState(null);
     useEffect(() => {
         fetchCities()
             .then((newCities) => {
-                setCitiesOpts(newCities.map((city) => ({ value: city, label: city })));
-            })
-            .catch((err) => {
-                setCitiesOpts(null);
+                setCities(newCities);
             });
     }, []);
     const handleCitySelect = (opt) => setSelectedCity(opt ? opt.value : null);
 
-    const [categoriesOpts, setCategoriesOpts] = useState(null);
+    const [categories, setCategories] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState(null);
     useEffect(() => {
         fetchCategories()
             .then((newCategories) => {
-                setCategoriesOpts(newCategories.map((cat) => ({ value: cat, label: cat })));
-            }).catch((err) => {
-                setCategoriesOpts(null);
+                setCategories(newCategories);
             });
     }, [])
     const handleCategorySelect = (opt) => setSelectedCategory(opt ? opt.value : null);
 
     const [teams, setTeams] = useState(null);
-    const [teamsOpts, setTeamsOpts] = useState(null);
     const [selectedTeam, setSelectedTeam] = useState(null);
     useEffect(() => {
         if (user) {
             fetchTeams()
                 .then((newTeams) => {
                     setTeams(newTeams);
-                    setTeamsOpts(newTeams.map((team) => ({ value: team.name, label: team.name })));
-                }).catch((err) => {
-                    setTeams(null);
-                    setTeamsOpts(null);
                 });
         } else {
-            setTeamsOpts(null);
+            setTeams(null);
         }
     }, [user]);
-    const handleTeamSelect = (opt) => setSelectedTeam(opt ? opt.value : null);
+    const handleTeamSelect = (opt) => setSelectedTeam(opt ? opt.team : null);
 
-    const [memberOpts, setMemberOpts] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState(null);
     useEffect(() => {
-        setSelectedMembers(null);  // todo clear selected members when team changes
-        if (selectedTeam) {
-            const team = teams.find((t) => t.name === selectedTeam);
-            if (team) {
-                let members = (team.members || []).concat(team.leader || []);
-                members = members.map((username) => ({ value: username, label: username }));
-                setMemberOpts(members);
-            } else {
-                setMemberOpts(null);
-            }
-        } else {
-            setMemberOpts(null);
-        }
+        setSelectedMembers(null);
     }, [selectedTeam]);
     const handleMembersSelect = (values) => {
-        if (values && values.length === 0) {
+        if (!values || values.length === 0) {
             values = null;
         } else {
             values = values.map((v) => v.value);
@@ -141,30 +125,62 @@ function EscapeRoomsContent() {
     }
 
     const [rooms, setRooms] = useState(null);
-
-    const [initMapPos, setInitMapPos] = useState([0, 0]);
+    const [roomsLoading, setRoomsLoading] = useState(false);
+    const [sortType, setSortType] = useState({ attribute: "cijena", direction: "asc" });
+    useEffect(() => handleFilterClick(), []);
     useEffect(() => {
-        if (!rooms || rooms.length === 0) {
-            setInitMapPos([45.8150, 15.9819]); // Default to Zagreb
-            return;
-        }
-        let geo_lat = 0;
-        let geo_long = 0;
-        for (let room of rooms) {
-            geo_lat += room.geo_lat;
-            geo_long += room.geo_long;
-        }
-        geo_lat = geo_lat / rooms.length;
-        geo_long = geo_long / rooms.length;
-        setInitMapPos([geo_lat, geo_long]);
-    }, [rooms]);
+        if (rooms === null) return;
+        setRooms(sortArr(rooms, (room) => room[sortType.attribute], sortType.direction));
+    }, [sortType]);
 
     const handleFilterClick = () => {
-        const city = selectedCity;
-        const category = selectedCategory;
-        const team = selectedTeam;
-        const members = selectedMembers;
-        console.log("filter", city, category, team, members);
+        if (!roomsLoading) {
+            const city = selectedCity;
+            const category = selectedCategory;
+            const team = selectedTeam ? selectedTeam.name : null;
+            const members = selectedMembers;
+            setRoomsLoading(true);
+            fetchRoomsFiltered(city, category, team, members)
+                .then((newRooms) => {
+                    newRooms = sortArr(newRooms, (room) => room[sortType.attribute], sortType.direction);
+                    setRooms(newRooms);
+                    setRoomsLoading(false);
+                });
+        }
+    }
+    const handleSortChangeAttribute = (opt) => {
+        const attribute = opt.value;
+        setSortType({ attribute: attribute, direction: sortType.direction });
+    }
+    const handleSortChangeDirection = () => {
+        const newDirection = sortType.direction === "asc" ? "desc" : "asc";
+        setSortType({ attribute: sortType.attribute, direction: newDirection });
+    }
+
+    const [initPos, setInitPos] = useState([45, 16.5]);
+    const [initZoom, setInitZoom] = useState(7);
+    useEffect(() => {
+        if (rooms === null || rooms.length === 0) {
+            const defaultCenter = [45, 16.5];
+            const defaultZoom = 7;
+            setInitPos(defaultCenter);
+            setInitZoom(defaultZoom);
+        } else {
+            const { center, zoom } = calculateMapCenterZoom(rooms.map((room) => [room.geo_lat, room.geo_long]));
+            setInitPos(center);
+            setInitZoom(zoom);
+        }
+    }, [rooms]);
+
+    let tilesSection;
+    if (roomsLoading || rooms === null) {
+        tilesSection = <SyncLoader/>;
+    } else {
+        if (rooms.length === 0) {
+            tilesSection = <p>Nema soba koje odgovaraju odabranim kriterijima.</p>;
+        } else {
+            tilesSection = <>{rooms.map((room) => <RoomTile room={room}/>)}</>;
+        }
     }
 
     return (
@@ -184,8 +200,8 @@ function EscapeRoomsContent() {
                 <div>
                     <Select
                         components={animatedComponents}
-                        options={citiesOpts || []}
-                        isLoading={citiesOpts === null}
+                        options={cities ? cities.map((city) => ({ value: city, label: city })) : []}
+                        isLoading={cities === null}
                         isMulti={false}
                         isClearable={true}
                         placeholder="Grad"
@@ -194,19 +210,19 @@ function EscapeRoomsContent() {
                     />
                     <Select
                         components={animatedComponents}
-                        options={categoriesOpts || []}
-                        isLoading={categoriesOpts === null}
+                        options={categories ? categories.map((cat) => ({ value: cat, label: cat })) : []}
+                        isLoading={categories === null}
                         isMulti={false}
                         isClearable={true}
                         placeholder="Žanr"
                         onChange={handleCategorySelect}
                         className="escape-rooms-form-category escape-rooms-form-select"
                     />
-                    {user && <>
+                    {user && user.uloga === "POLAZNIK" && <>
                         <Select
                             components={animatedComponents}
-                            options={teamsOpts || []}
-                            isLoading={teamsOpts === null}
+                            options={teams ? teams.map((team) => ({ value: team.name, label: team.name, team: team })) : []}
+                            isLoading={teams === null}
                             isMulti={false}
                             isClearable={true}
                             placeholder="Tim"
@@ -215,8 +231,9 @@ function EscapeRoomsContent() {
                         />
                         <Select
                             components={animatedComponents}
-                            options={memberOpts || []}
-                            isLoading={teamsOpts === null}  // the fetch for teams also fetches members
+                            value={selectedMembers ? selectedMembers.map((member) => ({ value: member, label: member })) : []}
+                            options={selectedTeam ? sortArr(selectedTeam.members.concat([selectedTeam.leader])).map((member) => ({ value: member, label: member })) : []}
+                            isLoading={teams === null}  // the fetch for teams also fetches members
                             isMulti={true}
                             isClearable={true}
                             placeholder="Članovi tima"
@@ -229,15 +246,31 @@ function EscapeRoomsContent() {
 
             </section>
             <section className={"escape-rooms-map-section"}>
-                <MapContainer className="escape-rooms-page-map" center={initMapPos} zoom={13} scrollWheelZoom={true} attributionControl={false}>
+                <MapContainer className="escape-rooms-page-map" center={initPos} zoom={initZoom} scrollWheelZoom={false} attributionControl={false}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                    <Marker position={initMapPos}>
-                        <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
-                    </Marker>
+                    <MapController center={initPos} zoom={initZoom}/>
+                    {rooms !== null && rooms.map((room) =>
+                        <Marker position={[room.geo_lat, room.geo_long]}>
+                            <RoomMapPopup room={room} />
+                        </Marker>
+                    )}
                 </MapContainer>
             </section>
-            <section>
-                -- Escape Room Tiles --
+            <section className={rooms && rooms.length > 0 && !roomsLoading ? "escape-rooms-tiles" : "escape-rooms-tiles-empty"}>
+                {rooms && rooms.length > 0 && !roomsLoading && (<div className={"escape-rooms-tiles-sort"}>
+                    <UpDownSwitch className={"escape-rooms-tiles-sort-direction"} visible={true} direction={sortType.direction === "asc" ? "up" : "down"} onClick={handleSortChangeDirection}/>
+                    <Select
+                        components={animatedComponents}
+                        value={{ value: sortType.attribute, label: sortType.attribute === "cijena" ? "Cijena" : "Težina" }}
+                        options={[{ value: "cijena", label: "Cijena" }, { value: "tezina", label: "Težina" }]}
+                        isLoading={false}
+                        isMulti={false}
+                        isClearable={false}
+                        onChange={handleSortChangeAttribute}
+                        className="escape-rooms-form-city escape-rooms-form-select"
+                    />
+                </div>)}
+                <div className={"escape-rooms-tiles-flex"}>{tilesSection}</div>
             </section>
         </div>
   );

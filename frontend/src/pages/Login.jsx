@@ -7,7 +7,7 @@ import registerLogo from "../assets/icons/address-card.svg";
 import {NavLink, useNavigate} from "react-router";
 import Popup from "../components/Popup";
 import {useAuth} from "../context/AuthContext";
-import {SyncLoader} from "react-spinners";
+import LoadingScreen from "../components/LoadingScreen";
 
 function LoginPage() {
     const name = "login";
@@ -44,7 +44,7 @@ function LoginPage() {
                 <div className="login-container">
                     <img src={loginLogo} alt="login logo"/>
                     <h2>Prijavi se!</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    <p>Prijavi se i nastavi tamo gdje si stao — pristupi svojim timovima, pregledaj rezultate i provjeri pozicije na ljestvicama.</p>
                     <a onClick={login} className={"login-link"}>
                         <img src={githubLogo} alt="github logo"/>
                         <p>PRIJAVA</p>
@@ -53,16 +53,13 @@ function LoginPage() {
                 <div className="register-container">
                     <img src={registerLogo} alt="register logo"/>
                     <h2>Registriraj se!</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    <p>Napravi besplatan račun — okupi ekipu, prati odigrane Escape roomove i zauzmi poziciju na ljestvici.</p>
                     <NavLink to={"/register"} className={"login-link"}>REGISTRACIJA</NavLink>
                 </div>
             </div>
         );
     } else {
-        body =
-            <div className="profile-page-loading">
-                <SyncLoader className={"profile-page-loader"}/>
-            </div>;
+        body = <LoadingScreen/>;
     }
 
     return <PageTemplate name={name} body={body} />;

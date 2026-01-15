@@ -7,6 +7,7 @@ import NotFoundPage from './pages/NotFound';
 import ProfilePage from "./pages/Profile";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
+import RoomPage from "./pages/Room";
 import {AuthProvider} from "./context/AuthContext";
 
 function App() {
@@ -20,6 +21,9 @@ function App() {
 
                     {/* escape rooms stranica */}
                     <Route path="escape-rooms" element={<EscapeRoomsPage />} />
+
+                    {/* stranica za pojedini escape room */}
+                    <Route path={"escape-rooms/:room_id"} element={<RoomPage/>} />
 
                     {/* leaderboard stranica */}
                     <Route path="leaderboard" element={<LeaderboardPage />} />

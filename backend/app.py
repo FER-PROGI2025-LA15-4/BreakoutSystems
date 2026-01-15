@@ -1,6 +1,7 @@
 # app.py
 import os
 import sqlite3
+from json.encoder import INFINITY
 from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory, session
 from flask_login import LoginManager, current_user,login_required
@@ -81,6 +82,7 @@ def run_test_sql():
         except Exception as e:
             print(f"GREŠKA u test_skripta.sql: {e}")
 
+
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     db = get_db_connection()
@@ -92,6 +94,36 @@ def get_categories():
     categories = sorted([row["kategorija"] for row in rows])
     return jsonify({"categories": categories}), 200
 
+@app.route('/api/rooms/<int:room_id>/owner', methods=['GET'])
+def get_owner(room_id):
+
+    db = get_db_connection()
+
+    owner = db.execute("""
+        SELECT
+            v.naziv_tvrtke,
+            v.adresa,
+            v.grad,
+            v.telefon,
+            v.logoImgUrl
+        FROM EscapeRoom e
+        JOIN Vlasnik v ON v.username = e.vlasnik_username
+        WHERE e.room_id = ?
+    """, (room_id,)).fetchone()
+
+    db.close()
+
+    if owner is None:
+        return jsonify({"error": "Room not found"}), 404
+
+    return jsonify({
+        "naziv_tvrtke": owner["naziv_tvrtke"],
+        "adresa": owner["adresa"],
+        "grad": owner["grad"],
+        "telefon": owner["telefon"],
+        "logoImgUrl": owner["logoImgUrl"]
+    }), 200
+
 @app.route('/api/my-teams', methods=['GET'])
 @login_required
 def get_my_teams():
@@ -101,7 +133,11 @@ def get_my_teams():
     db = get_db_connection()
 
     teams = db.execute(
-        "SELECT DISTINCT t.ime, t.image_url, t.voditelj_username FROM Tim t JOIN ClanTima c ON c.ime_tima = t.ime WHERE c.username = ?", (current_user.username,)
+        """SELECT DISTINCT t.ime, t.image_url, t.voditelj_username 
+        FROM Tim t JOIN ClanTima c 
+        ON c.ime_tima = t.ime 
+        WHERE c.username = ? 
+        OR t.voditelj_username = ?""", (current_user.username, current_user.username,)
     ).fetchall()
 
     result = []
@@ -158,7 +194,6 @@ def filter_rooms():
     rooms = db.execute(sql, params).fetchall()
     result = []
 
-    # --- team / players flags ---
     team_filter = False
     players_filter = False
 
@@ -180,7 +215,6 @@ def filter_rooms():
     ):
         players_filter = True
 
-    # --- per-room filtering ---
     for room in rooms:
         room_id = room["room_id"]
 
@@ -224,10 +258,16 @@ def filter_rooms():
             tezina = room["inicijalna_tezina"]
 
         images = db.execute("""
-            SELECT image_url
+            SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
         """, (room_id,)).fetchall()
+
+        for img in images:
+            if img["cover"] == True:
+                images.remove(img)
+                images.insert(0, img)
+                break
 
         result.append({
             "room_id": room_id,
@@ -248,6 +288,192 @@ def filter_rooms():
     db.close()
     return jsonify({"rooms": result}), 200
 
+@app.route('/api/rooms/<int:room_id>', methods=['GET'])
+def get_room(room_id):
+    db = get_db_connection()
+    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
+
+    if room is None:
+        db.close()
+        return jsonify({"error": "Room not found"}), 404
+
+    rating = db.execute("SELECT SUM(vrijednost_ocjene) AS total, COUNT(vrijednost_ocjene) AS cnt FROM OcjenaTezine WHERE room_id = ?", (room_id,)).fetchone()
+
+    if rating["total"] is not None:
+        tezina = (room["inicijalna_tezina"] + rating["total"]) / (rating["cnt"] + 1)
+    else:
+        tezina = room["inicijalna_tezina"]
+
+    images = db.execute("SELECT * FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
+    for img in images:
+        if img["cover"] == True:
+            images.remove(img)
+            images.insert(0, img)
+            break
+
+    db.close()
+    return jsonify({
+        "room_id": room_id,
+        "naziv": room["naziv"],
+        "opis": room["opis"],
+        "geo_lat": room["geo_lat"],
+        "geo_long": room["geo_long"],
+        "adresa": room["adresa"],
+        "grad": room["grad"],
+        "tezina": round(tezina, 2),
+        "cijena": room["cijena"],
+        "minBrClanTima": room["minBrClanTima"],
+        "maxBrClanTima": room["maxBrClanTima"],
+        "kategorija": room["kategorija"],
+        "slike": [img["image_url"] for img in images]
+    }), 200
+
+@app.route('/api/leaderboard', methods=['GET'])
+def get_leaderboard():
+    db = get_db_connection()
+    room_id = request.args.get('room_id')
+    sql = "SELECT ime_tima, rezultatSekunde FROM Termin WHERE datVrPoc < CURRENT_TIMESTAMP"
+
+    params = []
+
+    if room_id is not None:
+        sql+= " AND room_id = ?"
+        params.append(room_id)
+
+    sql += " ORDER BY rezultatSekunde ASC NULLS LAST"
+
+    rows = db.execute(sql, params).fetchall()
+    db.close()
+
+    # rank, ime tima, bodovi na globalnoj
+    # rank, ime tima i vrijeme na lokalnoj za sobu
+    leaderboard = []
+    if room_id is not None: #lokalni leaderboard za sobu
+        for row in rows:
+            if row[1] is not None:  # tim je završio sobu
+                leaderboard.append({
+                    "ime_tima": row[0],
+                    "score": row[1]
+                })
+            else: #tim nije završio sobu
+                leaderboard.append({
+                    "ime_tima": row[0],
+                    "score": None
+                })
+
+    # globalni leaderboard
+    # za svaki tim:
+    # 1. uzeti sve sobe i izracunati prosjecno vrijeme igranja sobe
+    # 2. iz tih soba odabrati sve one koje je igrao tim
+    # 3. za svaku od tih soba izracunati koeficijent kao prosjecno vrijeme/vrijeme tima i taj koeficijent pomnoziti s tezinom sobe
+    # 4. zbrojiti sve rezultate - to su bodovi tima
+
+    else:
+        db = get_db_connection()
+        escape_rooms = db.execute("SELECT * FROM EscapeRoom").fetchall()
+        teams = db.execute("SELECT ime FROM Tim").fetchall()
+
+        avg_times_for_rooms = {}
+        avg_weight_for_rooms = {}
+        score_per_team = []
+
+        for room in escape_rooms: #za svaku sobu izračunaj prosječno vrijeme
+            room_id = room["room_id"]
+            avg_time = db.execute("SELECT AVG(rezultatSekunde) FROM Termin WHERE room_id = ?", (room_id,)).fetchone()
+            avg_times_for_rooms.update({room_id: avg_time[0]})
+
+            # za svaku sobu izračunaj prosječnu ocjenu
+            rating = db.execute(
+                "SELECT SUM(vrijednost_ocjene) AS total, COUNT(vrijednost_ocjene) AS cnt FROM OcjenaTezine WHERE room_id = ?",
+                (room_id,)).fetchone()
+            if rating["total"] is not None:
+                tezina = (room["inicijalna_tezina"] + rating["total"]) / (rating["cnt"] + 1)
+            else:
+                tezina = room["inicijalna_tezina"]
+            avg_weight_for_rooms.update({room_id: tezina})
+
+        # izračun bodova za svaki tim
+        for team in teams:
+            ime_tima = team["ime"]
+            score = 0
+            results = db.execute("SELECT room_id, rezultatSekunde FROM Termin WHERE ime_tima = ?", (ime_tima,)).fetchall()
+            for r in results:
+                room_id = r["room_id"]
+                if r["rezultatSekunde"] is not None:
+                    coef = avg_times_for_rooms[room_id] / r["rezultatSekunde"]
+                else:
+                    coef = 0
+                score += coef * avg_weight_for_rooms[room_id]
+
+            score_per_team.append([ime_tima, score])
+
+        score_per_team.sort(key=lambda x: x[1], reverse=True)
+
+        for pair in score_per_team:
+            leaderboard.append({
+                "ime_tima": pair[0],
+                "score": round(pair[1], 2)
+            })
+
+        db.close()
+
+    return jsonify({"leaderboard": leaderboard}), 200
+
+
+@app.route('/api/rooms/most_popular', methods=['GET'])
+def top3_most_popular_rooms():
+    db = get_db_connection()
+
+    rooms = db.execute("""
+        SELECT
+            er.room_id,
+            er.naziv,
+            er.opis,
+            er.geo_lat,
+            er.geo_long,
+            er.adresa,
+            er.grad,
+            er.inicijalna_tezina,
+            er.cijena,
+            er.minBrClanTima,
+            er.maxBrClanTima,
+            er.kategorija,
+            COUNT(t.ime_tima) AS broj_igranja
+        FROM EscapeRoom er
+        LEFT JOIN Termin t
+          ON er.room_id = t.room_id
+        GROUP BY er.room_id
+        ORDER BY broj_igranja DESC
+        LIMIT 3
+    """).fetchall()
+
+    result = []
+
+    for room in rooms:
+        images = db.execute("""
+            SELECT image_url
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room["room_id"],)).fetchall()
+
+        result.append({
+            "room_id": room["room_id"],
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": room["inicijalna_tezina"],
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
 
 
 if __name__ == '__main__':

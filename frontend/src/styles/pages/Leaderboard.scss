@@ -6,33 +6,136 @@
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(242, 224, 55, 0.4), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(61, 44, 174, 0.35), transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(252, 138, 28, 0.25), transparent 40%),
+    linear-gradient(180deg, #fdf5d2 0%, #f6f3ff 55%, #f5f5f5 100%);
+  padding-bottom: 5rem;
+}
+.leaderboard-hero {
+  width: 100%;
+  padding: 4.5rem 5rem 2rem 5rem;
+}
+.leaderboard-hero-text {
+  max-width: 780px;
+}
+.leaderboard-hero-kicker {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background-color: #3d2cae;
+  color: white;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.leaderboard-hero-text > h1 {
+  font-size: 3.25em;
+  margin-bottom: 0.5rem;
+}
+.leaderboard-hero-text > p {
+  font-size: 1.1em;
+  line-height: 1.7;
+  max-width: 620px;
+}
+.leaderboard-panel {
+  width: min(1100px, 90%);
+  background-color: white;
+  border-radius: 18px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.leaderboard-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 420px;
+}
+.leaderboard-filter-label {
+  font-weight: 600;
+}
+.leaderboard-room-select {
+  width: 100%;
 }
 .leaderboard-table {
-  border-collapse: collapse;
-  border: 1px solid green;
-  min-width: 80%;
-  td, th {
-    border: 1px solid green;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 1.05em;
+  thead {
+    background-color: #f3f2fa;
   }
-  >thead {
-    >tr {
-      >th {
-        >div {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          flex-direction: row;
-          flex-wrap: nowrap;
-          justify-content: center;
-          align-items: center;
-          >.leaderboard-table-sort-switch {
-            height: 2em;
-            padding: 0.25em;
-          }
-        }
-      }
+  th, td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+  }
+  th {
+    font-weight: 700;
+    color: #1c1c1c;
+  }
+  tbody tr {
+    background-color: white;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  }
+  >thead >tr >th >div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.35rem;
+    >.leaderboard-table-sort-switch {
+      height: 2em;
+      padding: 0.25em;
     }
   }
+}
+.leaderboard-row--gold {
+  border-left: 4px solid #f2e037;
+  background-color: rgba(242, 224, 55, 0.18);
+}
+.leaderboard-row--silver {
+  border-left: 4px solid #c7c7d1;
+  background-color: rgba(199, 199, 209, 0.2);
+}
+.leaderboard-row--bronze {
+  border-left: 4px solid #c98a58;
+  background-color: rgba(201, 138, 88, 0.2);
+}
+.leaderboard-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background-color: #3d2cae;
+  color: white;
+  font-weight: 700;
+}
+.leaderboard-row--gold .leaderboard-rank-badge {
+  background: radial-gradient(circle at 30% 30%, #fff1a8, #f2e037 60%, #c8b400);
+  color: #1c1c1c;
+}
+.leaderboard-row--silver .leaderboard-rank-badge {
+  background: radial-gradient(circle at 30% 30%, #f5f5f8, #c7c7d1 60%, #9ea0ab);
+  color: #1c1c1c;
+}
+.leaderboard-row--bronze .leaderboard-rank-badge {
+  background: radial-gradient(circle at 30% 30%, #f0c7a4, #c98a58 60%, #8e5b2f);
+  color: #1c1c1c;
 }
 .leaderboard-loader-wrapper {
   width: 100%;
@@ -42,4 +145,20 @@
   justify-content: center;
   align-items: center;
   padding: 5em 0;
+}
+
+@media (max-width: 900px) {
+  .leaderboard-hero {
+    padding: 3.5rem 2rem 1.5rem 2rem;
+  }
+  .leaderboard-hero-text > h1 {
+    font-size: 2.4em;
+  }
+  .leaderboard-panel {
+    width: 92%;
+    padding: 1.5rem;
+  }
+  .leaderboard-table {
+    font-size: 0.95em;
+  }
 }

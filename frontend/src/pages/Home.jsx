@@ -4,75 +4,45 @@ import PageNavLink1 from "../components/PageNavLink1";
 import {SyncLoader} from "react-spinners";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import RoomTile from "../components/RoomTile";
+import MapController from "../components/MapController";
+import calculateMapCenterZoom from "../utils/calculateMapCenterZoom";
 
-
-const MOCK_ROOMS = [
-  {
-    id: "r1",
-    name: "Kuća u tišini",
-    description: "Svjetlo treperi, vrata škripe, a svaki zvuk može biti tvoj posljednji trag.",
-    genre: "Horor",
-    difficulty: 5,
-    location: "Zagreb, Donji grad",
-    imageUrl: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "r2",
-    name: "Ukradeni kolači",
-    description: "Netko je pojeo sve kolače iz pekare 'Slatki kutak'!",
-    genre: "Humor",
-    difficulty: 4,
-    location: "Zagreb, Donji grad",
-    imageUrl: "https://hotelrepublika.qupola.net/wp-content/uploads/sites/14/2025/10/cookies-chocolate-chips-arrangement-1024x683.jpg",
-  },
-  {
-    id: "r3",
-    name: "Tajni laboratorij",
-    description: "Eksperiment je pošao po zlu. Sustav odbrojava do samouništenja.",
-    genre: "Sci-Fi",
-    difficulty: 5,
-    location: "Zagreb, Donji grad",
-    imageUrl: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80",
-  },
-];
-
-function useFeaturedRooms() {
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      try {
-        const res = await fetch("/api/rooms?limit=3");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) {
-          setRooms(data);
-          setLoading(false);
-        }
-      } catch (err) {
-        // fallback mock data
-        if (!cancelled) {
-          setRooms(MOCK_ROOMS);
-          setLoading(false);
-          setError(null);
-        }
-      }
-    };
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { rooms, loading, error };
+async function fetchPopularRooms() {
+  const response = await fetch('/api/rooms/most_popular');
+  if (response.ok) {
+    const data = await response.json();
+    return data["rooms"];
+  } else {
+    return null;
+  }
 }
 
+
 function HomeContent() {
-  const { rooms, loading } = useFeaturedRooms();
-  const position = [45.8150, 15.9819]; // Zagreb coordinates
+  const [popularRooms, setPopularRooms] = useState(null);
+  useEffect(() => {
+    fetchPopularRooms()
+      .then((rooms) => {
+        if (rooms !== null) {
+          setPopularRooms(rooms);
+        }
+      });
+  }, []);
+
+  const [initPos, setInitPos] = useState([45, 16.5]);
+  const [initZoom, setInitZoom] = useState(7);
+  useEffect(() => {
+      if (popularRooms === null || popularRooms.length === 0) {
+        const defaultCenter = [45, 16.5];
+        const defaultZoom = 7;
+        setInitPos(defaultCenter);
+        setInitZoom(defaultZoom);
+      } else {
+          const { center, zoom } = calculateMapCenterZoom(popularRooms.map((room) => [room.geo_lat, room.geo_long]));
+          setInitPos(center);
+          setInitZoom(zoom);
+      }
+  }, [popularRooms]);
 
   return (
     <div className="home-page">
@@ -95,8 +65,14 @@ function HomeContent() {
           organizatore.
         </p>
         <p>
-          <strong>Pretraži</strong> sobe, <strong>rezerviraj</strong> termin, <strong>plati</strong> online
-            i <strong>prati rezultate</strong> svog tima na ljestvici. Tvoja sljedeća avantura počinje ovdje!
+          Na jednom mjestu možeš <strong>pretraživati</strong> sobe, <strong>usporediti</strong> teme, težine i cijene te
+          brzo <strong>pronaći</strong> izazov koji odgovara tvojoj ekipi. Kad odabereš
+          sobu, <strong>rezervacija</strong> i plaćanje su jednostavni i brzi.
+        </p>
+        <p>
+          Okupi ekipu, <strong>prati odigrane avanture</strong> i gledaj kako napredujete iz igre u igru.
+          Nakon igre možeš <strong>ocijeniti težinu sobe</strong> i pomoći drugima pri odabiru.
+          Ako se voliš natjecati, tu su i ljestvice po sobama i globalne ljestvice – <strong>pokaži koji je tim njabolji!</strong>
         </p>
       </section>
 
@@ -105,11 +81,11 @@ function HomeContent() {
         <h2>Odaberi svoju sljedeću avanturu!</h2>
         <p>Više od 100 Escape Roomova iz cijele Hrvatske! Odaberite i rezervirajte.</p>
 
-        {loading ? (
+        {popularRooms === null ? (
           <SyncLoader />
         ) : (
           <div className="room-grid">
-            {rooms.map((room) => <RoomTile room={room}/>)}
+            {popularRooms.map((room) => <RoomTile room={room}/>)}
           </div>
         )}
         <PageNavLink1 to="/escape-rooms" text="POGLEDAJ SVE" className="featured-btn"/>
@@ -119,13 +95,22 @@ function HomeContent() {
       <section className="map-section">
         <div className="map-text">
           <h2>Sve na jednom mjestu</h2>
-          <p>Pogledajte lokacije svih Escape Roomova i odaberite svoje sljedeći izazov! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <p>
+            Pogledaj lokacije svih Escape Roomova i planiraj svoju sljedeću
+            avanturu — bilo da tražiš nešto <i>usput</i> dok putuješ,
+            želiš organizirati team building ili samo želiš ideju za sljedeći izlazak.
+          </p>
         </div>
-        <MapContainer className="map-content" center={position} zoom={13} scrollWheelZoom={true} attributionControl={false}>
+        <MapContainer className="map-content" center={initPos} zoom={initZoom} scrollWheelZoom={false} attributionControl={false}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-            <Marker position={position}>
-                <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
-            </Marker>
+            <MapController center={initPos} zoom={initZoom}/>
+            {popularRooms !== null && (
+                popularRooms.map((room) => {
+                    return <Marker position={[room.geo_lat, room.geo_long]}>
+                        <Popup>A pretty CSS3 popup.<br/>Easily customizable.</Popup>
+                    </Marker>;
+                }))
+            }
         </MapContainer>
       </section>
 

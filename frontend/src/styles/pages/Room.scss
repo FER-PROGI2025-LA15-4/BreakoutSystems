@@ -1,0 +1,352 @@
+.room-page {
+  width: 100%;
+  flex: 1 0 0;
+}
+
+.room-page-section-title {
+  position: relative;
+  color: white;
+
+  >p {
+    font-size: 1.2em;
+    padding: 4rem 5rem 0.5rem 5rem;
+  }
+  >h1 {
+    font-size: 4.5em;
+    padding: 0 5rem 12rem 5rem;
+    font-weight: 700;
+  }
+  >img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+    z-index: -1;
+  }
+}
+
+.room-page-section-content {
+  display: grid;
+  grid-template-columns: 65% 30%;
+  column-gap: 5%;
+  background-color: #f5f5f5;
+  padding: 0 5em;
+  align-items: stretch;
+
+  >.room-page-section-content-info {
+    background-color: white;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
+    margin: -5em 0;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.1);
+
+    >.room-page-gallery {
+      width: 100%;
+      border-radius: 50px;
+      align-self: center;
+      margin: 2em 0;
+    }
+    p {
+      font-size: 1.2em;
+      padding: 0.4em;
+      >strong {
+        font-weight: 600;
+      }
+    }
+    p.opis {
+      font-weight: 500;
+      padding-top: 5px;
+    }
+    >.room-page-map {
+      width: 100%;
+      height: 50vh;
+      margin: 2em 0 1em 0;
+    }
+  }
+
+  >.room-page-section-content-side {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 40px;
+    margin-top: 60px;
+    padding-right: 3em;
+
+    h4 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      line-height: 2em;
+    }
+
+    >.room-page-owner {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      column-gap: 1em;
+
+      h4 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 8px 0 0 0;
+      }
+
+      >img {
+        width: 7em;
+      }
+      >div {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+      }
+    }
+
+    >.room-page-leaderboard {
+      border-radius: 10px;
+      width: 100%;
+      background-color: white;
+      padding-bottom: 15px;
+
+      >h4 {
+        color: white;
+        background-color: #3d2cae;
+        text-align: center;
+        padding: 1em;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      li {
+        list-style: none;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        column-gap: 1em;
+        margin: 0 20px;
+
+        >.room-page-leaderboard-team {
+          flex: 1 0 0;
+        }
+
+        >img {
+          width: 2.25em;
+          padding: 0.5em;
+        }
+      }
+    }
+  }
+}
+
+.room-page-section-reservation {
+  position: relative;
+  padding-bottom: 5rem;
+
+  >img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+    z-index: -1;
+  }
+  >h4 {
+    color: white;
+    font-size: 2em;
+    font-weight: 700;
+    padding: 10rem 5rem 2rem 5rem;
+  }
+  >.room-page-reservation-content {
+    display: grid;
+    grid-template-columns: minmax(260px, 32%) 1fr;
+    gap: 2.5rem;
+    padding: 0 5rem 3rem 5rem;
+    align-items: stretch;
+  }
+  .room-page-reservation-panel,
+  .room-page-reservation-calendar {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 2rem;
+    color: #1c1c1c;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+  }
+  .room-page-reservation-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .room-page-reservation-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    >label {
+      font-weight: 600;
+    }
+  }
+  .room-page-reservation-select {
+    width: 100%;
+  }
+  .room-page-reservation-selected {
+    font-size: 1.05em;
+    font-weight: 500;
+  }
+  .room-page-reservation-hint {
+    font-size: 0.95em;
+    opacity: 0.8;
+  }
+  .room-page-reservation-button {
+    align-self: flex-start;
+  }
+  .room-page-reservation-button.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .room-page-reservation-note {
+    font-size: 0.95em;
+  }
+  .room-page-reservation-calendar {
+    .fc {
+      font-size: 0.95em;
+    }
+    .fc-daygrid-event {
+      margin: 2px 4px;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .fc .fc-button-primary {
+      background-color: #f1f1f1;
+      border-color: #d7d7d7;
+      color: #1c1c1c;
+      box-shadow: none;
+    }
+    .fc .fc-button-primary:hover,
+    .fc .fc-button-primary:focus {
+      background-color: #e6e6e6;
+      border-color: #cfcfcf;
+      color: #1c1c1c;
+    }
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+      background-color: #dadada;
+      border-color: #c8c8c8;
+      color: #1c1c1c;
+    }
+    .fc .fc-button-primary:disabled {
+      opacity: 0.6;
+    }
+    .room-page-calendar-list-title {
+      color: inherit;
+    }
+    .fc-list-event,
+    .fc-list-event td {
+      background-color: transparent;
+    }
+    .fc-list-event-dot {
+      display: none;
+    }
+    .fc-list-event-time,
+    .fc-list-event-title a {
+      color: #1c1c1c;
+    }
+    .fc-list-event:hover td {
+      background-color: #3d2cae;
+      color: white;
+      font-weight: 600;
+    }
+    .fc-list-event:hover .fc-list-event-title a,
+    .fc-list-event:hover .fc-list-event-time {
+      color: white;
+    }
+  }
+  .room-page-calendar-event-selected.fc-list-event td {
+    background-color: #3d2cae;
+    color: white;
+    font-weight: 700;
+  }
+  .room-page-calendar-event-selected.fc-list-event .fc-list-event-title a,
+  .room-page-calendar-event-selected.fc-list-event .fc-list-event-time {
+    color: white;
+  }
+  .room-page-calendar-event {
+    background-color: #6658c3;
+    border: none;
+  }
+  .room-page-calendar-event:hover {
+    background-color: #3d2caecc;
+    border: none;
+  }
+  .room-page-calendar-event-selected {
+    background-color: #3d2cae;
+    border: none;
+    color: white;
+  }
+  .room-page-calendar-time-only {
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 1350px){
+  .room-page-section-title {
+    h1 {
+      font-size: 3.5em;
+      padding-bottom: 4em;
+    }
+  }
+  .room-page-section-content {
+    grid-template-columns: 1fr;
+    padding: 0 2em;
+
+    >.room-page-section-content-info {
+      margin: -10em 0 2em 0;
+
+      >.room-page-map {
+        height: 40vh;
+      }
+
+      p {
+        font-size: 1em;
+      }
+    }
+
+    >.room-page-section-content-side {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0;
+      margin: 20px 5% 0 5%;
+      gap: 40px;
+
+      >.upute {
+        text-align: center;
+      }
+
+      >.room-page-leaderboard{
+        width: 70%;
+        margin-bottom: 3em;
+      }
+    }
+  }
+
+  .room-page-section-reservation {
+    >h4 {
+      padding: 3rem 2rem 1.5rem 2rem;
+      font-size: 2em;
+    }
+    >.room-page-reservation-content {
+      grid-template-columns: 1fr;
+      padding: 0 2rem 3rem 2rem;
+    }
+  }
+}

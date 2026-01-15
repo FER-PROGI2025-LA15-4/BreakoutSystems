@@ -5,26 +5,16 @@ import makeAnimated from 'react-select/animated';
 import UpDownSwitch from "../components/UpDownSwitch";
 import {fetchRoomsFiltered} from "./EscapeRooms";
 import {SyncLoader} from "react-spinners";
+import sortArr from "../utils/sortArray";
 
 async function fetchData(room_id) {
-  return [];
-}
-
-function sortArr(array, key = (value) => value, direction = "asc") {
-  const localData = [...array];
-  for (let i = 0; i < localData.length - 1; i++) {
-    for (let j = i + 1; j < localData.length; j++) {
-      if (key(localData[i]) > key(localData[j])) {
-        const temp = localData[i];
-        localData[i] = localData[j];
-        localData[j] = temp;
-      }
-    }
+  const response = await fetch(`/api/leaderboard${room_id ? `?room_id=${room_id}` : ""}`);
+  if (response.ok) {
+    const data = await response.json();
+    return data["leaderboard"];
+  } else {
+    return [];
   }
-  if (direction === "desc") {
-    localData.reverse();
-  }
-  return localData;
 }
 
 function LeaderboardContent() {
@@ -49,8 +39,23 @@ function LeaderboardContent() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    fetchData(roomId)
+    const localRoomId = roomId;
+    fetchData(localRoomId)
         .then(fetchedData => {
+          for (const entry of fetchedData) {
+            if (entry.score === null) {
+              entry.score = Number.MAX_SAFE_INTEGER;
+            }
+          }
+          fetchedData = sortArr(fetchedData, (value) => value.score, localRoomId ? "asc" : "desc");
+          let rank = 1;
+          for (const i in fetchedData) {
+            if (parseInt(i) === 0 || fetchedData[parseInt(i) - 1]["score"] === fetchedData[i]["score"]) {
+              fetchedData[i].rank = rank;
+            } else {
+              fetchedData[i].rank = ++rank;
+            }
+          }
           setData(fetchedData);
           setSortType({ field: "rank", direction: "asc" });  // this triggers sorting useEffect (which sets loading to false)
         });
@@ -81,65 +86,80 @@ function LeaderboardContent() {
 
   return (
     <div className="leaderboard-page">
-      <Select
-          components={animatedComponents}
-          options={roomsOpts || []}
-          isLoading={roomsOpts === null}
-          isMulti={false}
-          isClearable={true}
-          placeholder="Escape Room"
-          onChange={handleRoomChange}
-          className="leaderboard-room-select"
-      />
-      <table className="leaderboard-table">
-        <thead>
-          <tr>
-            <th>
-              <div>
-                <p>#</p>
-                <UpDownSwitch
-                    direction={sortType.field === "rank" && sortType.direction === "desc" ? "down" : "up"}
-                    visible={sortType.field === "rank"}
-                    className={"leaderboard-table-sort-switch"}
-                    onClick={() => handleSortClick("rank")}
-                />
-              </div>
-            </th>
-            <th>
-              <div>
-                <p>Tim</p>
-                <UpDownSwitch
-                    direction={sortType.field === "team" && sortType.direction === "desc" ? "down" : "up"}
-                    visible={sortType.field === "team"}
-                    className={"leaderboard-table-sort-switch"}
-                    onClick={() => handleSortClick("team")}
-                />
-              </div>
-            </th>
-            <th>
-              <div>
-                <p>{roomId === null ? "Bodovi" : "Vrijeme"}</p>
-                <UpDownSwitch
-                    direction={sortType.field === "score" && sortType.direction === "desc" ? "down" : "up"}
-                    visible={sortType.field === "score"}
-                    className={"leaderboard-table-sort-switch"}
-                    onClick={() => handleSortClick("score")}
-                />
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading && <tr><td colSpan={3}><div className={"leaderboard-loader-wrapper"}><SyncLoader className={"profile-page-loader"}/></div></td></tr>}
-          {!loading && data.map((entry) => {
-            return <tr>
-              <td>{entry.rank}</td>
-              <td>{entry.team}</td>
-              <td>{entry.score}</td>
-            </tr>;
-          })}
-        </tbody>
-      </table>
+      <section className="leaderboard-hero">
+        <div className="leaderboard-hero-text">
+          <p className="leaderboard-hero-kicker">Najbolji timovi</p>
+          <h1>Leaderboard</h1>
+          <p>Usporedi vremena i rezultate te saznaj koji su timovi na vrhu ljestvice.</p>
+        </div>
+      </section>
+      <section className="leaderboard-panel">
+        <div className="leaderboard-filters">
+          <label className="leaderboard-filter-label">Odabir sobe</label>
+          <Select
+              components={animatedComponents}
+              options={roomsOpts || []}
+              isLoading={roomsOpts === null}
+              isMulti={false}
+              isClearable={true}
+              placeholder="Escape Room"
+              onChange={handleRoomChange}
+              className="leaderboard-room-select"
+          />
+        </div>
+        <table className="leaderboard-table">
+          <thead>
+            <tr>
+              <th>
+                <div>
+                  <p>#</p>
+                  <UpDownSwitch
+                      direction={sortType.field === "rank" && sortType.direction === "desc" ? "down" : "up"}
+                      visible={sortType.field === "rank"}
+                      className={"leaderboard-table-sort-switch"}
+                      onClick={() => handleSortClick("rank")}
+                  />
+                </div>
+              </th>
+              <th>
+                <div>
+                  <p>Tim</p>
+                  <UpDownSwitch
+                      direction={sortType.field === "ime_tima" && sortType.direction === "desc" ? "down" : "up"}
+                      visible={sortType.field === "ime_tima"}
+                      className={"leaderboard-table-sort-switch"}
+                      onClick={() => handleSortClick("ime_tima")}
+                  />
+                </div>
+              </th>
+              <th>
+                <div>
+                  <p>{roomId === null ? "Bodovi" : "Vrijeme"}</p>
+                  <UpDownSwitch
+                      direction={sortType.field === "score" && sortType.direction === "desc" ? "down" : "up"}
+                      visible={sortType.field === "score"}
+                      className={"leaderboard-table-sort-switch"}
+                      onClick={() => handleSortClick("score")}
+                  />
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && <tr><td colSpan={3}><div className={"leaderboard-loader-wrapper"}><SyncLoader/></div></td></tr>}
+            {!loading && data.map((entry) => {
+              const rowClass = entry.rank === 1 ? "leaderboard-row leaderboard-row--gold" : entry.rank === 2 ? "leaderboard-row leaderboard-row--silver" : entry.rank === 3 ? "leaderboard-row leaderboard-row--bronze" : "leaderboard-row";
+              return (
+                <tr key={`${entry.ime_tima}-${entry.rank}`} className={rowClass}>
+                  <td><span className="leaderboard-rank-badge">{entry.rank}</span></td>
+                  <td>{entry.ime_tima}</td>
+                  <td>{roomId ? (entry.score === Number.MAX_SAFE_INTEGER ? "-" : entry.score) : entry.score}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
     </div>
   );
 }
