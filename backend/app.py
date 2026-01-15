@@ -503,6 +503,48 @@ def get_appointments():
         db.close()
 
 
+@app.route('/api/owner/team-info')
+@login_required
+def get_owner_team_info():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+    ime_tima = request.args.get('ime_tima')
+
+    if not ime_tima:
+        return jsonify({'error': 'ime_tima query parameter is required'}), 400
+
+
+    podaci_tima = db.execute("""
+        SELECT t.image_url, t.voditelj_username
+        FROM Tim t
+        WHERE t.ime = ?
+    """, (ime_tima,)).fetchone()
+
+    if not podaci_tima:
+        db.close()
+        return jsonify({'error': 'Team not found'}), 404
+
+    members_rows = db.execute("""
+            SELECT username 
+            FROM ClanTima 
+            WHERE ime_tima = ? AND accepted = 1
+        """, (ime_tima,)).fetchall()
+    members_list = [member["username"] for member in members_rows]
+
+    result = {
+            "ime_tima": ime_tima,
+            "logo": podaci_tima["image_url"],
+            "leader": podaci_tima["voditelj_username"],
+            "members": members_list
+    }
+
+    # ime_tima: "ime_tima1", logo: "url_slike_loga_tima1", leader: "username_voditelj_tim1", members: ["username_clan1_tim1", "username_clan2_tim1"] }
+
+    db.close()
+    return jsonify(result), 200
+
 if __name__ == '__main__':
     with app.app_context():
         init_db()
