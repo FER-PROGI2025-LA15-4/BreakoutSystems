@@ -92,7 +92,6 @@
       }
     }
     >.profile-page-logout {
-      margin-left: 5em;
       cursor: pointer;
       width: 2.5em;
     }
@@ -358,12 +357,28 @@
   }
 }
 
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .profile-page > h1 {
+    font-size: 2.5em;
+  }
   .profile-page-personal-info-tab{
     div, div.slika-profila {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+    }
+  }
+
+  .profile-page-content > .profile-page-user-info > .profile-page-logout {
+    margin-left: 2em;
+  }
+
+  .profile-page-content > .profile-page-user-info > .profile-page-user-info-text {
+    h3 {
+      font-size: 1.5em;
+    }
+    h4 {
+      font-size: 1em;
     }
   }
 }
