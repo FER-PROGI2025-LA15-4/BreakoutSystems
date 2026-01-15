@@ -268,7 +268,8 @@ function ResultEntryTab() {
         }
 
         if (!selectedMembers || selectedMembers.length < selectedRoom.minBrClanTima || selectedMembers.length > selectedRoom.maxBrClanTima) {
-            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: `Molimo odaberite između ${selectedRoom.minBrClanTima} i ${selectedRoom.maxBrClanTima} članova tima.` });
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: `Molimo odaberite između ${selectedRoom.minBrClanTima} do ${selectedRoom.maxBrClanTima} članova tima.` });
+            return;
         }
 
         const [hours, minutes, seconds] = timeValue.split(':').map(Number);
