@@ -234,7 +234,6 @@ def edit_user():
             adresa = request.form.get('adresa')
             grad = request.form.get('grad')
             telefon = request.form.get('telefon')
-            logoImgUrl = request.form.get('logoImgUrl')
 
             if naziv_tvrtke:
                 db.execute("UPDATE Vlasnik SET naziv_tvrtke = ? WHERE username = ?", (naziv_tvrtke, current_user.username))

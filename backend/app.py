@@ -476,6 +476,32 @@ def top3_most_popular_rooms():
     db.close()
     return jsonify({"rooms": result}), 200
 
+@app.route('/api/appointments', methods=['GET'])
+def get_appointments():
+    #{ appointments: [podaci_o_terminu1, podaci_o_terminu2, ...]}
+    db = get_db_connection()
+    #{ ime_tima, datVrPoc, rezultatSekunde }
+    room_id = request.args.get('roomId', type=int)
+
+    if room_id is None:
+        return jsonify({"error": "roomId query parameter is required"}), 400
+
+    try:
+        appointments = db.execute("""
+                SELECT ime_tima, datVrPoc, rezultatSekunde
+                FROM Termin
+                WHERE room_id = ?
+                ORDER BY datVrPoc DESC
+            """, (room_id,)).fetchall()
+
+        result = [dict(row) for row in appointments]
+
+        return jsonify({"appointments": result}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
 
 if __name__ == '__main__':
     with app.app_context():
