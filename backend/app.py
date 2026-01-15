@@ -167,6 +167,51 @@ def get_cities():
     cities = [row["grad"] for row in rows]
     return jsonify({"cities": cities}), 200
 
+@app.route('/api/my-rooms', methods=['GET'])
+@login_required
+def get_my_rooms():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+
+    rooms = db.execute("SELECT * FROM EscapeRoom WHERE username = ?", (current_user.username,)).fetchall()
+
+    result = []
+    for room in rooms:
+        room_id = rooms["room_id"]
+
+        images = db.execute("""
+            SELECT *
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room_id,)).fetchall()
+
+        for img in images:
+            if img["cover"] == True:
+                images.remove(img)
+                images.insert(0, img)
+
+        result.append({
+            "room_id": room_id,
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": room["inicijalna_tezina"],
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
+
+
 
 @app.route('/api/rooms/filter', methods=['POST'])
 def filter_rooms():
