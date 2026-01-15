@@ -204,7 +204,7 @@ function ResultEntryTab() {
     const [appointments, setAppointments] = useState(null);
     useEffect(() => {
         if (selectedRoom) {
-            fetchRoomAppointments(selectedRoom.id).then((response) => {
+            fetchRoomAppointments(selectedRoom.room_id).then((response) => {
                 setAppointments(sortArr(response.filter((app) => new Date(app.datVrPoc) <= new Date() && app.rezultatSekunde === null && app.ime_tima !== null)));
             });
         } else {
@@ -216,6 +216,66 @@ function ResultEntryTab() {
         setSelectedAppointment(opt ? opt.value : null);
     }
 
+    const [teamInfo, setTeamInfo] = useState(null);
+    useEffect(() => {
+        if (selectedAppointment) {
+            fetchTeamInfo(selectedAppointment.ime_tima).then((response) => {
+                setTeamInfo(response);
+            });
+        } else {
+            setTeamInfo(null);
+        }
+    }, [selectedAppointment]);
+
+    const [selectedMembers, setSelectedMembers] = useState(null);
+    const handleMembersSelect = (values) => {
+        if (!values || values.length === 0) {
+            values = null;
+        } else {
+            values = values.map((v) => v.value);
+        }
+        setSelectedMembers(values);
+    }
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedAppointment) {
+            alert("Odaberite termin.");
+            return;
+        }
+        const form = e.target;
+        const formData = new FormData(form);
+        formData.append("appointmentId", selectedAppointment.appointment_id);
+        if (selectedMembers) {
+            formData.append("members", JSON.stringify(selectedMembers));
+        } else {
+            formData.append("members", JSON.stringify([]));
+        }
+
+        try {
+            const response = await authFetch('/api/owner/enter-result', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                alert("Rezultat uspješno unesen.");
+                // reset form
+                setSelectedRoom(null);
+                setSelectedAppointment(null);
+                setSelectedMembers(null);
+                form.reset();
+                // refresh appointments
+                fetchRoomAppointments(selectedRoom.room_id).then((response) => {
+                    setAppointments(sortArr(response.filter((app) => new Date(app.datVrPoc) <= new Date() && app.rezultatSekunde === null && app.ime_tima !== null)));
+                });
+            } else {
+                alert("Došlo je do pogreške prilikom unosa rezultata.");
+            }
+        } catch (e) {
+            alert("Došlo je do pogreške prilikom unosa rezultata.");
+        }
+    }
+
     return <div className={"profile-page-result-entry-tab"}>
         <Select
             components={animatedComponents}
@@ -224,23 +284,45 @@ function ResultEntryTab() {
             isLoading={myRooms === null}
             isMulti={false}
             isClearable={true}
-            isDisabled={true}
             placeholder="Escape Room"
             onChange={handleRoomSelect}
             className="profile-page-result-entry-tab-select-room"
         />
-        <Select
-            components={animatedComponents}
-            value={selectedAppointment ? ({ value: selectedAppointment, label: selectedAppointment.datVrPoc }) : null}
-            options={appointments ? appointments.map((app) => ({ value: app, label: app.datVrPoc })) : []}
-            isLoading={myRooms === null}
-            isMulti={false}
-            isClearable={true}
-            isDisabled={true}
-            placeholder="Termin"
-            onChange={handleTerminSelect}
-            className="profile-page-result-entry-tab-select-termin"
-        />
+
+        {selectedRoom &&
+            <Select
+                components={animatedComponents}
+                value={selectedAppointment ? ({ value: selectedAppointment, label: selectedAppointment.datVrPoc }) : null}
+                options={appointments ? appointments.map((app) => ({ value: app, label: app.datVrPoc })) : []}
+                isLoading={appointments === null}
+                isMulti={false}
+                isClearable={true}
+                placeholder="Termin"
+                onChange={handleTerminSelect}
+                className="profile-page-result-entry-tab-select-termin"
+            />
+        }
+        {selectedAppointment && <>
+            <p>Tim: {selectedAppointment.ime_tima}</p>
+            <Select
+                components={animatedComponents}
+                value={selectedMembers ? selectedMembers.map((mem) => ({ value: mem, label: mem })) : null}
+                options={teamInfo ? teamInfo.members.concat(teamInfo.leader).map((mem) => ({ value: mem, label: mem })) : []}
+                isLoading={teamInfo === null}
+                isMulti={true}
+                isClearable={true}
+                placeholder="Članovi tima"
+                onChange={handleMembersSelect}
+                className="profile-page-result-entry-tab-select-members"
+            />
+        </>}
+
+        <form onSubmit={handleFormSubmit} className={"profile-page-result-entry-tab-form"}>
+            <input type={"time"} id={"result-time"} name={"result-time"} step={1} required={true} />
+            <input type="submit" value={"Unesi rezultat"} />
+        </form>
+
+
     </div>;
 }
 function SubscriptionTab() {
@@ -272,5 +354,13 @@ async function fetchRoomAppointments(roomId) {
         return data["appointments"];
     } else {
         return [];
+    }
+}
+async function fetchTeamInfo(ime_tima) {
+    const response = await authFetch("/api/owner/team-info?ime_tima=" + encodeURIComponent(ime_tima))
+    if (response.ok) {
+        return await response.json();
+    } else {
+        return null;
     }
 }
