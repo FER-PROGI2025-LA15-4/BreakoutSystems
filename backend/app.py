@@ -200,7 +200,7 @@ def get_my_rooms():
             "geo_long": room["geo_long"],
             "adresa": room["adresa"],
             "grad": room["grad"],
-            "tezina": room["tezina"],
+            "tezina": room["inicijalna_tezina"],
             "cijena": room["cijena"],
             "minBrClanTima": room["minBrClanTima"],
             "maxBrClanTima": room["maxBrClanTima"],
