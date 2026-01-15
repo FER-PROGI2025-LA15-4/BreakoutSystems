@@ -208,6 +208,7 @@ def get_my_rooms():
             "slike": [img["image_url"] for img in images]
         })
 
+    db.close()
     return jsonify({"rooms": result}), 200
 
 
