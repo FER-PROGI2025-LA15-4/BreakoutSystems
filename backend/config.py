@@ -52,3 +52,6 @@ class Config:
     # OAuth scope - koje podatke tražimo od GitHuba
     # 'user:email' - pristup email adresi korisnika
     GITHUB_SCOPE = ['user:email']
+
+    STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+    STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
