@@ -52,6 +52,7 @@
   background-color: white;
   border-radius: 20px;
   max-width: 80%;
+  min-width: 60%;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -67,13 +68,8 @@
     justify-content: center;
     align-items: center;
 
-    >.profile-page-user-info-logo-square {
-      height: 5em;
-      width: 5em;
-    }
     >.profile-page-user-info-logo-circle {
-      height: 5em;
-      width: 5em;
+      width: 6em;
       border-radius: 99999em;
     }
     >.profile-page-user-info-text {
@@ -115,15 +111,15 @@
 
     >.active-tab {
       text-align: center;
-      padding: 1em 0.75em;
+      padding: 0.75em 0.75em;
       font-size: 1.1em;
       font-weight: 500;
       color: #42d2f5;
-      border: 1px solid #42d2f5;
+      border-bottom: 2px solid #42d2f5;
     }
     >.inactive-tab {
       text-align: center;
-      padding: 1em 0.75em;
+      padding: 0.75em 0.75em;
       font-weight: 500;
       font-size: 1.1em;
       color: #f0de37;
@@ -132,12 +128,60 @@
   }
 }
 
-.profile-page-tab {
-  border: 1px solid deeppink;
-}
-
 .profile-page-personal-info-tab {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 10px;
+  font-size: 1em;
 
+  >form {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 15px;
+
+    .slika-profila{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 0;
+      gap: 0.5em
+    }
+
+    label {
+      margin-right: 0.5em;
+    }
+
+    input {
+      padding: 5px 5px;
+      font-size: 1em;
+      font-family: Montserrat, sans-serif;
+    }
+
+    input#email, input#naziv_tvrtke{
+      min-width: 300px;
+    }
+
+    .register-form-owner-address{
+      margin: 0;
+    }
+
+    input[type=submit] {
+      font-family: Montserrat, sans-serif;
+      font-size: 0.8em;
+      font-weight: 500;
+      background-color: #42d2f5;
+      color: #fff;
+      border-radius: 999px;
+      width: fit-content;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+  }
 }
 
 .profile-page-subscription-tab {

@@ -64,7 +64,7 @@ function ProfilePageContent() {
                     <img
                         src={user["profImgUrl"] || user["logoImgUrl"] || profilna}
                         alt="profilna slika"
-                        className={user.uloga === "VLASNIK" ? "profile-page-user-info-logo-square" : "profile-page-user-info-logo-circle"}
+                        className="profile-page-user-info-logo-circle"
                     />
                     <div className="profile-page-user-info-text">
                         <h3>{user["username"]}</h3>
@@ -119,28 +119,28 @@ function PersonalInfoTab() {
 
             <form onSubmit={handleSubmit} encType={"multipart/form-data"}>
                 <div>
-                    <label htmlFor={"naziv_tvrtke"}>Naziv tvrtke</label>
+                    <label htmlFor={"naziv_tvrtke"}>Naziv tvrtke:</label>
                     <input type="text" id={"naziv_tvrtke"} name={"naziv_tvrtke"} defaultValue={user.naziv_tvrtke} required={true} />
                 </div>
 
                 <div className={"register-form-owner-address"}>
                     <div>
-                        <label htmlFor={"adresa"}>Adresa tvrtke</label>
+                        <label htmlFor={"adresa"}>Adresa tvrtke:</label>
                         <input type="text" id={"adresa"} name={"adresa"} defaultValue={user.adresa} required={true}/>
                     </div>
                     <div>
-                        <label htmlFor={"grad"}>Grad</label>
+                        <label htmlFor={"grad"}>Grad:</label>
                         <input type="text" id={"grad"} name={"grad"} defaultValue={user.grad} required={true}/>
                     </div>
                 </div>
 
                 <div>
-                    <label htmlFor={"telefon"}>Telefonski broj tvrtke </label>
+                    <label htmlFor={"telefon"}>Telefonski broj tvrtke:</label>
                     <input type="text" id={"telefon"} name={"telefon"} defaultValue={user.telefon} pattern={"(\\+[1-9][0-9]{0,2}|00[1-9][0-9]{0,2}|0)[1-9][0-9]{7,14}"} required={true}/>
                 </div>
 
                 <div className="slika-profila">
-                    <label htmlFor="image">Promjena logotipa tvrtke</label>
+                    <label htmlFor="image">Promjena logotipa tvrtke:</label>
                     <input type="file" id="image" name="image" accept="image/*"/>
                 </div>
                 <input type="submit" value={"Spremi promjene"}/>
@@ -153,11 +153,11 @@ function PersonalInfoTab() {
 
             <form onSubmit={handleSubmit} encType={"multipart/form-data"}>
                 <div>
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="email">Email:</label>
                     <input type="email" id="email" name="email" defaultValue={user.email} required={true}/>
                 </div>
                 <div className="slika-profila">
-                    <label htmlFor="image">Promjena profilne slike</label>
+                    <label htmlFor="image">Promjena profilne slike:</label>
                     <input type="file" id="image" name="image" accept="image/*"/>
                 </div>
                 <input type="submit" value={"Spremi promjene"}/>
