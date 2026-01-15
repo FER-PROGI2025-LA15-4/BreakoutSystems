@@ -10,6 +10,7 @@ import makeAnimated from 'react-select/animated';
 import sortArr from "../utils/sortArray";
 import { TimePicker } from '@mantine/dates';
 import Popup from "../components/Popup";
+import tick_icon from '../assets/icons/tick-circle.svg';
 
 export default function ProfilePage() {
     const name = "profile";
@@ -355,8 +356,27 @@ function SubscriptionTab() {
         return null;
     }
 
+    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+
     return <div className={"profile-page-subscription-tab"}>
-        <p>Status vaše pretplate: {user.clanarinaDoDatVr}</p>
+        <div className={"profile-page-subscription-tab-status"}>
+            <p>Status vaše pretplate: { activeSubscription ? "vrijedi do " + user.clanarinaDoDatVr : "nemate aktivnu članarinu" }</p>
+            { activeSubscription && <img src={tick_icon}/> }
+        </div>
+        <div className={"profile-page-subscription-tab-options"}>
+            <div className={"profile-page-subscription-tab-option"}>
+                <h4>Mjesečna pretplata</h4>
+                <p className={"profile-page-subscription-tab-option-price"}>€<span>10</span>99</p>
+                <p></p>
+                <button></button>
+            </div>
+            <div className={"profile-page-subscription-tab-option"}>
+                <h4>Godišnja pretplata</h4>
+                <p className={"profile-page-subscription-tab-option-price"}><s>€131.88</s>€<span>99</span>99</p>
+                <p></p>
+                <button></button>
+            </div>
+        </div>
     </div>;
 }
 

@@ -185,7 +185,43 @@
 }
 
 .profile-page-subscription-tab {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  color: #f0de37;
 
+  >.profile-page-subscription-tab-status {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 0.1em;
+
+    >img {
+      width: 1em;
+    }
+  }
+  >.profile-page-subscription-tab-options {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+
+    >.profile-page-subscription-tab-option {
+
+      >.profile-page-subscription-tab-option-price {
+        vertical-align: top;
+        >span {
+          font-size: 2em;
+          font-weight: 700;
+        }
+      }
+    }
+  }
 }
 
 .profile-page-result-entry-tab {
