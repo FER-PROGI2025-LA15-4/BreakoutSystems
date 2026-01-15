@@ -14,8 +14,7 @@ import tick_icon from '../assets/icons/tick-circle.svg';
 import plus_icon from '../assets/icons/plus.svg';
 import {Rating} from "react-simple-star-rating";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
-import MapController from "../components/MapController";
-import RoomMapPopup from "../components/RoomMapPopup";
+import '../styles/pages/Profile.scss';
 
 export default function ProfilePage() {
     const name = "profile";
@@ -251,41 +250,75 @@ function MyRoomsTab() {
 
     let body;
     if (newRoomMode) {
-        body = <form onSubmit={handleSubmit}>
-            <input type="text" placeholder="Naziv sobe" name={"naziv"} required={true} />
-            <input type="text" placeholder="Opis sobe" name={"opis"} required={true} />
-            <input type="number" placeholder="Minimalan broj članova tima" name={"minBrClanTima"} required={true} min={1}/>
-            <input type="number" placeholder="Maksimalan broj članova tima" name={"maxBrClanTima"} required={true} min={1} />
-            <input type="number" placeholder="Cijena (€)" step="0.01" name={"cijena"} required={true} min={0.01}/>
-            <input type="text" placeholder="Adresa" name={"adresa"} required={true} />
-            <input type="text" placeholder="Grad" name={"grad"} required={true} />
-            <ImageEditor initialImages={myRooms[1].slike} result={result}/>
-            <Select
-                components={animatedComponents}
-                value={({ value: selectedCategory, label: selectedCategory })}
-                options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
-                isClearable={false}
-                placeholder="Kategorija"
-                onChange={(opt) => setSelectedCategory(opt ? opt.value : "Ostalo")}
-                className="profile-page-result-entry-tab-select-room"
-            />
-            <Rating size={30} readonly={false} allowFraction={true} initialValue={0}/>
-            <MapContainer className={""} style={{ width: 500, height: 500 }} center={[0, 0]} zoom={0} scrollWheelZoom={false} attributionControl={false} ref={setMap}>
+        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"}>
+            <div className="polje">
+                <label htmlFor="naziv">Naziv sobe:</label>
+                <input type="text" id="naziv" placeholder="Naziv sobe" name={"naziv"} required={true} />
+            </div>
+            <div className="polje">
+                <label htmlFor="opis">Opis sobe:</label>
+                <input type="text" id="opis" placeholder="Opis sobe" name={"opis"} required={true} />
+            </div>
+            <div className="grouped-polje">
+                <div className="polje">
+                    <label htmlFor="minBrClanTima">Minimalan broj igrača:</label>
+                    <input type="number" id="minBrClanTima" name={"minBrClanTima"} required={true} min={1}/>
+                </div>
+                <div className="polje">
+                    <label htmlFor="maxBrClanTima">Maksimalan broj igrača:</label>
+                    <input type="number" id="maxBrClanTima" name={"maxBrClanTima"} required={true} min={1} />
+                </div>
+            </div>
+            <div className="polje">
+                <label htmlFor="cijena">Cijena (€):</label>
+                <input type="number" id="cijena" placeholder="Cijena (€)" step="0.01" name={"cijena"} required={true} min={0.01}/>
+            </div>
+            <div className="grouped-polje">
+                <div className="polje">
+                    <label htmlFor="adresa">Adresa:</label>
+                    <input type="text" id="adresa" placeholder="Adresa" name={"adresa"} required={true} />
+                </div>
+                <div className="polje">
+                    <label htmlFor="grad">Grad:</label>
+                    <input type="text" id="grad" placeholder="Grad" name={"grad"} required={true} />
+                </div>
+            </div>
+            <MapContainer className={"mapa"} center={[45.5, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
                 <Marker position={latLng}/>
             </MapContainer>
-            <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
-            <input type="submit" value={"Dodaj sobu"} />
+            <div className="polje">
+                <label htmlFor="kat">Kategorija sobe:</label>
+                <Select
+                    components={animatedComponents}
+                    value={({ value: selectedCategory, label: selectedCategory })}
+                    options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
+                    isClearable={false}
+                    placeholder="Kategorija"
+                    onChange={(opt) => setSelectedCategory(opt ? opt.value : "Ostalo")}
+                    className="profile-page-result-entry-tab-select-room"
+                    name="kat"
+                />
+            </div>
+            <div className="polje">
+                <label htmlFor="rating" id="tezina">Težina sobe:</label>
+                <Rating size={30} readonly={false} allowFraction={true} initialValue={0} name="rating" />
+            </div>
+            <ImageEditor initialImages={myRooms[1].slike} result={result}/>
+            <div className="buttons">
+                <input type="submit" value={"Dodaj sobu"} className="dodaj"/>
+                <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
+            </div>
         </form>;
     } else if (selectedRoom) {
         body = <p>room details</p>;
     } else {
         body = <>
-            <div>
-                <img src={plus_icon} alt="plus icon" onClick={() => setNewRoomMode(true)} />
-                <p>select a room</p>
+            <div className="new-room" onClick={() => setNewRoomMode(true)}>
+                <img src={plus_icon} alt="plus icon" />
+                <p>Dodaj novu sobu</p>
             </div>
-            {myRooms && <>
+            {myRooms && <div className="my-rooms-list">
                 {myRooms.map((room) => (
                 <div key={room.room_id} onClick={() => handleRoomSelect(room)}>
                     <img src={room.slike[0]} alt={"room img"} />
@@ -293,7 +326,7 @@ function MyRoomsTab() {
                     <button onClick={() => handleRoomSelect(room)}>DETALJI</button>
                 </div>
                 ))}
-            </>}
+            </div>}
         </>;
     }
 
@@ -548,7 +581,6 @@ async function fetchTeamInfo(ime_tima) {
     }
 }
 
-// javascript
 function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] } }) {
     const fileInputRef = useRef(null);
     const dragIndexRef = useRef(null);
@@ -648,37 +680,26 @@ function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] }
         dragIndexRef.current = null;
     };
 
-    const styles = {
-        container: { border: "1px dashed #bbb", padding: 12, borderRadius: 6 },
-        controls: { display: "flex", gap: 8, marginBottom: 8, alignItems: "center" },
-        grid: { display: "flex", gap: 8, flexWrap: "wrap" },
-        thumb: { width: 120, height: 90, position: "relative", borderRadius: 6, overflow: "hidden", border: "1px solid #ddd", cursor: "grab" },
-        img: { width: "100%", height: "100%", objectFit: "cover", display: "block", userSelect: "none", WebkitUserDrag: "none" },
-        removeBtn: { position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,0.6)", color: "#fff", border: "none", borderRadius: 4, padding: "2px 6px", cursor: "pointer" },
-        orderHint: { position: "absolute", left: 6, bottom: 6, background: "rgba(0,0,0,0.5)", color: "#fff", padding: "2px 6px", fontSize: 12, borderRadius: 4 },
-        metaExisting: { position: "absolute", left: 6, top: 6, background: "rgba(255,255,255,0.8)", color: "#000", padding: "2px 6px", fontSize: 11, borderRadius: 4 },
-    };
-
     return (
-        <div style={styles.container}>
-            <div style={styles.controls}>
-                <button type="button" onClick={() => fileInputRef.current.click()}>Add images</button>
-                <span style={{ color: "#666" }}>{items.length} / {maxFiles}</span>
+        <div className="image-editor">
+            <div className="image-editor-controls">
+                <button type="button" onClick={() => fileInputRef.current.click()}>Dodaj slike</button>
+                <span className="image-editor-count">{items.length} / {maxFiles}</span>
                 <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     multiple
-                    style={{ display: "none" }}
+                    className="image-editor-input"
                     onChange={handleInputChange}
                 />
             </div>
 
-            <div style={styles.grid}>
+            <div className="image-editor-grid">
                 {items.map((it, idx) => (
                     <div
                         key={it.key}
-                        style={styles.thumb}
+                        className="image-editor-thumb"
                         draggable
                         onDragStart={(e) => onDragStart(e, idx)}
                         onDragOver={onDragOver}
@@ -689,14 +710,14 @@ function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] }
                         <img
                             src={it.src}
                             alt={`preview-${idx}`}
-                            style={styles.img}
+                            className="image-editor-img"
                             draggable={false}
                             onDragStart={(e) => onDragStart(e, idx)}
                             onDragEnd={onDragEnd}
                         />
-                        {!it.isNew && it.id !== null && <div style={styles.metaExisting}>#{it.id}</div>}
-                        <button type="button" aria-label="Remove image" onClick={() => removeAt(idx)} style={styles.removeBtn}>×</button>
-                        <div style={styles.orderHint}>{idx + 1}</div>
+                        {!it.isNew && it.id !== null && <div className="image-editor-meta">#{it.id}</div>}
+                        <button type="button" aria-label="Remove image" onClick={() => removeAt(idx)} className="image-editor-remove">×</button>
+                        <div className="image-editor-order">{idx + 1}</div>
                     </div>
                 ))}
             </div>
