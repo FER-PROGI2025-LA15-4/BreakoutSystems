@@ -8,6 +8,7 @@ from flask_login import LoginManager, current_user,login_required
 from config import Config
 from auth import auth_bp, init_oauth, get_db_connection
 from models import User
+import stripe
 
 app = Flask(__name__)
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
@@ -544,6 +545,75 @@ def get_owner_team_info():
 
     db.close()
     return jsonify(result), 200
+
+#ovdje dodati stripe kljuc
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+
+@app.route('/api/test-stripe', methods=['POST'])
+@login_required
+def test_stripe_payment():
+    data = request.get_json()
+    tip_pretplate = data.get('tip')  # 'mjesečna' ili 'godišnja'
+
+    # Određivanje cijene
+    iznos = 1500 if tip_pretplate == 'mjesečna' else 12000  # u centima (15€ ili 150€)
+    naziv = f"Escape Room - {tip_pretplate.capitalize()} članarina"
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {'name': naziv},
+                    'unit_amount': iznos,
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            # URL na koji se korisnik vraća nakon uspjeha
+            success_url='http://localhost:5000/stripe-test?success=true',
+            cancel_url='http://localhost:5000/stripe-test?canceled=true',
+        )
+        return jsonify({'url': checkout_session.url})
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+
+@app.route('/api/confirm-payment', methods=['POST'])
+@login_required
+def confirm_payment():
+    data = request.get_json()
+    session_id = data.get('session_id')
+
+    try:
+        # Provjeravamo session kod Stripea
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        if session.payment_status == 'paid':
+            username = session.client_reference_id
+            tip = session.metadata.get('tip_pretplate')
+            dana = 30 if tip == 'mjesečna' else 365
+
+            db = get_db_connection()
+            # Logika: Ako već ima članarinu, produlji je. Ako nema, kreni od danas.
+            db.execute("""
+                UPDATE Vlasnik 
+                SET clanarinaDoDatVr = datetime(
+                    COALESCE(MAX(clanarinaDoDatVr, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP), 
+                    '+' || ? || ' days'
+                )
+                WHERE username = ?
+            """, (dana, username))
+
+            db.commit()
+            db.close()
+            return jsonify({"status": "success", "message": f"Članarina produljena za {dana} dana."})
+
+        return jsonify({"status": "failed"}), 400
+    except Exception as e:
+        return jsonify(error=str(e)), 500
 
 if __name__ == '__main__':
     with app.app_context():

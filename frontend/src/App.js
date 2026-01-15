@@ -9,12 +9,17 @@ import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import RoomPage from "./pages/Room";
 import {AuthProvider} from "./context/AuthContext";
+//STRIPE TEST
+import StripeTest from "./pages/StripeTest"; // pazi da je putanja točna
 
 function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
+
+                    {/* STRIPE DUMMY PAGE */}
+                    <Route path="stripe-test" element={<StripeTest />} />
 
                     {/* početna stranica */}
                     <Route index element={<HomePage />} />
