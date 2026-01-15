@@ -5,6 +5,9 @@ import profilna from '../assets/images/404.png';
 import logoutImg from '../assets/icons/logout.svg';
 import {authFetch, useAuth} from "../context/AuthContext";
 import LoadingScreen from "../components/LoadingScreen";
+import Select from "react-select";
+import makeAnimated from 'react-select/animated';
+import sortArr from "../utils/sortArray";
 
 
 export default function ProfilePage() {
@@ -181,8 +184,64 @@ function MyRoomsTab() {
 }
 function ResultEntryTab() {
     const { user } = useAuth();
+    const animatedComponents = makeAnimated();
 
-    return <p>results</p>;
+    if (!user || user.uloga !== "VLASNIK") {
+        return null;
+    }
+
+    const [myRooms, setMyRooms] = useState(null);
+    useEffect(() => {
+        fetchMyRooms().then((response) => {
+            setMyRooms(response);
+        })
+    }, [user]);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const handleRoomSelect = (opt) => {
+        setSelectedRoom(opt ? opt.value : null);
+    }
+
+    const [appointments, setAppointments] = useState(null);
+    useEffect(() => {
+        if (selectedRoom) {
+            fetchRoomAppointments(selectedRoom.id).then((response) => {
+                setAppointments(sortArr(response.filter((app) => new Date(app.datVrPoc) <= new Date() && app.rezultatSekunde === null && app.ime_tima !== null)));
+            });
+        } else {
+            setAppointments(null);
+        }
+    }, [selectedRoom]);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const handleTerminSelect = (opt) => {
+        setSelectedAppointment(opt ? opt.value : null);
+    }
+
+    return <div className={"profile-page-result-entry-tab"}>
+        <Select
+            components={animatedComponents}
+            value={selectedRoom ? ({ value: selectedRoom, label: selectedRoom.naziv }) : null}
+            options={myRooms ? myRooms.map((room) => ({ value: room, label: room.naziv })) : []}
+            isLoading={myRooms === null}
+            isMulti={false}
+            isClearable={true}
+            isDisabled={true}
+            placeholder="Escape Room"
+            onChange={handleRoomSelect}
+            className="profile-page-result-entry-tab-select-room"
+        />
+        <Select
+            components={animatedComponents}
+            value={selectedAppointment ? ({ value: selectedAppointment, label: selectedAppointment.datVrPoc }) : null}
+            options={appointments ? appointments.map((app) => ({ value: app, label: app.datVrPoc })) : []}
+            isLoading={myRooms === null}
+            isMulti={false}
+            isClearable={true}
+            isDisabled={true}
+            placeholder="Termin"
+            onChange={handleTerminSelect}
+            className="profile-page-result-entry-tab-select-termin"
+        />
+    </div>;
 }
 function SubscriptionTab() {
     const { user } = useAuth();
@@ -194,4 +253,24 @@ function SubscriptionTab() {
     return <div className={"profile-page-subscription-tab"}>
         <p>Status vaše pretplate: {user.clanarinaDoDatVr}</p>
     </div>;
+}
+
+
+async function fetchMyRooms() {
+    const response = await authFetch("/api/my-rooms")
+    if (response.ok) {
+        const data = await response.json();
+        return data["rooms"];
+    } else {
+        return [];
+    }
+}
+async function fetchRoomAppointments(roomId) {
+    const response = await fetch(`/api/appointments?roomId=${roomId}`)
+    if (response.ok) {
+        const data = await response.json();
+        return data["appointments"];
+    } else {
+        return [];
+    }
 }
