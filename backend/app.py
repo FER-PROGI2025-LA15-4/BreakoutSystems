@@ -1,7 +1,7 @@
 # app.py
 import os
 from pathlib import Path
-from flask import Flask, jsonify, request, send_from_directory, session
+from flask import Flask, jsonify, request, send_from_directory
 from flask_login import LoginManager, current_user,login_required
 from config import Config
 from auth import auth_bp, init_oauth, get_db_connection
@@ -652,8 +652,8 @@ def test_stripe_payment():
             }],
             mode='payment',
             # URL na koji se korisnik vraća nakon uspjeha
-            success_url='http://localhost:5000/stripe-test?success=true',
-            cancel_url='http://localhost:5000/stripe-test?canceled=true',
+            success_url=request.host_url + f'profile?payment_status=true&session_id={{CHECKOUT_SESSION_ID}}',
+            cancel_url=request.host_url + 'profile?payment_status=false',
         )
         return jsonify({'url': checkout_session.url})
     except Exception as e:

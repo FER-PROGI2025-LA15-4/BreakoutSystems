@@ -1,5 +1,4 @@
 # auth.py
-import os
 import uuid
 import sqlite3
 from pathlib import Path
@@ -8,7 +7,6 @@ from flask_login import login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from models import User
 from werkzeug.utils import secure_filename
-import stripe
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 oauth = OAuth()
