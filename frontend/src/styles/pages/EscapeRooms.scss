@@ -29,11 +29,6 @@
     opacity: 1;
     z-index: 2;
   }
-  @media (max-width: 1350px) {
-    >.hero::before {
-      opacity: 0.2;
-    }
-  }
 }
 .escape-rooms-form {
   background-color: white;
@@ -123,5 +118,40 @@
     align-items: stretch;
     justify-content: center;
     gap: 1.5em;
+  }
+}
+
+@media (max-width: 1350px) {
+  .escape-rooms-page > .hero::before {
+    opacity: 0.2;
+  }
+  .escape-rooms-page > .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    >.hero-left {
+      margin: 2em 3em 0 3em;
+
+      h1{
+        font-size: 2.5em;
+      }
+      p{
+        font-size: 1.2em;
+        margin-top: 20px;
+      }
+    }
+  }
+  .escape-rooms-form {
+    margin: 4em 3em 2em 3em;
+    h2{
+      font-size: 2em;
+    }
+    p{
+      font-size: 1em;
+    }
+  }
+  .escape-rooms-map-section {
+    margin: 1em 3em 4em 3em;
   }
 }

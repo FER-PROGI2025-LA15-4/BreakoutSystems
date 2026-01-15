@@ -377,24 +377,44 @@ function SubscriptionTab() {
     }
 
     const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+    const formattedSubscriptionDate = user.clanarinaDoDatVr
+        ? new Intl.DateTimeFormat("hr-HR", {
+            year: "numeric",
+            month: "long",
+            day: "2-digit"
+        }).format(new Date(user.clanarinaDoDatVr))
+        : null;
 
     return <div className={"profile-page-subscription-tab"}>
         <div className={"profile-page-subscription-tab-status"}>
-            <p>Status vaše pretplate: { activeSubscription ? "vrijedi do " + user.clanarinaDoDatVr : "nemate aktivnu članarinu" }</p>
+            <p>Status vaše pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "nemate aktivnu članarinu" }</p>
             { activeSubscription && <img src={tick_icon}/> }
         </div>
         <div className={"profile-page-subscription-tab-options"}>
             <div className={"profile-page-subscription-tab-option"}>
-                <h4>Mjesečna pretplata</h4>
-                <p className={"profile-page-subscription-tab-option-price"}>€<span>10</span>99</p>
-                <p></p>
-                <button></button>
+                <div className="tip-clanarine">
+                    <h4>Mjesečna pretplata</h4>
+                </div>
+                <p className={"profile-page-subscription-tab-option-price"}>
+                    <span className="price-currency">€</span>
+                    <span className="price-euros">10</span>
+                    <span className="price-cents">99</span>
+                </p>
+                <p>Aktiviraj platformu na 30 dana i upravljaj terminima, rezervacijama i detaljima svojih Escape Roomova.</p>
+                <button>IDI NA PLAĆANJE</button>
             </div>
             <div className={"profile-page-subscription-tab-option"}>
-                <h4>Godišnja pretplata</h4>
-                <p className={"profile-page-subscription-tab-option-price"}><s>€131.88</s>€<span>99</span>99</p>
-                <p></p>
-                <button></button>
+                <div className="tip-clanarine">
+                    <h4>Godišnja pretplata</h4>
+                </div>
+                <p className={"profile-page-subscription-tab-option-price"}>
+                    <s>€131.88</s>
+                    <span className="price-currency">€</span>
+                    <span className="price-euros">99</span>
+                    <span className="price-cents">99</span>
+                </p>
+                <p>Povoljno aktiviraj platformu na 12 mjeseci i osiguraj vidljivost i upravljanje tijekom cijele godine.</p>
+                <button>IDI NA PLAĆANJE</button>
             </div>
         </div>
     </div>;

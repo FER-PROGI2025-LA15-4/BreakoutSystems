@@ -92,7 +92,6 @@
       }
     }
     >.profile-page-logout {
-      margin-left: 5em;
       cursor: pointer;
       width: 2.5em;
     }
@@ -194,7 +193,7 @@
   flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: stretch;
-  color: #f0de37;
+  gap: 30px;
 
   >.profile-page-subscription-tab-status {
     display: flex;
@@ -203,26 +202,100 @@
     align-items: center;
     justify-content: flex-start;
     column-gap: 0.1em;
+    font-size: 1em;
 
     >img {
-      width: 1em;
+      width: 2em;
+      margin-left: 0.75em;
+      margin-bottom: 0.1em;
     }
   }
   >.profile-page-subscription-tab-options {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-evenly;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
+    gap: 4em;
+    padding: 0 3em;
 
     >.profile-page-subscription-tab-option {
+      background-color: rgb(241, 241, 241);
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: center;
+      min-width: 15em;
+      max-width: 20em;
+      gap: 1.5em;
+
+      div.tip-clanarine {
+        width: 100%;
+        background-color: #42d2f5;
+        padding: 1em 0;
+        text-align: center;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+      }
+
+      h4{
+        font-size: 1.2em;
+        font-weight: 600;
+        color: white;
+      }
 
       >.profile-page-subscription-tab-option-price {
-        vertical-align: top;
-        >span {
-          font-size: 2em;
-          font-weight: 700;
+        color: rgb(18, 18, 18);
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 0.25em;
+
+        s {
+          font-size: 0.95em;
+          color: rgb(120, 120, 120);
+          margin-right: 0.35em;
+          position: relative;
+          top: 0;
+          align-self: flex-end;
         }
+
+        .price-euros {
+          font-size: 3em;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        .price-currency,
+        .price-cents {
+          font-size: 0.9em;
+          font-weight: 600;
+          line-height: 1;
+          vertical-align: super;
+          position: relative;
+          align-self: flex-start;
+        }
+      }
+
+      p{
+        font-size: 0.9em;
+        color: rgb(80, 80, 80);
+        padding: 0 1em;
+        text-align: center;
+      }
+
+      button{
+        font-family: Montserrat, sans-serif;
+        font-size: 1em;
+        font-weight: 400;
+        background-color: #f0de37;
+        color: black;
+        border-radius: 999px;
+        width: fit-content;
+        padding: 10px 25px;
+        border: none;
+        cursor: pointer;
+        margin: 0.5em 0 1.5em 0;
       }
     }
   }
@@ -284,12 +357,28 @@
   }
 }
 
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .profile-page > h1 {
+    font-size: 2.5em;
+  }
   .profile-page-personal-info-tab{
     div, div.slika-profila {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+    }
+  }
+
+  .profile-page-content > .profile-page-user-info > .profile-page-logout {
+    margin-left: 2em;
+  }
+
+  .profile-page-content > .profile-page-user-info > .profile-page-user-info-text {
+    h3 {
+      font-size: 1.5em;
+    }
+    h4 {
+      font-size: 1em;
     }
   }
 }
