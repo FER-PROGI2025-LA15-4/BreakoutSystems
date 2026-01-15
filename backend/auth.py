@@ -2,6 +2,7 @@
 import os
 import uuid
 import sqlite3
+from http.cookiejar import cut_port_re
 from pathlib import Path
 from flask import Blueprint, redirect, url_for, request, jsonify, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
@@ -57,10 +58,10 @@ def save_temp_file(file):
 
 def move_temp_image(tmp_filename):
     if not tmp_filename:
-        return "/instance/images/default.png"
+        return None
     tmp_path = Path(current_app.instance_path) / "tmp_images" / tmp_filename
     if not tmp_path.exists():
-        return "/instance/images/default.png"
+        return None
     images_folder = Path(current_app.instance_path) / "images"
     images_folder.mkdir(parents=True, exist_ok=True)
     final_path = images_folder / tmp_filename
@@ -69,7 +70,7 @@ def move_temp_image(tmp_filename):
 
 
 def delete_image_file(filename):
-    if not filename or filename == "default.png":
+    if not filename:
         return
     path = Path(current_app.instance_path) / "images" / filename
     path.unlink(missing_ok=True)
@@ -201,6 +202,56 @@ def callback():
         session.pop('reg_data', None)
         return redirect('/login?auth_error=auth_failed')
 
+    finally:
+        db.close()
+
+@auth_bp.route('/edit', methods=['POST'])
+@login_required
+def edit_user():
+
+    db = get_db_connection()
+
+    file = request.files.get('image')
+    new_image_url = None
+    if file and file.filename:
+        new_image_url = save_temp_file(file)
+        new_image_url = move_temp_image(new_image_url)
+
+    if(current_user.uloga == 'ADMIN'):
+
+        return jsonify({'error': 'Admin je pokusao mijenjati profil', '': False}), 401
+
+    try:
+        if(current_user.uloga == 'POLAZNIK'):
+            email = request.form.get('email')
+            if email:
+                db.execute("UPDATE Polaznik SET email = ? WHERE username = ?", (email, current_user.username))
+            if new_image_url:
+                db.execute("UPDATE Polaznik SET profImgUrl = ? WHERE username = ?",
+                           (new_image_url, current_user.username))
+        elif(current_user.uloga == 'VLASNIK'):
+            naziv_tvrtke = request.form.get('naziv_tvrtke')
+            adresa = request.form.get('adresa')
+            grad = request.form.get('grad')
+            telefon = request.form.get('telefon')
+
+            if naziv_tvrtke:
+                db.execute("UPDATE Vlasnik SET naziv_tvrtke = ? WHERE username = ?", (naziv_tvrtke, current_user.username))
+            if adresa:
+                db.execute("UPDATE Vlasnik SET adresa = ? WHERE username = ?", (adresa, current_user.username))
+            if grad:
+                db.execute("UPDATE Vlasnik SET grad = ? WHERE username = ?", (grad, current_user.username))
+            if telefon:
+                db.execute("UPDATE Vlasnik SET telefon = ? WHERE username = ?", (telefon, current_user.username))
+            if new_image_url:
+                db.execute("UPDATE Vlasnik SET logoImgUrl = ? WHERE username = ?",
+                           (new_image_url, current_user.username))
+        db.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.rollback()
+        print(f"Edit User Error: {e}")
+        return jsonify({'error': 'Neuspjelo azuriranje podataka'}), 500
     finally:
         db.close()
 

@@ -8,6 +8,13 @@ from flask_login import LoginManager, current_user,login_required
 from config import Config
 from auth import auth_bp, init_oauth, get_db_connection
 from models import User
+import stripe
+
+
+stripe.api_key = Config.STRIPE_SECRET_KEY
+
+if not stripe.api_key:
+    raise RuntimeError("stripe secret key not configured")
 
 app = Flask(__name__)
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
@@ -83,6 +90,14 @@ def run_test_sql():
             print(f"GREŠKA u test_skripta.sql: {e}")
 
 
+@app.route("/config/stripe")
+def stripe_config():
+    return {
+        "publishableKey": Config.STRIPE_PUBLIC_KEY
+    }
+
+
+
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     db = get_db_connection()
@@ -123,6 +138,7 @@ def get_owner(room_id):
         "telefon": owner["telefon"],
         "logoImgUrl": owner["logoImgUrl"]
     }), 200
+
 
 @app.route('/api/my-teams', methods=['GET'])
 @login_required
@@ -166,6 +182,51 @@ def get_cities():
     db.close()
     cities = [row["grad"] for row in rows]
     return jsonify({"cities": cities}), 200
+
+@app.route('/api/my-rooms', methods=['GET'])
+@login_required
+def get_my_rooms():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+
+    rooms = db.execute("SELECT * FROM EscapeRoom WHERE vlasnik_username = ?", (current_user.username,)).fetchall()
+
+    result = []
+    for room in rooms:
+        room_id = room["room_id"]
+
+        images = db.execute("""
+            SELECT *
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room_id,)).fetchall()
+
+        for img in images:
+            if img["cover"] == True:
+                images.remove(img)
+                images.insert(0, img)
+
+        result.append({
+            "room_id": room_id,
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": room["inicijalna_tezina"],
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
+
 
 
 @app.route('/api/rooms/filter', methods=['POST'])
@@ -420,8 +481,129 @@ def get_leaderboard():
     return jsonify({"leaderboard": leaderboard}), 200
 
 
+@app.route('/api/rooms/most_popular', methods=['GET'])
+def top3_most_popular_rooms():
+    db = get_db_connection()
+
+    rooms = db.execute("""
+        SELECT
+            er.room_id,
+            er.naziv,
+            er.opis,
+            er.geo_lat,
+            er.geo_long,
+            er.adresa,
+            er.grad,
+            er.inicijalna_tezina,
+            er.cijena,
+            er.minBrClanTima,
+            er.maxBrClanTima,
+            er.kategorija,
+            COUNT(t.ime_tima) AS broj_igranja
+        FROM EscapeRoom er
+        LEFT JOIN Termin t
+          ON er.room_id = t.room_id
+        GROUP BY er.room_id
+        ORDER BY broj_igranja DESC
+        LIMIT 3
+    """).fetchall()
+
+    result = []
+
+    for room in rooms:
+        images = db.execute("""
+            SELECT image_url
+            FROM EscapeRoomImage
+            WHERE room_id = ?
+        """, (room["room_id"],)).fetchall()
+
+        result.append({
+            "room_id": room["room_id"],
+            "naziv": room["naziv"],
+            "opis": room["opis"],
+            "geo_lat": room["geo_lat"],
+            "geo_long": room["geo_long"],
+            "adresa": room["adresa"],
+            "grad": room["grad"],
+            "tezina": room["inicijalna_tezina"],
+            "cijena": room["cijena"],
+            "minBrClanTima": room["minBrClanTima"],
+            "maxBrClanTima": room["maxBrClanTima"],
+            "kategorija": room["kategorija"],
+            "slike": [img["image_url"] for img in images]
+        })
+
+    db.close()
+    return jsonify({"rooms": result}), 200
+
+@app.route('/api/appointments', methods=['GET'])
+def get_appointments():
+    #{ appointments: [podaci_o_terminu1, podaci_o_terminu2, ...]}
+    db = get_db_connection()
+    #{ ime_tima, datVrPoc, rezultatSekunde }
+    room_id = request.args.get('roomId', type=int)
+
+    if room_id is None:
+        return jsonify({"error": "roomId query parameter is required"}), 400
+
+    try:
+        appointments = db.execute("""
+                SELECT ime_tima, datVrPoc, rezultatSekunde
+                FROM Termin
+                WHERE room_id = ?
+                ORDER BY datVrPoc DESC
+            """, (room_id,)).fetchall()
+
+        result = [dict(row) for row in appointments]
+
+        return jsonify({"appointments": result}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
 
 
+@app.route('/api/owner/team-info')
+@login_required
+def get_owner_team_info():
+    if current_user.uloga != "VLASNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+    ime_tima = request.args.get('ime_tima')
+
+    if not ime_tima:
+        return jsonify({'error': 'ime_tima query parameter is required'}), 400
+
+
+    podaci_tima = db.execute("""
+        SELECT t.image_url, t.voditelj_username
+        FROM Tim t
+        WHERE t.ime = ?
+    """, (ime_tima,)).fetchone()
+
+    if not podaci_tima:
+        db.close()
+        return jsonify({'error': 'Team not found'}), 404
+
+    members_rows = db.execute("""
+            SELECT username 
+            FROM ClanTima 
+            WHERE ime_tima = ? AND accepted = 1
+        """, (ime_tima,)).fetchall()
+    members_list = [member["username"] for member in members_rows]
+
+    result = {
+            "ime_tima": ime_tima,
+            "logo": podaci_tima["image_url"],
+            "leader": podaci_tima["voditelj_username"],
+            "members": members_list
+    }
+
+    # ime_tima: "ime_tima1", logo: "url_slike_loga_tima1", leader: "username_voditelj_tim1", members: ["username_clan1_tim1", "username_clan2_tim1"] }
+
+    db.close()
+    return jsonify(result), 200
 
 if __name__ == '__main__':
     with app.app_context():
