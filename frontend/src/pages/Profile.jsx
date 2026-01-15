@@ -136,7 +136,7 @@ function PersonalInfoTab() {
                     <input type="text" id={"naziv_tvrtke"} name={"naziv_tvrtke"} defaultValue={user.naziv_tvrtke} required={true} />
                 </div>
 
-                <div className={"register-form-owner-address"}>
+                <div className={"owner-address"}>
                     <div>
                         <label htmlFor={"adresa"}>Adresa tvrtke:</label>
                         <input type="text" id={"adresa"} name={"adresa"} defaultValue={user.adresa} required={true}/>

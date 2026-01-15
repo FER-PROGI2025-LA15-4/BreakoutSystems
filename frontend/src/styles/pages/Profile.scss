@@ -164,8 +164,12 @@
       min-width: 300px;
     }
 
-    .register-form-owner-address{
+    .owner-address{
       margin: 0;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     input[type=submit] {
@@ -237,5 +241,15 @@
     border: none;
     cursor: pointer;
     margin-top: 5px;
+  }
+}
+
+  @media (max-width: 768px) {
+  .profile-page-personal-info-tab{
+    div, div.slika-profila {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 }
