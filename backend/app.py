@@ -8,6 +8,13 @@ from flask_login import LoginManager, current_user,login_required
 from config import Config
 from auth import auth_bp, init_oauth, get_db_connection
 from models import User
+import stripe
+
+
+stripe.api_key = Config.STRIPE_SECRET_KEY
+
+if not stripe.api_key:
+    raise RuntimeError("stripe secret key not configured")
 
 app = Flask(__name__)
 app.frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
@@ -81,6 +88,14 @@ def run_test_sql():
                 db.executescript(f.read())
         except Exception as e:
             print(f"GREŠKA u test_skripta.sql: {e}")
+
+
+@app.route("/config/stripe")
+def stripe_config():
+    return {
+        "publishableKey": Config.STRIPE_PUBLIC_KEY
+    }
+
 
 
 @app.route('/api/categories', methods=['GET'])
