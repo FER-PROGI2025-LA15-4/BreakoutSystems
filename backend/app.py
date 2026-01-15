@@ -1,7 +1,5 @@
 # app.py
 import os
-import sqlite3
-from json.encoder import INFINITY
 from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory, session
 from flask_login import LoginManager, current_user,login_required
@@ -13,11 +11,6 @@ import stripe
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INSTANCE_PATH = PROJECT_ROOT / "instance"
-
-stripe.api_key = Config.STRIPE_SECRET_KEY
-
-if not stripe.api_key:
-    raise RuntimeError("stripe secret key not configured")
 
 app = Flask(
     __name__,
@@ -96,13 +89,6 @@ def run_test_sql():
                 db.executescript(f.read())
         except Exception as e:
             print(f"GREŠKA u test_skripta.sql: {e}")
-
-
-@app.route("/config/stripe")
-def stripe_config():
-    return {
-        "publishableKey": Config.STRIPE_PUBLIC_KEY
-    }
 
 @app.route("/api/owner/enter-result", methods=["POST"])
 @login_required
@@ -643,14 +629,14 @@ def get_owner_team_info():
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 
-@app.route('/api/test-stripe', methods=['POST'])
+@app.route('/api/start-payment', methods=['POST'])
 @login_required
 def test_stripe_payment():
     data = request.get_json()
     tip_pretplate = data.get('tip')  # 'mjesečna' ili 'godišnja'
 
     # Određivanje cijene
-    iznos = 1500 if tip_pretplate == 'mjesečna' else 12000  # u centima (15€ ili 150€)
+    iznos = 1099 if tip_pretplate == 'mjesečna' else 9999  # u centima (15€ ili 150€)
     naziv = f"Escape Room - {tip_pretplate.capitalize()} članarina"
 
     try:
