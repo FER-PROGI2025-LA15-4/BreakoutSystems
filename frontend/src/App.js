@@ -10,8 +10,7 @@ import RegisterPage from "./pages/Register";
 import RoomPage from "./pages/Room";
 import {AuthProvider} from "./context/AuthContext";
 import { createTheme, MantineProvider } from '@mantine/core';
-//STRIPE TEST
-import StripeTest from "./pages/StripeTest"; // pazi da je putanja točna
+
 
 function App() {
     return (
@@ -19,12 +18,8 @@ function App() {
             <BrowserRouter>
                 <AuthProvider>
                     <Routes>
-
-                    {/* STRIPE DUMMY PAGE */}
-                    <Route path="stripe-test" element={<StripeTest />} />
-
-                    {/* početna stranica */}
-                    <Route index element={<HomePage />} />
+                        {/* početna stranica */}
+                        <Route index element={<HomePage />} />
 
                         {/* escape rooms stranica */}
                         <Route path="escape-rooms" element={<EscapeRoomsPage />} />

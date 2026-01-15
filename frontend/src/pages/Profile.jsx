@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import { useNavigate } from "react-router";
+import {useNavigate, useSearchParams} from "react-router";
 import PageTemplate from "./PageTemplate";
 import profilna from '../assets/images/404.png';
 import logoutImg from '../assets/icons/logout.svg';
@@ -41,6 +41,7 @@ export default function ProfilePage() {
 
 function ProfilePageContent() {
     const { user, logout } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
     if (!user) return null;
 
     let tabs = [];
@@ -62,9 +63,55 @@ function ProfilePageContent() {
         }
     };
 
+    useEffect(() => {
+        // callback from stripe after payment
+        let payment_status = searchParams.get('payment_status');
+        if (payment_status) {
+            // remove payment_status from URL after reading it
+            searchParams.delete('payment_status');
+            setSearchParams(searchParams, { replace: true });
+        }
+        let sessionId = searchParams.get('session_id');
+        if (sessionId) {
+            // remove session_id from URL after reading it
+            searchParams.delete('session_id');
+            setSearchParams(searchParams, { replace: true });
+        }
+        const asyncFunc = async () => {
+            try {
+                const response = await fetch('/api/confirm-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                })
+                if (response.ok) {
+                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Vaša pretplata je uspješno aktivirana." });
+                } else {
+                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+                }
+            } catch (err) {
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            }
+        };
+
+        if (payment_status && payment_status === "true" && sessionId) {
+            asyncFunc();
+        } else if (payment_status && payment_status === "false") {
+            setPopup({ isOpen: true, title: "Plaćanje nije uspjelo", message: "Vaša pretplata nije aktivirana. Pokušajte ponovno." });
+        }
+    }, []);
+
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
+
     return (
         <div className={"profile-page"}>
             <div className={"profile-page-circle"}><div></div></div>
+            {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup} />}
             <h1>Moj profil</h1>
             <div className={"profile-page-content"}>
                 <div className="profile-page-user-info">
@@ -485,10 +532,26 @@ function SubscriptionTab() {
         }).format(new Date(user.clanarinaDoDatVr))
         : null;
 
+    const handlePaymentClick = async (type) => {
+        try {
+            const response = await fetch('/api/start-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tip: type })
+            });
+            const data = await response.json();
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            console.error("Greška:", err);
+        }
+    }
+
     return <div className={"profile-page-subscription-tab"}>
         <div className={"profile-page-subscription-tab-status"}>
             <p>Status vaše pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "nemate aktivnu članarinu" }</p>
-            { activeSubscription && <img src={tick_icon}/> }
+            { activeSubscription && <img src={tick_icon} alt={"tick icon"}/> }
         </div>
         <div className={"profile-page-subscription-tab-options"}>
             <div className={"profile-page-subscription-tab-option"}>
@@ -501,7 +564,7 @@ function SubscriptionTab() {
                     <span className="price-cents">99</span>
                 </p>
                 <p>Aktiviraj platformu na 30 dana i upravljaj terminima, rezervacijama i detaljima svojih Escape Roomova.</p>
-                <button>IDI NA PLAĆANJE</button>
+                <button onClick={() => handlePaymentClick("mjesečna")}>IDI NA PLAĆANJE</button>
             </div>
             <div className={"profile-page-subscription-tab-option"}>
                 <div className="tip-clanarine">
@@ -514,7 +577,7 @@ function SubscriptionTab() {
                     <span className="price-cents">99</span>
                 </p>
                 <p>Povoljno aktiviraj platformu na 12 mjeseci i osiguraj vidljivost i upravljanje tijekom cijele godine.</p>
-                <button>IDI NA PLAĆANJE</button>
+                <button onClick={() => handlePaymentClick("godišnja")}>IDI NA PLAĆANJE</button>
             </div>
         </div>
     </div>;
