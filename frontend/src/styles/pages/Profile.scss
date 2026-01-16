@@ -665,3 +665,17 @@
     height: 100px;
   }
 }
+
+.profile-page-game-history-tab {
+  overflow: auto;
+
+  >table {
+    border-collapse: collapse;
+    td, th {
+      border: 1px solid lightgray;
+    }
+    >.history-room-name {
+      cursor: pointer;
+    }
+  }
+}

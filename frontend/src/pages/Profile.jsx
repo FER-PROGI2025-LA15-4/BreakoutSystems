@@ -15,6 +15,7 @@ import plus_icon from '../assets/icons/plus.svg';
 import {Rating} from "react-simple-star-rating";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
 import '../styles/pages/Profile.scss';
+import {SyncLoader} from "react-spinners";
 
 export default function ProfilePage() {
     const name = "profile";
@@ -240,8 +241,43 @@ function MyTeamsTab() {
 }
 function GameHistoryTab() {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
-    return <p>history</p>;
+    if (!user || user.uloga !== "POLAZNIK") {
+        return null;
+    }
+
+    const [gameHistory, setGameHistory] = useState(null);
+    useEffect(() => {
+        fetchGameHistory().then(history => setGameHistory(history));
+    }, []);
+
+    const handleRatingClick = (index, rating) => {
+
+    }
+
+    return <div className={"profile-page-game-history-tab"}>
+        <table>
+            <thead>
+                <tr>
+                    <th>Escape Room</th>
+                    <th>Termin</th>
+                    <th>Tim</th>
+                    <th>Ocijena težine</th>
+                </tr>
+            </thead>
+            <tbody>
+                {gameHistory === null ? <tr><SyncLoader/></tr> : <>
+                    {gameHistory.map((game) => <tr>
+                        <td className={"history-room-name"} onClick={() => navigate(`/escape-rooms/${game.room_id}`)}>{game.room_name}</td>
+                        <td>{game.termin}</td>
+                        <td>{game.ime_tima}</td>
+                        <td><Rating size={30} readonly={false} value={game.ocjena_tezine} allowFraction={true} initialValue={0} name="rating" /></td>
+                    </tr>)}
+                </>}
+            </tbody>
+        </table>
+    </div>;
 }
 function MyRoomsTab() {
     const { user } = useAuth();
@@ -641,6 +677,15 @@ async function fetchTeamInfo(ime_tima) {
         return await response.json();
     } else {
         return null;
+    }
+}
+async function fetchGameHistory() {
+    const response = await authFetch("/api/game-history")
+    if (response.ok) {
+        const data = await response.json();
+        return sortArr(data["history"], (game) => game.termin, "desc");
+    } else {
+        return [];
     }
 }
 
