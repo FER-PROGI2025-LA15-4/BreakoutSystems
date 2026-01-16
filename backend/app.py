@@ -111,10 +111,12 @@ def enter_result():
 
     room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?", (room_id, current_user.username,)).fetchone()
     if not room:
+        db.close()
         return jsonify({'error': 'forbidden access'}), 403
     cursor = db.cursor()
     cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?", (result, room_id, dat_vr_poc))
     if cursor.rowcount == 0:
+        db.close()
         return jsonify({'error': 'appointment not found'}), 400
     for member in members:
         cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)", (room_id, dat_vr_poc, member))
@@ -160,9 +162,41 @@ def get_game_history():
     db.close()
     return jsonify({"history": history}), 200
 
+@app.route('/api/rate-room', methods=['POST'])
+@login_required
+def rate_room():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    data = request.get_json() or {}
+    room_id = data.get("room_id")
+    rating = data.get("rating")
+
+    db = get_db_connection()
+    played = db.execute("SELECT * FROM ClanNaTerminu WHERE room_id = ? AND username = ?", (room_id, current_user.username)).fetchone()
+    if played is None:
+        db.close()
+        return jsonify({'error': 'forbidden access'}), 403
+
+    rtg_exists = db.execute("SELECT * FROM OcjenaTezine WHERE room_id = ? AND username = ?", (room_id, current_user.username)).fetchone()
+
+    cursor = db.cursor()
+
+    if rtg_exists is None:
+        cursor.execute("INSERT INTO OcjenaTezine VALUES (room_id, username, vrijednost_ocjene) = (?,?,?)", (room_id, current_user.username, rating))
+
+    else:
+        cursor.execute("UPDATE OcjenaTezine SET vrijednost_ocjene = ? WHERE room_id = ? AND username = ?", (rating, room_id, current_user.username))
+
+    db.commit()
+    db.close()
+
+    return jsonify({"success": True}), 200
+
 
 @app.route('/api/rooms/<int:room_id>/owner', methods=['GET'])
 def get_owner(room_id):
+
 
     db = get_db_connection()
 
