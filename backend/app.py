@@ -134,6 +134,33 @@ def get_categories():
     categories = sorted([row["kategorija"] for row in rows])
     return jsonify({"categories": categories}), 200
 
+@app.route('/api/game-history', methods=['GET'])
+@login_required
+def get_game_history():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+    rows = db.execute("""SELECT naziv, c.room_id, c.datVrPoc, t.ime_tima
+                            FROM ClanNaTerminu c JOIN Termin t ON c.room_id = t.room_id AND c.datVrPoc = t.datVrPoc
+                            JOIN EscapeRoom e ON e.room_id = t.room_id""").fetchall()
+
+    history = []
+    for row in rows:
+        room_id = rows["room_id"]
+        ocjena = db.execute("SELECT vrijednost_ocjene FROM OcjenaTezine WHERE room_id = ? AND username = ?", (room_id, current_user.username)).fetchone()
+        history.append({
+            "room_name": row["naziv"],
+            "room_id": room_id,
+            "termin": row["datVrPoc"],
+            "ime_tima": row["ime_tima"],
+            "ocjena_tezine": ocjena
+        })
+
+    db.close()
+    return jsonify({"history": history}), 200
+
+
 @app.route('/api/rooms/<int:room_id>/owner', methods=['GET'])
 def get_owner(room_id):
 
