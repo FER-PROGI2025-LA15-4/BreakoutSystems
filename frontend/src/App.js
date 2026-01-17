@@ -11,6 +11,9 @@ import RoomPage from "./pages/Room";
 import {AuthProvider} from "./context/AuthContext";
 import { createTheme, MantineProvider } from '@mantine/core';
 
+import TestReservationPayment from './pages/TestReservationPayment';
+
+// U routing sekciji:
 
 function App() {
     return (
@@ -18,6 +21,9 @@ function App() {
             <BrowserRouter>
                 <AuthProvider>
                     <Routes>
+                        {/*  ZA IZBACIT: testna stranica za plaćanje rezervacije */}
+                        <Route path="/test-payment" element={<TestReservationPayment />} />
+
                         {/* početna stranica */}
                         <Route index element={<HomePage />} />
 
