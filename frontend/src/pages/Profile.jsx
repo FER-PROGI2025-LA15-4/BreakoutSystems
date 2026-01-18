@@ -602,21 +602,23 @@ function SubscriptionTab() {
         : null;
 
     const handlePaymentClick = async (type) => {
-        try {
-            const response = await fetch('/api/start-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tip: type })
-            });
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
-            }
-        } catch (err) {
-            console.error("Greška:", err);
+    try {
+        const response = await fetch('/api/start-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tip_placanja: 'pretplata',
+                tip: type                    //mjesečna ili godišnja
+            })
+        });
+        const data = await response.json();
+        if (data.url) {
+            window.location.href = data.url;
         }
+    } catch (err) {
+        console.error("Greška:", err);
     }
-
+}
     return <div className={"profile-page-subscription-tab"}>
         <div className={"profile-page-subscription-tab-status"}>
             <p>Status vaše pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "nemate aktivnu članarinu" }</p>
