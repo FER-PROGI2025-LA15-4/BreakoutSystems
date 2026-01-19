@@ -1,4 +1,3 @@
-# auth.py
 import uuid
 import sqlite3
 from pathlib import Path
@@ -34,15 +33,6 @@ def init_oauth(app):
     )
     return oauth
 
-#def save_uploaded_file(file):
-    if not file or not file.filename:
-        return "/instance/images/default.png"
-    upload_folder = Path(current_app.instance_path) / "images"
-    upload_folder.mkdir(parents=True, exist_ok=True)
-    ext = Path(secure_filename(file.filename)).suffix or ".png"
-    filename = f"{uuid.uuid4().hex}{ext}"
-    file.save(upload_folder / filename)
-    return f"/instance/images/{filename}"
 
 def save_temp_file(file):
     if not file or not file.filename:
@@ -215,19 +205,19 @@ def edit_user():
         new_image_url = save_temp_file(file)
         new_image_url = move_temp_image(new_image_url)
 
-    if(current_user.uloga == 'ADMIN'):
+    if current_user.uloga == 'ADMIN':
 
         return jsonify({'error': 'Admin je pokusao mijenjati profil', '': False}), 401
 
     try:
-        if(current_user.uloga == 'POLAZNIK'):
+        if current_user.uloga == 'POLAZNIK':
             email = request.form.get('email')
             if email:
                 db.execute("UPDATE Polaznik SET email = ? WHERE username = ?", (email, current_user.username))
             if new_image_url:
                 db.execute("UPDATE Polaznik SET profImgUrl = ? WHERE username = ?",
                            (new_image_url, current_user.username))
-        elif(current_user.uloga == 'VLASNIK'):
+        elif current_user.uloga == 'VLASNIK':
             naziv_tvrtke = request.form.get('naziv_tvrtke')
             adresa = request.form.get('adresa')
             grad = request.form.get('grad')
