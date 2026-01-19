@@ -185,3 +185,4 @@ INSERT INTO OcjenaTezine (room_id, username, vrijednost_ocjene) VALUES
 (9, 'lucija123', 3.5),  
 (9, 'ivan123', 3.0),
 (9, 'matej123', 3.5);
+
