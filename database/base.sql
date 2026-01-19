@@ -87,7 +87,7 @@ CREATE TABLE ClanNaTerminu (
 CREATE TABLE OcjenaTezine (
     room_id INT,
     username VARCHAR(255),
-    vrijednost_ocjene DOUBLE NOT NULL CHECK (vrijednost_ocjene BETWEEN 1.0 AND 5.0),
+    vrijednost_ocjene DOUBLE NOT NULL CHECK (vrijednost_ocjene BETWEEN 0.5 AND 5.0),
     PRIMARY KEY (room_id, username),
     FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE,
     FOREIGN KEY (username) REFERENCES Polaznik(username) ON DELETE CASCADE

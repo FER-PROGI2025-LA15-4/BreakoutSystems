@@ -40,7 +40,7 @@ export default function ProfilePage() {
 }
 
 function ProfilePageContent() {
-    const { user, logout } = useAuth();
+    const { user, logout, refresh } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     if (!user) return null;
 
@@ -86,6 +86,7 @@ function ProfilePageContent() {
                 })
                 if (response.ok) {
                     setPopup({ isOpen: true, title: "Uspjeh!", message: "Vaša pretplata je uspješno aktivirana." });
+                    refresh();
                 } else {
                     setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
                 }
@@ -110,7 +111,7 @@ function ProfilePageContent() {
 
     return (
         <div className={"profile-page"}>
-            <div className={"profile-page-circle"}><div></div></div>
+             <div className={"profile-page-circle"}><div></div></div>
             {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup} />}
             <h1>Moj profil</h1>
             <div className={"profile-page-content"}>
@@ -383,14 +384,14 @@ function MyTeamsTab() {
                 </div>
                 {myTeams && myTeams.map((team) => (
                     <div key={team.name} className={"profile-page-my-teams-tab-team-entry"}>
-                        <img src={team.logo} alt={"team logo"}/>
+                        <img src={team.logo === null ? profilna : team.logo} alt={"team logo"}/>
                         <p className={"profile-page-my-teams-tab-team-entry-name"}>{team.name}</p>
                         <p className={"profile-page-my-teams-tab-team-entry-details"} onClick={() => handleDetailsClick(team)}>Detalji</p>
                     </div>
                 ))}
                 {myPendingInvites && myPendingInvites.map((team) =>
                     <div key={team.name} className={"profile-page-my-teams-tab-team-entry-invite"}>
-                        <img src={team.logo} alt={"team logo"}/>
+                        <img src={team.logo === null ? profilna : team.logo} alt={"team logo"}/>
                         <p className={"profile-page-my-teams-tab-team-entry-name"}>{team.name}</p>
                         <p className={"profile-page-my-teams-tab-team-entry-details"} onClick={() => handleAcceptClick(team.name)}>Prihvati</p>
                         <p className={"profile-page-my-teams-tab-team-entry-details"} onClick={() => handleDeclineClick(team.name)}>Odbij</p>
@@ -482,30 +483,51 @@ function GameHistoryTab() {
     }, []);
 
     const handleRatingClick = (index, rating) => {
-
+        const localGameHistory = [...gameHistory];
+        localGameHistory[index].ocjena_tezine = rating;
+        setGameHistory(localGameHistory);
+        authFetch("api/rate-room ", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                room_id: localGameHistory[index].room_id,
+                rating: rating
+            })
+        }).then(response => {
+            if (!response.ok) {
+                // revert rating on failure
+                const revertGameHistory = [...gameHistory];
+                revertGameHistory[index].ocjena_tezine = null;
+                setGameHistory(revertGameHistory);
+            }
+        })
     }
 
     return <div className={"profile-page-game-history-tab"}>
-        <table>
-            <thead>
-                <tr>
-                    <th>Escape Room</th>
-                    <th>Termin</th>
-                    <th>Tim</th>
-                    <th>Ocijena težine</th>
-                </tr>
-            </thead>
-            <tbody>
-                {gameHistory === null ? <tr><SyncLoader/></tr> : <>
-                    {gameHistory.map((game) => <tr>
-                        <td className={"history-room-name"} onClick={() => navigate(`/escape-rooms/${game.room_id}`)}>{game.room_name}</td>
-                        <td>{game.termin}</td>
-                        <td>{game.ime_tima}</td>
-                        <td><Rating size={30} readonly={false} value={game.ocjena_tezine} allowFraction={true} initialValue={0} name="rating" /></td>
-                    </tr>)}
-                </>}
-            </tbody>
-        </table>
+        {gameHistory === null ? <SyncLoader/> :
+            <table>
+                <thead>
+                    <tr>
+                        <th>Escape Room</th>
+                        <th>Termin</th>
+                        <th>Tim</th>
+                        <th>Ocijena težine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        {gameHistory.map((game, index) => <tr>
+                            <td className={"history-room-name"} onClick={() => navigate(`/escape-rooms/${game.room_id}`)}>{game.room_name}</td>
+                            <td>{game.termin}</td>
+                            <td>{game.ime_tima}</td>
+                            <td>
+                                <Rating size={30} readonly={!!game.ocjena_tezine} allowFraction={true} initialValue={game.ocjena_tezine ? game.ocjena_tezine : 0} name="rating" onClick={game.ocjena_tezine ? () => {} : (rate, _, e) => e && (handleRatingClick(index, rate))} />
+                            </td>
+                        </tr>)}
+                </tbody>
+            </table>
+        }
     </div>;
 }
 function MyRoomsTab() {
@@ -792,7 +814,7 @@ function ResultEntryTab() {
                 className="profile-page-result-entry-tab-select-members"
             />
             <form onSubmit={handleSubmit}>
-                <label for="finished">
+                <label htmlFor="finished">
                     <input type="checkbox" id="finished" onChange={(e) => setTeamFinished(e.target.checked)} />
                     Tim je završio sobu
                 </label>
