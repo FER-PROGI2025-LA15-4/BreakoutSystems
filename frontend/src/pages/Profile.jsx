@@ -236,8 +236,237 @@ function PersonalInfoTab() {
 }
 function MyTeamsTab() {
     const { user } = useAuth();
+    if (!user || user.uloga !== "POLAZNIK") {
+        return null;
+    }
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
 
-    return <p>teams</p>;
+    const [view, setView] = useState("list"); // "list", "new", "details"
+
+    const [myTeams, setMyTeams] = useState(null);
+    useEffect(() => {
+        fetchMyTeams().then(setMyTeams);
+    }, []);
+
+    const [myPendingInvites, setMyPendingInvites] = useState(null);
+    useEffect(() => {
+        fetchTeamInvites().then(setMyPendingInvites);
+    }, []);
+    const updateInvite = (team_name, action) => {
+        authFetch("/api/update-invite", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ team_name, invite_update: action })
+        }).then(response => {
+            if (response.ok) {
+                fetchMyTeams().then(setMyTeams);
+                fetchTeamInvites().then(setMyPendingInvites);
+            }
+        })
+    }
+    const handleAcceptClick = (team_name) => {
+        updateInvite(team_name, "accept");
+    }
+    const handleDeclineClick = (team_name) => {
+        updateInvite(team_name, "decline");
+    }
+
+    const [selectedTeam, setSelectedTeam] = useState(null);
+    const handleDetailsClick = (team) => {
+        setSelectedTeam(team);
+        setView("details");
+    }
+    const [selectedTeamInvites, setSelectedTeamInvites] = useState([]);
+    useEffect(() => {
+        setSelectedTeamInvites([]);
+        if (user.username === selectedTeam?.leader) {
+            authFetch("/api/invites?teamName=" + encodeURIComponent(selectedTeam.name)).then(
+                response => {
+                    if (response.ok) {
+                        response.json().then(data => setSelectedTeamInvites(data["users"]))
+                    }
+                }
+            )
+        }
+    }, [selectedTeam]);
+
+    const submitNewTeam = (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+        authFetch("/api/create-team", {
+            method: "POST",
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                fetchMyTeams().then(setMyTeams);
+            } else if (response.status === 400) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    response.json().then(data => {
+                        if (data["error"] === "Team name already taken!") {
+                            const localPopup = { isOpen: true, title: "Oops, došlo je do greške!", message: "Ime tima je zauzeto, molimo odaberite drugo ime." };
+                            setPopup(localPopup);
+                        }
+                    });
+                }
+            }
+        });
+        setView("list");
+    }
+    const submitEditTeam = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        authFetch("/api/edit-team", {
+            method: "POST",
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                fetchMyTeams().then(setMyTeams);
+            }
+        });
+    }
+    const submitUserAdd = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            team_name: form.name.value,
+            user: form.user.value
+        };
+        authFetch("/api/add-member", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (response.ok) {
+                authFetch("/api/invites?teamName=" + encodeURIComponent(selectedTeam.name)).then(
+                    response => response.json().then(data => setSelectedTeamInvites(data["users"]))
+                )
+            }
+        });
+    }
+    const submitUserRemove = (username) => {
+        authFetch("/api/remove-member", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ team_name: selectedTeam.name, user: username })
+        }).then(response => {
+            if (response.ok) {
+                fetchMyTeams().then(setMyTeams);
+                authFetch("/api/invites?teamName=" + encodeURIComponent(selectedTeam.name)).then(
+                    response => response.json().then(data => setSelectedTeamInvites(data["users"]))
+                )
+            }
+        })
+    }
+
+    return <div className={"profile-page-my-teams-tab"}>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup} />}
+        {view === "list" &&
+            <div className={"profile-page-my-teams-tab-list"}>
+                <div onClick={() => setView("new")} className={"profile-page-my-teams-tab-new-team"}>
+                    <img src={plus_icon} alt={"plus icon"}/>
+                    <p>Kreiraj novi tim</p>
+                </div>
+                {myTeams && myTeams.map((team) => (
+                    <div key={team.name} className={"profile-page-my-teams-tab-team-entry"}>
+                        <img src={team.logo} alt={"team logo"}/>
+                        <p className={"profile-page-my-teams-tab-team-entry-name"}>{team.name}</p>
+                        <p className={"profile-page-my-teams-tab-team-entry-details"} onClick={() => handleDetailsClick(team)}>Detalji</p>
+                    </div>
+                ))}
+                {myPendingInvites && myPendingInvites.map((team) =>
+                    <div key={team.name} className={"profile-page-my-teams-tab-team-entry-invite"}>
+                        <img src={team.logo} alt={"team logo"}/>
+                        <p className={"profile-page-my-teams-tab-team-entry-name"}>{team.name}</p>
+                        <p className={"profile-page-my-teams-tab-team-entry-details"} onClick={() => handleAcceptClick(team.name)}>Prihvati</p>
+                        <p className={"profile-page-my-teams-tab-team-entry-details"} onClick={() => handleDeclineClick(team.name)}>Odbij</p>
+                    </div>
+                )}
+            </div>
+        }
+        {view === "new" &&
+            <div className={"profile-page-my-teams-tab-new-form"}>
+                <form onSubmit={submitNewTeam} encType={"multipart/form-data"}>
+                    <div>
+                        <label htmlFor={"name"}>Naziv tima:</label>
+                        <input type={"text"} name={"name"} required={true}/>
+                    </div>
+                    <div className="slika-profila">
+                        <label htmlFor="image">Logo tima:</label>
+                        <input type="file" id="image" name="image" accept="image/*"/>
+                    </div>
+                    <input type={"submit"} value={"Kreiraj tim"}/>
+                    <input type={"button"} value={"Natrag"} onClick={() => setView("list")}/>
+                </form>
+            </div>
+        }
+        {view === "details" &&
+            <div className={"profile-page-my-teams-tab-details"}>
+                <img src={selectedTeam.logo} alt={"team logo"}/>
+                <p>Naziv tima: {selectedTeam.name}</p>
+                <p>Voditelj tima: {selectedTeam.leader}</p>
+                {selectedTeam.members && <>
+                    <p>Članovi tima ({selectedTeam.members.length}/10):</p>
+                    <ul>
+                        {selectedTeam.members.map((member) =>
+                            <li key={member}>
+                                <p>{member}</p>
+                                {user.username === selectedTeam.leader && <button onClick={() => submitUserRemove(member)}>Ukloni</button>}
+                            </li>
+                        )}
+                    </ul>
+                </>}
+                {user.username !== selectedTeam.leader && <button onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
+                {user.username === selectedTeam.leader && <>
+                    <form onSubmit={submitEditTeam} encType={"multipart/form-data"}>
+                        <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
+                        <div className="slika-profila">
+                            <label htmlFor="image">Promijeni logo:</label>
+                            <input type="file" id="image" name="image" accept="image/*" required={true}/>
+                        </div>
+                        <input type={"submit"} value={"Spremi"}/>
+                    </form>
+                    {selectedTeamInvites || selectedTeam.members.length < 10 &&
+                        <div>
+                            <p>Pozvani korisnici:</p>
+                            {selectedTeamInvites &&
+                                <ul>
+                                    {selectedTeamInvites.map((member) =>
+                                        <li key={member}>
+                                            <p>{member}</p>
+                                            <button onClick={() => submitUserRemove(member)}>Ukloni</button>
+                                        </li>
+                                    )}
+                                </ul>
+                            }
+                            {selectedTeam.members.length + selectedTeamInvites.length < 10 &&
+                                <form onSubmit={submitUserAdd}>
+                                    <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
+                                    <input type={"text"} name={"user"} placeholder={"Korisničko ime"} required={true}/>
+                                    <input type={"submit"} value={"Dodaj korisnika"}/>
+                                </form>
+                            }
+                        </div>
+                    }
+                </>}
+                <button onClick={() => setView("list")}>Natrag</button>
+            </div>
+        }
+    </div>;
 }
 function GameHistoryTab() {
     const { user } = useAuth();
@@ -686,6 +915,24 @@ async function fetchGameHistory() {
     if (response.ok) {
         const data = await response.json();
         return sortArr(data["history"], (game) => game.termin, "desc");
+    } else {
+        return [];
+    }
+}
+async function fetchMyTeams() {
+    const response = await authFetch("/api/my-teams")
+    if (response.ok) {
+        const data = await response.json();
+        return data["teams"];
+    } else {
+        return [];
+    }
+}
+async function fetchTeamInvites() {
+    const response = await authFetch("/api/team-invites")
+    if (response.ok) {
+        const data = await response.json();
+        return data["invites"];
     } else {
         return [];
     }
