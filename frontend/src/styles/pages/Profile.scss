@@ -606,13 +606,50 @@
   overflow: auto;
 
   >table {
-    border-collapse: collapse;
-    td, th {
-      border: 1px solid lightgray;
-    }
-    >.history-room-name {
-      cursor: pointer;
-    }
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.95em;
+  }
+
+  thead th {
+    background-color: #42d2f5;
+    color: white;
+    text-align: left;
+    padding: 0.75em 0.9em;
+    font-weight: 600;
+  }
+
+  thead th:first-child {
+    border-top-left-radius: 10px;
+  }
+
+  thead th:last-child {
+    border-top-right-radius: 10px;
+  }
+
+  tbody td {
+    background-color: white;
+    padding: 0.75em 0.9em;
+    border-bottom: 1px solid #e9e9e9;
+    color: #1f1f1f;
+    vertical-align: middle;
+  }
+
+  tbody tr:nth-child(even) td {
+    background-color: #fbfbfb;
+  }
+
+  tbody tr:hover td {
+    background-color: #f3fcff;
+  }
+
+  .history-room-name {
+    font-weight: 500;
+    color: #1a3b4a;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 
