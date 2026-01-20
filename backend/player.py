@@ -14,18 +14,18 @@ def get_game_history():
     db = get_db_connection()
     rows = db.execute("""SELECT naziv, c.room_id, c.datVrPoc, t.ime_tima
                             FROM ClanNaTerminu c JOIN Termin t ON c.room_id = t.room_id AND c.datVrPoc = t.datVrPoc
-                            JOIN EscapeRoom e ON e.room_id = t.room_id""").fetchall()
+                            JOIN EscapeRoom e ON e.room_id = t.room_id WHERE c.username = ?""", (current_user.username, )).fetchall()
 
     history = []
     for row in rows:
-        room_id = rows["room_id"]
+        room_id = row["room_id"]
         ocjena = db.execute("SELECT vrijednost_ocjene FROM OcjenaTezine WHERE room_id = ? AND username = ?", (room_id, current_user.username)).fetchone()
         history.append({
             "room_name": row["naziv"],
             "room_id": room_id,
             "termin": row["datVrPoc"],
             "ime_tima": row["ime_tima"],
-            "ocjena_tezine": ocjena
+            "ocjena_tezine": ocjena["vrijednost_ocjene"] if ocjena else None
         })
 
     db.close()
@@ -53,7 +53,7 @@ def rate_room():
     cursor = db.cursor()
 
     if rtg_exists is None:
-        cursor.execute("INSERT INTO OcjenaTezine VALUES (room_id, username, vrijednost_ocjene) = (?,?,?)", (room_id, current_user.username, rating))
+        cursor.execute("INSERT INTO OcjenaTezine(room_id, username, vrijednost_ocjene) VALUES (?,?,?)", (room_id, current_user.username, rating))
 
     else:
         cursor.execute("UPDATE OcjenaTezine SET vrijednost_ocjene = ? WHERE room_id = ? AND username = ?", (rating, room_id, current_user.username))
