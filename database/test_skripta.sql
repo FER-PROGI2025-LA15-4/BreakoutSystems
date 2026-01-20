@@ -13,8 +13,8 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('matej123', 'oauth_polaznik_333', 'POLAZNIK'),
 ('elena123', 'oauth_polaznik_444', 'POLAZNIK'),
 ('antonio123', 'oauth_polaznik_555', 'POLAZNIK'),
-('am', 'oauth_vlasnik_123', 'VLASNIK'),
-('sara123', 'oauth_polaznik_666', 'POLAZNIK');
+('am', 'oauth_polaznik_666', 'VLASNIK'),
+('sara123', '40371578', 'POLAZNIK');
 
 -- VLASNICI
 INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl, clanarinaDoDatVr) VALUES
@@ -57,11 +57,11 @@ INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, i
 
 -- TIMOVI (voditelj mora biti polaznik)
 INSERT INTO Tim (ime, image_url, voditelj_username) VALUES
-('Tim Alfa', '...', 'ivan123'),
-('Tim Beta', '...', 'ana123'),
-('Tim Gamma', '...', 'lucija123'),
-('Tim Delta', '...', 'lucija123'),
-('Tim Epsilon', '...', 'sara123');
+('Tim Alfa', null, 'ivan123'),
+('Tim Beta', null, 'ana123'),
+('Tim Gamma', null, 'lucija123'),
+('Tim Delta', null, 'lucija123'),
+('Tim Epsilon', null, 'sara123');
 
 
 
@@ -127,6 +127,8 @@ INSERT INTO Termin (room_id, datVrPoc, ime_tima, rezultatSekunde) VALUES
 (3, '2025-11-22 20:00:00', 'Tim Gamma', 3300), 
 (5, '2025-11-25 19:00:00', 'Tim Alfa', 2950),  
 (9, '2025-12-01 17:00:00', 'Tim Gamma', 3100),
+(9, '2025-02-01 17:00:00', 'Tim Delta', 3100),
+(9, '2025-02-01 20:00:00', 'Tim Epsilon', 3100),
 
 
 -- Budući termini (rezervirani)
@@ -134,7 +136,9 @@ INSERT INTO Termin (room_id, datVrPoc, ime_tima, rezultatSekunde) VALUES
 (4, '2026-03-29 16:00:00', 'Tim Beta', NULL),
 (10, '2026-03-30 19:30:00', 'Tim Gamma', NULL),
 (12, '2026-03-02 14:00:00', 'Tim Beta', NULL), 
-(13, '2026-04-03 18:00:00', 'Tim Alfa', NULL);
+(13, '2026-04-03 18:00:00', 'Tim Alfa', NULL),
+(9, '2027-02-01 17:00:00', 'Tim Delta', NULL),
+(9, '2027-02-01 20:00:00', 'Tim Epsilon', NULL);
 
 
 
@@ -163,7 +167,10 @@ INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES
 -- escape room 9 tim gamma
 (9, '2025-12-01 17:00:00', 'lucija123'),
 (9, '2025-12-01 17:00:00', 'ivan123'),
-(9, '2025-12-01 17:00:00', 'matej123');
+(9, '2025-12-01 17:00:00', 'matej123'),
+
+(9, '2025-02-01 17:00:00', 'sara123'),
+(9, '2025-02-01 17:00:00', 'antonio123');
 
 -- OCJENE TEŽINE 
 INSERT INTO OcjenaTezine (room_id, username, vrijednost_ocjene) VALUES

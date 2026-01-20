@@ -301,13 +301,13 @@
 @media (max-width: 1350px){
   .room-page-section-title {
     h1 {
-      font-size: 3.5em;
-      padding-bottom: 4em;
+      font-size: 2.5em;
+      padding-bottom: 5em;
     }
   }
   .room-page-section-content {
     grid-template-columns: 1fr;
-    padding: 0 2em;
+    padding: 0 2em 3em 2em;
 
     >.room-page-section-content-info {
       margin: -10em 0 2em 0;
@@ -349,5 +349,12 @@
       grid-template-columns: 1fr;
       padding: 0 2rem 3rem 2rem;
     }
+  }
+}
+
+@media (max-width: 600px){
+  .room-page-section-content > .room-page-section-content-side > .room-page-leaderboard{
+    margin: 1em;
+    width: 100%;
   }
 }
