@@ -261,7 +261,7 @@ def top3_most_popular_rooms():
         tezina = calculate_weight(room["room_id"])
 
         images = db.execute("""
-            SELECT image_url
+            SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
         """, (room["room_id"],)).fetchall()
