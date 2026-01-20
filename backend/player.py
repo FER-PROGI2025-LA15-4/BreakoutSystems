@@ -134,3 +134,24 @@ def update_invite():
     db.commit()
     db.close()
     return jsonify({"success": True}), 200
+
+
+# timovi u koje je korisnik pozvan, ali još nije prihvatio ulazak
+@app.route('/api/my-invites', methods=['GET'])
+@login_required
+def get_my_invites():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+    db = get_db_connection()
+    invites = db.execute("SELECT * FROM ClanTima WHERE username = ? AND accepted = 0", (current_user.username,)).fetchall()
+    result = []
+    for invite in invites:
+        team_name = invite["ime_tima"]
+        team = db.execute("SELECT * FROM Tim WHERE ime_tima = ?", (team_name,)).fetchone()
+        result.append({
+            "name": team["ime"],
+            "logo": team["image_url"],
+            "leader": team["voditelj_username"],
+        })
+
+    return jsonify({"invites": result}), 200
