@@ -1,4 +1,6 @@
 from flask import jsonify, request
+from flask_login import login_required
+
 from backend.app import app
 from auth import get_db_connection
 from escape_room import calculate_weight
