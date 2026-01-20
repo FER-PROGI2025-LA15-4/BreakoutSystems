@@ -602,6 +602,231 @@
   font-size: 0.7em;
 }
 
+.profile-page-game-history-tab {
+  overflow: auto;
+
+  >table {
+    border-collapse: collapse;
+    td, th {
+      border: 1px solid lightgray;
+    }
+    >.history-room-name {
+      cursor: pointer;
+    }
+  }
+}
+
+.profile-page-my-teams-tab {
+  width: 100%;
+
+  >.profile-page-my-teams-tab-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 1em;
+
+    >.profile-page-my-teams-tab-new-team {
+      cursor: pointer;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      column-gap: 1em;
+
+      >img {
+        width: 3em;
+      }
+    }
+    >.profile-page-my-teams-tab-team-entry {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      column-gap: 1em;
+
+      >img {
+        width: 3em;
+        border-radius: 99999em;
+      }
+      >.profile-page-my-teams-tab-team-entry-name {
+        flex: 1 0 0;
+      }
+      >.profile-page-my-teams-tab-team-entry-details {
+        text-decoration: underline;
+        user-select: none;
+        cursor: pointer;
+      }
+    }
+  }
+
+  >.profile-page-my-teams-tab-new-form {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 1em;
+
+    .slika-profila{
+      margin-top: 1.5em;
+      gap: 0.5em;
+    }
+
+    label {
+      font-weight: 500;
+      margin-right: 0.5em;
+    }
+
+    .buttons{
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1em;
+      margin-top: 1.5em;
+
+      input {
+        font-family: Montserrat, sans-serif;
+        font-size: 1em;
+        font-weight: 500;
+        background-color: #42d2f5;
+        color: #fff;
+        border-radius: 999px;
+        width: fit-content;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        margin-top: 5px;
+        min-width: 0;
+      }
+    }
+  }
+
+  >.profile-page-my-teams-tab-details {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 1em;
+
+    label{
+      font-weight: 500;
+    }
+
+    img {
+      width: 5em;
+      height: 5em;
+      border-radius: 99999em;
+      object-fit: cover;
+      border: 3px solid #42d2f5;
+      background-color: white;
+    }
+
+    .details-header{
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 1em;
+      margin-top: 0.5em;
+
+      .details-header-title{
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 0.5em;
+      }
+    }
+
+    >p:first-of-type {
+      font-weight: 600;
+    }
+
+    >ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6em;
+    }
+
+    >ul > li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      background-color: white;
+      border: 1px solid #e3e3e3;
+      border-radius: 10px;
+      padding: 0.6em 0.9em;
+    }
+
+    >ul > li > p {
+      margin: 0;
+      font-weight: 500;
+      color: #1c1c1c;
+    }
+
+    >ul > li > button {
+      font-family: Montserrat, sans-serif;
+      font-size: 0.9em;
+      font-weight: 500;
+      background-color: #f0de37;
+      color: #1c1c1c;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      cursor: pointer;
+    }
+
+    >button {
+      font-family: Montserrat, sans-serif;
+      font-size: 1em;
+      font-weight: 500;
+      background-color: #42d2f5;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      width: fit-content;
+      cursor: pointer;
+    }
+
+    >form {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      gap: 1em;
+      position: relative;
+
+      .slika-profila{
+        margin-top: 1em;
+      }
+
+      input[type=submit] {
+        font-family: Montserrat, sans-serif;
+        font-weight: 500;
+        background-color: #42d2f5;
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 8px 18px;
+        cursor: pointer;
+        width: fit-content;
+        margin-top: 1em;
+      }
+    }
+
+    .back-button {
+      position: absolute;
+      bottom: 3em;
+      left: 10em;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .profile-page > h1 {
     font-size: 2.5em;
@@ -676,16 +901,43 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .profile-page-content {
     padding: 2em;
     max-width: 90%;
     min-width: 80%;
+
+    >.profile-page-user-info {
+      flex-direction: column;
+      align-items: center;
+      row-gap: 1em;
+
+      >.profile-page-user-info-text {
+        margin-left: 0;
+        align-items: center;
+        text-align: center;
+      }
+    }
+
+    >.profile-page-tabs {
+      margin-top: 1em;
+    }
+
+    .profile-page-my-teams-tab-new-form > form{
+      width: 100%;
+      .ime-tima > input{
+        width: 100%;
+      }
+    }
   }
 
   .profile-page-personal-info-tab{
     form > div{
       gap: 10px;
+    }
+
+    .mail-polaznik > input{
+      padding-bottom: 4px;
     }
   }
 
@@ -694,66 +946,21 @@
       gap: 14px;
     }
   }
-}
 
-.profile-page-game-history-tab {
-  overflow: auto;
+  .profile-page-my-teams-tab > .profile-page-my-teams-tab-details{
+    gap: 1.5em;
 
-  >table {
-    border-collapse: collapse;
-    td, th {
-      border: 1px solid lightgray;
-    }
-    >.history-room-name {
-      cursor: pointer;
-    }
-  }
-}
-
-.profile-page-my-teams-tab {
-  width: 100%;
-
-  >.profile-page-my-teams-tab-list {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-
-    >.profile-page-my-teams-tab-new-team {
-      cursor: pointer;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-      align-items: center;
-      column-gap: 1em;
-
-      >img {
-        width: 3em;
-      }
-    }
-    >.profile-page-my-teams-tab-team-entry {
+    ul {
       width: 100%;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-      align-items: center;
-      column-gap: 1em;
+    }
 
-      >img {
-        width: 3em;
-        border-radius: 99999em;
-      }
-      >.profile-page-my-teams-tab-team-entry-name {
-        flex: 1 0 0;
-      }
-      >.profile-page-my-teams-tab-team-entry-details {
-        text-decoration: underline;
-        user-select: none;
-        cursor: pointer;
-      }
+    .back-button {
+      bottom: 2em;
+      left: 9em;
+    }
+    img {
+      width: 3.5em;
+      height: 3.5em;
     }
   }
 }
