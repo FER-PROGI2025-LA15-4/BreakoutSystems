@@ -94,3 +94,43 @@ def get_my_teams():
 
     db.close()
     return jsonify({"teams": result}), 200
+
+
+# ažurira stanje atributa accepted u tablici ClanTima
+@app.route('/api/update-invite', methods=['POST'])
+@login_required
+def update_invite():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    data = request.get_json() or {}
+    team_name = data.get("team_name")
+    invite_update = data.get("invite_update")
+
+    db = get_db_connection()
+    invite = db.execute("SELECT accepted FROM ClanTima WHERE ime_tima = ? AND username = ?", (team_name,current_user.username,)).fetchone()
+
+    if invite is None:
+        db.close()
+        return jsonify({"error": "Forbidden"}), 403
+
+    cursor = db.cursor()
+
+    if invite_update == "accept":
+        cursor.execute("""
+            UPDATE ClanTima
+            SET accepted = 1
+            WHERE ime_tima = ?
+              AND username = ?
+        """, (team_name, current_user.username))
+
+    else:
+        cursor.execute("""
+            DELETE FROM ClanTima
+            WHERE ime_tima = ?
+              AND username = ?
+        """, (team_name, current_user.username))
+
+    db.commit()
+    db.close()
+    return jsonify({"success": True}), 200
