@@ -219,3 +219,14 @@ label#radio {
   padding: 0.5em 1em;
   margin-right: 0.7em;
 }
+
+@media (max-width: 600px) {
+  .register-container, .login-container {
+    padding: 3em;
+    width: 100%;
+    text-align: center;
+  }
+  .login-background{
+    padding: 2em;
+  }
+}

@@ -155,3 +155,19 @@
     margin: 1em 3em 4em 3em;
   }
 }
+
+@media (max-width: 600px) {
+  .escape-rooms-page > .hero > .hero-left {
+    margin: 2em 1em 0 1em;
+    h1{
+      font-size: 2.25em;
+    }
+    p{
+      font-size: 1.25em;
+      margin-top: 15px;
+    }
+  }
+  .escape-rooms-tiles{
+    padding: 2em 2em 5em 2em;
+  }
+}

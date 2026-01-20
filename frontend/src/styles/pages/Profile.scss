@@ -198,6 +198,7 @@
       border: none;
       cursor: pointer;
       margin-top: 5px;
+      min-width: 0;
     }
   }
 }
@@ -664,6 +665,34 @@
   .image-editor-thumb {
     width: 100px;
     height: 100px;
+  }
+
+  .profile-page-subscription-tab{
+    margin-top: 1em;
+    >.profile-page-subscription-tab-options {
+      gap: 2em;
+      padding: 0 1em;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-page-content {
+    padding: 2em;
+    max-width: 90%;
+    min-width: 80%;
+  }
+
+  .profile-page-personal-info-tab{
+    form > div{
+      gap: 10px;
+    }
+  }
+
+  .profile-page-new-room-form{
+    div.polje{
+      gap: 14px;
+    }
   }
 }
 
