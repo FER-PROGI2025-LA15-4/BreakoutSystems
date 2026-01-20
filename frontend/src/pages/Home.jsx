@@ -73,7 +73,7 @@ function HomeContent() {
         <p>
           Okupi ekipu, <strong>prati odigrane avanture</strong> i gledaj kako napredujete iz igre u igru.
           Nakon igre možeš <strong>ocijeniti težinu sobe</strong> i pomoći drugima pri odabiru.
-          Ako se voliš natjecati, tu su i ljestvice po sobama i globalne ljestvice – <strong>pokaži koji je tim njabolji!</strong>
+          Ako se voliš natjecati, tu su i ljestvice po sobama i globalne ljestvice – <strong>pokaži koji je tim najbolji!</strong>
         </p>
       </section>
 

@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {useNavigate, useSearchParams} from "react-router";
 import PageTemplate from "./PageTemplate";
-import profilna from '../assets/images/404.png';
+import profilna from '../assets/images/default.png';
 import logoutImg from '../assets/icons/logout.svg';
 import {authFetch, useAuth} from "../context/AuthContext";
 import LoadingScreen from "../components/LoadingScreen";
@@ -220,7 +220,7 @@ function PersonalInfoTab() {
             <p>Uloga: {user.uloga}</p>
 
             <form onSubmit={handleSubmit} encType={"multipart/form-data"}>
-                <div>
+                <div className="mail-polaznik">
                     <label htmlFor="email">Email:</label>
                     <input type="email" id="email" name="email" defaultValue={user.email} required={true}/>
                 </div>
@@ -402,7 +402,7 @@ function MyTeamsTab() {
         {view === "new" &&
             <div className={"profile-page-my-teams-tab-new-form"}>
                 <form onSubmit={submitNewTeam} encType={"multipart/form-data"}>
-                    <div>
+                    <div className="ime-tima">
                         <label htmlFor={"name"}>Naziv tima:</label>
                         <input type={"text"} name={"name"} required={true}/>
                     </div>
@@ -410,16 +410,22 @@ function MyTeamsTab() {
                         <label htmlFor="image">Logo tima:</label>
                         <input type="file" id="image" name="image" accept="image/*"/>
                     </div>
-                    <input type={"submit"} value={"Kreiraj tim"}/>
-                    <input type={"button"} value={"Natrag"} onClick={() => setView("list")}/>
+                    <div className="buttons">
+                        <input type={"submit"} value={"Kreiraj tim"}/>
+                        <input type={"button"} value={"Natrag"} onClick={() => setView("list")}/>
+                    </div>
                 </form>
             </div>
         }
         {view === "details" &&
             <div className={"profile-page-my-teams-tab-details"}>
-                <img src={selectedTeam.logo} alt={"team logo"}/>
-                <p>Naziv tima: {selectedTeam.name}</p>
-                <p>Voditelj tima: {selectedTeam.leader}</p>
+                <div className="details-header">
+                    <div className="details-header-title">
+                        <p>Naziv tima: {selectedTeam.name}</p>
+                        <p>Voditelj tima: {selectedTeam.leader}</p>
+                    </div>
+                    <img src={selectedTeam.logo === null ? profilna : selectedTeam.logo} alt={"team logo"}/>
+                </div>
                 {selectedTeam.members && <>
                     <p>Članovi tima ({selectedTeam.members.length}/10):</p>
                     <ul>
@@ -464,7 +470,7 @@ function MyTeamsTab() {
                         </div>
                     }
                 </>}
-                <button onClick={() => setView("list")}>Natrag</button>
+                <button className="back-button" onClick={() => setView("list")}>Natrag</button>
             </div>
         }
     </div>;

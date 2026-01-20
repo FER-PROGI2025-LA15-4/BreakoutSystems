@@ -213,11 +213,6 @@ $cta-owner-bg-secondary: #3a178e;
     border: 25px solid rgb(246, 241, 255);
     margin-right: 5%;
   }
-  @media (max-width: 800px) {
-    .map-text {
-      flex: 1 0 100%;
-    }
-  }
 }
 
 @media (max-width: 1350px) {
@@ -268,6 +263,24 @@ $cta-owner-bg-secondary: #3a178e;
     }
     >p {
       font-size: 1em;
+    }
+  }
+}
+
+@media (max-width: 800px) {
+  .map-section > .map-text {
+    flex: 1 0 100%;
+    padding: 0 3em 3em 3em;
+  }
+  .cta-owner {
+    padding: 0 2%;
+  }
+  .cta-owner .cta-owner-content{
+    >p{
+      font-size: 1.5em;
+    }
+    >h2{
+      font-size: 2.5em;
     }
   }
 }

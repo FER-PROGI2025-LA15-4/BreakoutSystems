@@ -32,3 +32,26 @@
     vertical-align: center;
   }
 }
+
+@media (max-width: 800px) {
+  .leaflet-popup-content-wrapper{
+    width: 200px !important;
+  }
+  .room-map-popup {
+    width: 170px;
+    >div {
+      justify-content: flex-start;
+      >img {
+        height: 100px;
+        width: auto;
+        margin-bottom: 2px;
+      }
+    }
+    >h2{
+      font-size: 1.25em;
+    }
+    >h5{
+      font-size: 1em;
+    }
+  }
+}
