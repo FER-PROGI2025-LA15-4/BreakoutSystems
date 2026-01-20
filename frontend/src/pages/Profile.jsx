@@ -477,6 +477,13 @@ function GameHistoryTab() {
         return null;
     }
 
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
+
     const [gameHistory, setGameHistory] = useState(null);
     useEffect(() => {
         fetchGameHistory().then(history => setGameHistory(history));
@@ -501,11 +508,15 @@ function GameHistoryTab() {
                 const revertGameHistory = [...gameHistory];
                 revertGameHistory[index].ocjena_tezine = null;
                 setGameHistory(revertGameHistory);
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            } else {
+                setPopup({ isOpen: true, title: "Uspjeh!", message: "Hvala vam na ocjeni težine sobe!" });
             }
         })
     }
 
     return <div className={"profile-page-game-history-tab"}>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
         {gameHistory === null ? <SyncLoader/> :
             <table>
                 <thead>
@@ -513,7 +524,7 @@ function GameHistoryTab() {
                         <th>Escape Room</th>
                         <th>Termin</th>
                         <th>Tim</th>
-                        <th>Ocijena težine</th>
+                        <th>Ocjena težine</th>
                     </tr>
                 </thead>
                 <tbody>
