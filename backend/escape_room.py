@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user
-from backend.app import app
 from auth import get_db_connection
 
 room_bp = Blueprint('room', __name__)

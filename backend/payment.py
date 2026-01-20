@@ -4,7 +4,6 @@ from flask_login import current_user,login_required
 from auth import get_db_connection
 import stripe
 from datetime import datetime, timedelta
-from backend.app import app
 
 payment_bp = Blueprint('payment', __name__)
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
