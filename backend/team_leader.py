@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
-from backend.app import app
 from auth import get_db_connection
 
 leader_bp = Blueprint('leader', __name__)
