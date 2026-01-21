@@ -13,7 +13,7 @@ def get_invites():
 
     team_name = request.args.get('team_name')
     db = get_db_connection()
-    team = db.execute("SELECT * FROM Tim WHERE ime_tima = ? AND voditelj_username = ?", (team_name,current_user.username,)).fetchone()
+    team = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?", (team_name,current_user.username,)).fetchone()
     if team is None:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
