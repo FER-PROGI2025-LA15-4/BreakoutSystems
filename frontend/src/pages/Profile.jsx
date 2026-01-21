@@ -554,16 +554,35 @@ function MyRoomsTab() {
     }
     const animatedComponents = makeAnimated();
     const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
 
     const [myRooms, setMyRooms] = useState(null);
     const [newRoomMode, setNewRoomMode] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
-        useEffect(() => {
+    useEffect(() => {
         fetchMyRooms().then((response) => {
             setMyRooms(response);
         })
     }, [user]);
-
+    const handleRoomClick = (room) => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Nije moguće urediti sobu", message: "Morate imati aktivnu pretplatu da biste uredili sobu." });
+        } else {
+            setSelectedRoom(room);
+        }
+    };
+    const handleNewRoomClick = () => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Nije moguće dodati sobu", message: "Morate imati aktivnu pretplatu da biste dodali novu sobu." });
+        } else {
+            setNewRoomMode(true);
+        }
+    }
 
     const handleSubmit = async (e) => {
         e && e.preventDefault();
@@ -583,12 +602,11 @@ function MyRoomsTab() {
         fd.append("order", JSON.stringify(order));
         newFiles.forEach((file) => fd.append(fieldNewFiles, file, file.name));
     };
-    const result = { items: [] };
 
     const [category, setCategory] = useState("Ostalo");
     const [rating, setRating] = useState(0.5);
     const [map, setMap] = useState(null);
-    const [latLng, setLatLng] = useState([0, 0]);
+    const [latLng, setLatLng] = useState(null);
     const [images, setImages] = useState([]);
     useEffect(() => {
         if (map) {
@@ -598,9 +616,15 @@ function MyRoomsTab() {
         }
     }, [map]);
     useEffect(() => {
-        if (selectedRoom) {
-            setImages(selectedRoom.slike)
+        if (selectedRoom && !newRoomMode) {
+            setLatLng([selectedRoom.geo_lat, selectedRoom.geo_long]);
+            setCategory(selectedRoom.kategorija);
+            setRating(selectedRoom.tezina);
+            setImages(selectedRoom.slike);
         } else {
+            setLatLng(null);
+            setCategory("Ostalo");
+            setRating(0.5);
             setImages([]);
         }
     }, [selectedRoom, newRoomMode]);
@@ -640,10 +664,13 @@ function MyRoomsTab() {
                     <input type="text" id="grad" placeholder="Grad" name={"grad"} required={true} />
                 </div>
             </div>
-            <MapContainer className={"mapa"} center={[45.5, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                <Marker position={latLng}/>
-            </MapContainer>
+            <div className={"mapa-polje"}>
+                <label htmlFor="mapa">Lokacija:</label>
+                <MapContainer className={"mapa"} center={[45, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap} name="mapa">
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                    {latLng && (<Marker position={latLng}/>)}
+                </MapContainer>
+            </div>
             <div className="polje">
                 <label htmlFor="kat">Kategorija sobe:</label>
                 <Select
@@ -661,17 +688,79 @@ function MyRoomsTab() {
                 <label htmlFor="rating" id="tezina">Težina sobe:</label>
                 <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
             </div>
-            <ImageEditor initialImages={myRooms[1].slike} result={result}/>
+            <ImageEditor images={images} setImages={setImages}/>
             <div className="buttons">
                 <input type="submit" value={"Dodaj sobu"} className="dodaj"/>
                 <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
             </div>
         </form>;
     } else if (selectedRoom) {
-        body = <p>room details</p>;
+        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"}>
+            <div className="polje">
+                <label htmlFor="naziv">Naziv sobe:</label>
+                <input type="text" id="naziv" placeholder="Naziv sobe" name={"naziv"} required={true} defaultValue={selectedRoom.naziv}/>
+            </div>
+            <div className="polje">
+                <label htmlFor="opis">Opis sobe:</label>
+                <input type="text" id="opis" placeholder="Opis sobe" name={"opis"} required={true} defaultValue={selectedRoom.opis} />
+            </div>
+            <div className="grouped-polje">
+                <div className="polje">
+                    <label htmlFor="minBrClanTima">Minimalan broj igrača:</label>
+                    <input type="number" id="minBrClanTima" name={"minBrClanTima"} required={true} min={1} defaultValue={selectedRoom.minBrClanTima}/>
+                </div>
+                <div className="polje">
+                    <label htmlFor="maxBrClanTima">Maksimalan broj igrača:</label>
+                    <input type="number" id="maxBrClanTima" name={"maxBrClanTima"} required={true} min={1} defaultValue={selectedRoom.maxBrClanTima}/>
+                </div>
+            </div>
+            <div className="polje">
+                <label htmlFor="cijena">Cijena (€):</label>
+                <input type="number" id="cijena" placeholder="Cijena (€)" step="0.01" name={"cijena"} required={true} min={0.01} defaultValue={selectedRoom.cijena}/>
+            </div>
+            <div className="grouped-polje">
+                <div className="polje">
+                    <label htmlFor="adresa">Adresa:</label>
+                    <input type="text" id="adresa" placeholder="Adresa" name={"adresa"} required={true} defaultValue={selectedRoom.adresa}/>
+                </div>
+                <div className="polje">
+                    <label htmlFor="grad">Grad:</label>
+                    <input type="text" id="grad" placeholder="Grad" name={"grad"} required={true} defaultValue={selectedRoom.grad}/>
+                </div>
+            </div>
+            <div className={"mapa-polje"}>
+                <label htmlFor="mapa">Lokacija:</label>
+                <MapContainer className={"mapa"} center={[45, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap} name="mapa">
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                    {latLng && (<Marker position={latLng}/>)}
+                </MapContainer>
+            </div>
+            <div className="polje">
+                <label htmlFor="kat">Kategorija sobe:</label>
+                <Select
+                    components={animatedComponents}
+                    value={({ value: category, label: category })}
+                    options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
+                    isClearable={false}
+                    placeholder="Kategorija"
+                    onChange={(opt) => setCategory(opt ? opt.value : "Ostalo")}
+                    className="profile-page-result-entry-tab-select-room"
+                    name="kat"
+                />
+            </div>
+            <div className="polje">
+                <label htmlFor="rating" id="tezina">Težina sobe:</label>
+                <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
+            </div>
+            <ImageEditor images={images} setImages={setImages}/>
+            <div className="buttons">
+                <input type="submit" value={"Spremi"} className="dodaj"/>
+                <button type="button" onClick={() => setSelectedRoom(false)}>Natrag</button>
+            </div>
+        </form>;
     } else {
         body = <>
-            <div className="new-room" onClick={() => setNewRoomMode(true)}>
+            <div className="new-room" onClick={handleNewRoomClick}>
                 <img src={plus_icon} alt="plus icon" />
                 <p>Dodaj novu sobu</p>
             </div>
@@ -680,14 +769,17 @@ function MyRoomsTab() {
                 <div key={room.room_id} onClick={() => setSelectedRoom(room)}>
                     <img src={room.slike[0]} alt={"room img"} />
                     <h3>{room.naziv}</h3>
-                    <button onClick={() => handleRoomSelect(room)}>DETALJI</button>
+                    <button onClick={() => handleRoomClick(room)}>DETALJI</button>
                 </div>
                 ))}
             </div>}
         </>;
     }
 
-    return <div>{body}</div>;
+    return <div>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
+        {body}
+    </div>;
 }
 function ResultEntryTab() {
     const { user } = useAuth();
@@ -698,6 +790,7 @@ function ResultEntryTab() {
         localPopup.isOpen = false;
         setPopup(localPopup);
     }
+    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
 
     if (!user || user.uloga !== "VLASNIK") {
         return null;
@@ -711,7 +804,11 @@ function ResultEntryTab() {
     }, [user]);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const handleRoomSelect = (opt) => {
-        setSelectedRoom(opt ? opt.value : null);
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Morate imati aktivnu pretplatu da biste unijeli rezultate." });
+        } else {
+            setSelectedRoom(opt ? opt.value : null);
+        }
     }
 
     const [appointments, setAppointments] = useState(null);

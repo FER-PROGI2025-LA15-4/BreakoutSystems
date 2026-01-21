@@ -457,9 +457,12 @@
   }
 
   .mapa{
-    width: min(50em, 100%);
+    width: 100%;
     height: min(50em, 70vw);
     margin: 2em 0;
+  }
+  .mapa-polje {
+    width: 100%;
   }
 
   label#tezina{
