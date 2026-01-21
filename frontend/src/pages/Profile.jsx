@@ -438,6 +438,28 @@ function MyTeamsTab() {
                         )}
                     </ul>
                 </>}
+                {(selectedTeamInvites || selectedTeam.members.length < 10) &&
+                    (<div className="team-invites">
+                        <p className="pozvani-korisnici-naslov">Pozvani korisnici:</p>
+                        {selectedTeamInvites &&
+                            <ul>
+                                {selectedTeamInvites.map((member) =>
+                                    <li key={member}>
+                                        <p>{member}</p>
+                                        <button onClick={() => submitUserRemove(member)}>Ukloni</button>
+                                    </li>
+                                )}
+                            </ul>
+                        }
+                        {selectedTeam.members.length + selectedTeamInvites.length < 10 &&
+                            <form onSubmit={submitUserAdd}>
+                                <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
+                                <input className="pozovi" type={"text"} name={"user"} placeholder={"Korisničko ime"} required={true}/>
+                                <input className="dodaj-korisnika" type={"submit"} value={"Pozovi"}/>
+                            </form>
+                        }
+                    </div>)
+                }
                 {user.username !== selectedTeam.leader && <button className="napusti-tim" onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
                 {user.username === selectedTeam.leader && <>
                     <form onSubmit={submitEditTeam} encType={"multipart/form-data"}>
@@ -448,28 +470,6 @@ function MyTeamsTab() {
                         </div>
                         <input type={"submit"} value={"Spremi"}/>
                     </form>
-                    {selectedTeamInvites || selectedTeam.members.length < 10 &&
-                        <div>
-                            <p>Pozvani korisnici:</p>
-                            {selectedTeamInvites &&
-                                <ul>
-                                    {selectedTeamInvites.map((member) =>
-                                        <li key={member}>
-                                            <p>{member}</p>
-                                            <button onClick={() => submitUserRemove(member)}>Ukloni</button>
-                                        </li>
-                                    )}
-                                </ul>
-                            }
-                            {selectedTeam.members.length + selectedTeamInvites.length < 10 &&
-                                <form onSubmit={submitUserAdd}>
-                                    <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
-                                    <input type={"text"} name={"user"} placeholder={"Korisničko ime"} required={true}/>
-                                    <input type={"submit"} value={"Dodaj korisnika"}/>
-                                </form>
-                            }
-                        </div>
-                    }
                 </>}
                 <button className={user.username !== selectedTeam.leader ? "back-button" : "back-button-leader"} onClick={() => setView("list")}>Natrag</button>
             </div>
