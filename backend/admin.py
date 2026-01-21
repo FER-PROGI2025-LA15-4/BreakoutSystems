@@ -23,3 +23,10 @@ def get_subscription_status():
     ]
 
     return jsonify({"users": owners}), 200
+
+@admin_bp.route('/api/admin/subscription', methods=['PUT'])
+@login_required
+def update_subscription_status():
+    if current_user.uloga != 'ADMIN':
+        return jsonify({'error': 'forbidden access'}), 403
+    db = get_db_connection()

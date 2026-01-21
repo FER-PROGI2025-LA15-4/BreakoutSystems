@@ -6,3 +6,4 @@ python-dotenv==1.0.0
 requests==2.31.0
 stripe==14.1.0
 APScheduler==3.11.2
+icalendar==6.3.2

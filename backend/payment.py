@@ -113,8 +113,9 @@ def confirm_payment():
                 print(dani)
                 current_expiry = db.execute("SELECT clanarinaDoDatVr FROM Vlasnik WHERE username = ?", (current_user.username,)).fetchone()
                 datum = datetime.now()
-                if current_expiry['clanarinaDoDatVr'] is not None:
-                    datum = datetime.fromisoformat(current_expiry['clanarinaDoDatVr'])
+
+                if current_expiry and current_expiry['clanarinaDoDatVr']:
+                    datum = max(datetime.fromisoformat(current_expiry['clanarinaDoDatVr']), datum)
 
                 novi_datum = datum + timedelta(days=dani)
 
