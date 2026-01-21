@@ -586,21 +586,58 @@ function MyRoomsTab() {
 
     const handleSubmit = async (e) => {
         e && e.preventDefault();
+
+        const form = e.target;
         const fd = new FormData();
 
-        result.items.forEach((it) => {
+        // basic room fields
+        if (form.room_id) {
+            fd.append("room_id", form.room_id.value)
+        }
+        fd.append("naziv", form.naziv.value);
+        fd.append("opis", form.opis.value);
+        fd.append("minBrClanTima", form.minBrClanTima.value);
+        fd.append("maxBrClanTima", form.maxBrClanTima.value);
+        fd.append("cijena", form.cijena.value);
+        fd.append("adresa", form.adresa.value);
+        fd.append("grad", form.grad.value);
+        fd.append("kategorija", category);
+        fd.append("tezina", rating);
+        fd.append("geo_lat", latLng[0]);
+        fd.append("geo_long", latLng[1]);
+
+        // images from ImageEditor
+        const localImages = [];
+        (images || []).forEach((it) => {
             if (it.isNew) {
-                order.push(`NEW_${newIndex}`);
-                newFiles.push(it.file);
-                newIndex += 1;
+                localImages.push({ nova: true });
             } else {
-                order.push(it.id);
+                localImages.push({ nova: false, src: it.src })
             }
         });
 
-        fd.append("removed_ids", JSON.stringify(removedIds));
-        fd.append("order", JSON.stringify(order));
-        newFiles.forEach((file) => fd.append(fieldNewFiles, file, file.name));
+        fd.append("images_list", JSON.stringify(localImages));
+
+        // append new files
+        localImages.forEach((file) => {
+            if (file.nova) {
+                fd.append("images", file, file.name);
+            }
+        });
+
+        const response = await authFetch("/api/editRoom", {
+            method: "POST",
+            body: fd,
+        });
+
+        if (response.ok) {
+            setPopup({ isOpen: true, title: "Uspjeh!", message: "Soba je spremljena." });
+            setNewRoomMode(false);
+            setSelectedRoom(null);
+            fetchMyRooms().then(setMyRooms);
+        } else {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+        }
     };
 
     const [category, setCategory] = useState("Ostalo");
@@ -616,22 +653,25 @@ function MyRoomsTab() {
         }
     }, [map]);
     useEffect(() => {
+        setImages([]);
         if (selectedRoom && !newRoomMode) {
             setLatLng([selectedRoom.geo_lat, selectedRoom.geo_long]);
             setCategory(selectedRoom.kategorija);
             setRating(selectedRoom.tezina);
-            setImages(selectedRoom.slike);
         } else {
-            setLatLng(null);
+            setLatLng([45, 16.5]);
             setCategory("Ostalo");
             setRating(0.5);
-            setImages([]);
         }
     }, [selectedRoom, newRoomMode]);
 
+    useEffect(() => {
+        console.log(images)
+    }, [images]);
+
     let body;
     if (newRoomMode) {
-        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"}>
+        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"} encType={"multipart/form-data"}>
             <div className="polje">
                 <label htmlFor="naziv">Naziv sobe:</label>
                 <input type="text" id="naziv" placeholder="Naziv sobe" name={"naziv"} required={true} />
@@ -688,14 +728,15 @@ function MyRoomsTab() {
                 <label htmlFor="rating" id="tezina">Težina sobe:</label>
                 <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
             </div>
-            <ImageEditor images={images} setImages={setImages}/>
+            <ImageEditor initialImages={[]} setImages={setImages}/>
             <div className="buttons">
                 <input type="submit" value={"Dodaj sobu"} className="dodaj"/>
                 <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
             </div>
         </form>;
     } else if (selectedRoom) {
-        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"}>
+        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"} encType={"multipart/form-data"}>
+            <input type={"text"} name={"room_id"} hidden={true} value={selectedRoom.room_id}/>
             <div className="polje">
                 <label htmlFor="naziv">Naziv sobe:</label>
                 <input type="text" id="naziv" placeholder="Naziv sobe" name={"naziv"} required={true} defaultValue={selectedRoom.naziv}/>
@@ -752,7 +793,7 @@ function MyRoomsTab() {
                 <label htmlFor="rating" id="tezina">Težina sobe:</label>
                 <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
             </div>
-            <ImageEditor images={images} setImages={setImages}/>
+            <ImageEditor initialImages={[...selectedRoom.slike]} setImages={setImages}/>
             <div className="buttons">
                 <input type="submit" value={"Spremi"} className="dodaj"/>
                 <button type="button" onClick={() => setSelectedRoom(false)}>Natrag</button>
@@ -766,7 +807,7 @@ function MyRoomsTab() {
             </div>
             {myRooms && <div className="my-rooms-list">
                 {myRooms.map((room) => (
-                <div key={room.room_id} onClick={() => setSelectedRoom(room)}>
+                <div key={room.room_id}>
                     <img src={room.slike[0]} alt={"room img"} />
                     <h3>{room.naziv}</h3>
                     <button onClick={() => handleRoomClick(room)}>DETALJI</button>
@@ -1080,7 +1121,7 @@ async function fetchTeamInvites() {
     }
 }
 
-function ImageEditor({ images = [], maxFiles = 20, setImages = () => {} }) {
+function ImageEditor({ initialImages = [], maxFiles = 20, setImages = () => {} }) {
     const fileInputRef = useRef(null);
     const dragIndexRef = useRef(null);
 
@@ -1095,7 +1136,7 @@ function ImageEditor({ images = [], maxFiles = 20, setImages = () => {} }) {
         });
     };
 
-    const [items, setItems] = useState(normalizeInitial(images));
+    const [items, setItems] = useState(normalizeInitial(initialImages));
 
     useEffect(() => {
         setImages(items);
