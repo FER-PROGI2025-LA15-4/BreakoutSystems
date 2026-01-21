@@ -15,8 +15,7 @@ def get_invites():
 
     team_name = request.args.get('teamName')
     db = get_db_connection()
-    team = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?",
-                      (team_name, current_user.username,)).fetchone()
+    team = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?", (team_name,current_user.username,)).fetchone()
     if team is None:
         print("Nema tima ili nije voditelj")
         db.close()
