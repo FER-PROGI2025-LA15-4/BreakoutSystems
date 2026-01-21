@@ -19,9 +19,8 @@ def create_ics(start_dt, duration_minutes):
     event.add('summary', 'Rezervirani termin')
     event.add('dtstart', start_dt)
     event.add('dtend', start_dt + timedelta(minutes=duration_minutes))
-    event.add('location', 'KARLOVAC')
     event.add('description', 'Podsjetnik na rezervirani termin')
-    event.add('uid', f'karlovac-{start_dt.timestamp()}')
+    event.add('uid', 'BreakoutSystems0')
 
     cal.add_component(event)
     return cal.to_ical()
