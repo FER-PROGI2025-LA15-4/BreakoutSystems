@@ -549,25 +549,21 @@ function GameHistoryTab() {
 }
 function MyRoomsTab() {
     const { user } = useAuth();
-    const animatedComponents = makeAnimated();
-
     if (!user || user.uloga !== "VLASNIK") {
         return null;
     }
+    const animatedComponents = makeAnimated();
+    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
 
     const [myRooms, setMyRooms] = useState(null);
-    useEffect(() => {
+    const [newRoomMode, setNewRoomMode] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+        useEffect(() => {
         fetchMyRooms().then((response) => {
             setMyRooms(response);
         })
     }, [user]);
 
-    const [selectedRoom, setSelectedRoom] = useState(null);
-    const handleRoomSelect = (opt) => {
-        setSelectedRoom(opt ? opt.value : null);
-    }
-
-    const [newRoomMode, setNewRoomMode] = useState(false);
 
     const handleSubmit = async (e) => {
         e && e.preventDefault();
@@ -588,9 +584,12 @@ function MyRoomsTab() {
         newFiles.forEach((file) => fd.append(fieldNewFiles, file, file.name));
     };
     const result = { items: [] };
-    const [selectedCategory, setSelectedCategory] = useState("Ostalo");
+
+    const [category, setCategory] = useState("Ostalo");
+    const [rating, setRating] = useState(0.5);
     const [map, setMap] = useState(null);
     const [latLng, setLatLng] = useState([0, 0]);
+    const [images, setImages] = useState([]);
     useEffect(() => {
         if (map) {
             map.on('click', (e) => {
@@ -598,6 +597,13 @@ function MyRoomsTab() {
             });
         }
     }, [map]);
+    useEffect(() => {
+        if (selectedRoom) {
+            setImages(selectedRoom.slike)
+        } else {
+            setImages([]);
+        }
+    }, [selectedRoom, newRoomMode]);
 
     let body;
     if (newRoomMode) {
@@ -642,18 +648,18 @@ function MyRoomsTab() {
                 <label htmlFor="kat">Kategorija sobe:</label>
                 <Select
                     components={animatedComponents}
-                    value={({ value: selectedCategory, label: selectedCategory })}
+                    value={({ value: category, label: category })}
                     options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
                     isClearable={false}
                     placeholder="Kategorija"
-                    onChange={(opt) => setSelectedCategory(opt ? opt.value : "Ostalo")}
+                    onChange={(opt) => setCategory(opt ? opt.value : "Ostalo")}
                     className="profile-page-result-entry-tab-select-room"
                     name="kat"
                 />
             </div>
             <div className="polje">
                 <label htmlFor="rating" id="tezina">Težina sobe:</label>
-                <Rating size={30} readonly={false} allowFraction={true} initialValue={0} name="rating" />
+                <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
             </div>
             <ImageEditor initialImages={myRooms[1].slike} result={result}/>
             <div className="buttons">
@@ -671,7 +677,7 @@ function MyRoomsTab() {
             </div>
             {myRooms && <div className="my-rooms-list">
                 {myRooms.map((room) => (
-                <div key={room.room_id} onClick={() => handleRoomSelect(room)}>
+                <div key={room.room_id} onClick={() => setSelectedRoom(room)}>
                     <img src={room.slike[0]} alt={"room img"} />
                     <h3>{room.naziv}</h3>
                     <button onClick={() => handleRoomSelect(room)}>DETALJI</button>
@@ -977,7 +983,7 @@ async function fetchTeamInvites() {
     }
 }
 
-function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] } }) {
+function ImageEditor({ images = [], maxFiles = 20, setImages = () => {} }) {
     const fileInputRef = useRef(null);
     const dragIndexRef = useRef(null);
 
@@ -992,15 +998,11 @@ function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] }
         });
     };
 
-    const [items, setItems] = useState(() => normalizeInitial(initialImages));
+    const [items, setItems] = useState(normalizeInitial(images));
 
     useEffect(() => {
-        result.items = items;
+        setImages(items);
     }, [items]);
-
-    useEffect(() => {
-        setItems(normalizeInitial(initialImages));
-    }, [JSON.stringify(initialImages)]);
 
     useEffect(() => {
         return () => {
