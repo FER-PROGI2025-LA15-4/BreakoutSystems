@@ -196,7 +196,7 @@ def get_room(room_id):
 
     tezina = calculate_weight(room_id)
 
-    images = db.execute("SELECT * FROM EscapeRoomImage WHERE room_id = ? ORDER BY index", (room_id,)).fetchall()
+    images = db.execute("SELECT * FROM EscapeRoomImage WHERE room_id = ? ORDER BY image_index", (room_id,)).fetchall()
 
     db.close()
     return jsonify({
