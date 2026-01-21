@@ -16,6 +16,7 @@ import {Rating} from "react-simple-star-rating";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
 import '../styles/pages/Profile.scss';
 import {SyncLoader} from "react-spinners";
+import {fetchRoomsFiltered} from "./EscapeRooms";
 
 export default function ProfilePage() {
     const name = "profile";
@@ -1156,13 +1157,159 @@ function SubscriptionTab() {
         </div>
     </div>;
 }
-
 function AdminAppointmentsTab() {
+    const animatedComponents = makeAnimated();
     const { user } = useAuth();
     if (!user || user.uloga !== "ADMIN") {
         return null;
     }
-    return <div className={"profile-page-admin-appointments-tab"}>appointments admin tab
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
+    const [rooms, setRooms] = useState(null);
+    useEffect(() => {
+        fetchRoomsFiltered().then(
+            (data) => setRooms(data)
+        );
+    }, []);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const handleRoomSelect = (opt) => {
+        setSelectedRoom(opt ? opt.value : null);
+        setSelectedAppointment(null);
+    }
+    const [appointments, setAppointments] = useState(null);
+    useEffect(() => {
+        setAppointments(null);
+        if (selectedRoom) {
+            fetchRoomAppointments(selectedRoom.room_id).then((response) => {
+                setAppointments(sortArr(response, (app) => app, "desc"));
+            });
+        }
+    }, [selectedRoom]);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const handleTerminSelect = (opt) => {
+        setSelectedAppointment(opt ? opt.value : null);
+    }
+    const [timeValue, setTimeValue] = useState('23:59:59');
+    useEffect(() => {
+        if (selectedAppointment) {
+            const totalSeconds = selectedAppointment.rezultatSekunde || 0;
+            const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            setTimeValue(`${hours}:${minutes}:${seconds}`);
+        }
+    }, [selectedAppointment]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const room_id = selectedRoom.room_id;
+        const datVrPoc = selectedAppointment.datVrPoc;
+        const ime_tima = e.target.ime_tima.value;
+        const [hours, minutes, seconds] = timeValue.split(':').map(Number);
+        const resultSeconds =  hours * 3600 + minutes * 60 + seconds;
+
+        const fd = {
+            room_id: room_id,
+            datVrPoc: datVrPoc,
+            ime_tima: ime_tima,
+            rezultatSekunde: resultSeconds
+        };
+
+        try {
+            const response = await authFetch("/api/admin/appointment", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(fd)
+            });
+
+            if (response.ok) {
+                setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno uređen." });
+                setSelectedAppointment(null);
+            } else {
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            }
+        } catch (e) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+        }
+    }
+
+    const handleDelete = async () => {
+        const room_id = selectedRoom.room_id;
+        const datVrPoc = selectedAppointment.datVrPoc;
+
+        try {
+            const response = await authFetch("/api/admin/appointment", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    room_id: room_id,
+                    datVrPoc: datVrPoc
+                })
+            });
+
+            if (response.ok) {
+                setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno obrisan." });
+                setSelectedAppointment(null);
+            } else {
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            }
+        } catch (e) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+        }
+    }
+
+    return <div className={"profile-page-admin-appointments-tab"}>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
+        <Select
+            components={animatedComponents}
+            value={selectedRoom ? ({ value: selectedRoom, label: selectedRoom.naziv }) : null}
+            options={rooms ? rooms.map((room) => ({ value: room.naziv, label: room.naziv })) : []}
+            isLoading={rooms === null}
+            isMulti={false}
+            isClearable={true}
+            placeholder="Escape Room"
+            onChange={handleRoomSelect}
+            className="profile-page-result-entry-tab-select-room"
+        />
+        {appointments && <>
+            <Select
+                components={animatedComponents}
+                value={selectedAppointment ? ({ value: selectedAppointment, label: selectedAppointment.datVrPoc }) : null}
+                options={appointments ? appointments.map((app) => ({ value: app, label: app.datVrPoc })) : []}
+                isMulti={false}
+                isClearable={true}
+                placeholder="Termin"
+                onChange={handleRoomSelect}
+                className="profile-page-result-entry-tab-select-room"
+            />
+            {selectedAppointment && <>
+                <form onSubmit={handleSubmit}>
+                    <input type={"text"} name={"ime_tima"} required={true} defaultValue={selectedAppointment.ime_tima} disabled={!!selectedAppointment.ime_tima}/>
+                    <TimePicker
+                        label="Vrijeme rješavanja:"
+                        className="timePicker"
+                        classNames={{
+                            label: "profile-timepicker-label",
+                            input: "profile-timepicker-input"
+                        }}
+                        withSeconds
+                        value={timeValue}
+                        onChange={setTimeValue}
+                    />
+                    <input type={"submit"} value={"Spremi"}/>
+                    {!selectedAppointment.ime_tima && <button onClick={handleDelete}>Obriši</button>}
+                </form>
+            </>}
+        </>}
     </div>;
 }
 function AdminSubscriptionsTab() {
@@ -1191,7 +1338,7 @@ function AdminSubscriptionsTab() {
             }
         });
     }, []);
-    const activeSubscription = selectedUser && selectedUser.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+    const activeSubscription = selectedUser && selectedUser.clanarinaDoDatVr && new Date(selectedUser.clanarinaDoDatVr) > new Date();
     const formattedSubscriptionDate = selectedUser && selectedUser.clanarinaDoDatVr ? new Intl.DateTimeFormat("hr-HR", {
         year: "numeric",
         month: "long",
