@@ -86,7 +86,7 @@ INSERT INTO ClanTima (ime_tima, username, accepted) VALUES
 
 
 -- SLIKE ZA ESCAPE ROOMS (2-3 slike po sobi)
-INSERT INTO EscapeRoomImage (image_url, room_id, cover) VALUES
+INSERT INTO EscapeRoomImage (image_url, room_id, image_index) VALUES
 ('https://picsum.photos/1000/750', 1, 0),
 ('https://picsum.photos/1000/751', 1, 1),
 ('https://picsum.photos/1000/752', 2, 0),
