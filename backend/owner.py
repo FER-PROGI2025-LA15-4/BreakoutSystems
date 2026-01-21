@@ -55,12 +55,8 @@ def get_my_rooms():
             SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
+            ORDER BY image_index
         """, (room_id,)).fetchall()
-
-        for img in images:
-            if img["image_index"] == 0:
-                images.remove(img)
-                images.insert(0, img)
 
         result.append({
             "room_id": room_id,
@@ -175,7 +171,7 @@ from flask_login import login_required, current_user
 from auth import get_db_connection, save_temp_file, move_temp_image, delete_image_file
 
 
-@owner_bp.route('/api/owner/editRoom', methods=['POST'])
+@owner_bp.route('/api/owner/edit-room', methods=['POST'])
 @login_required
 def edit_room():
     # 1. Provjera uloge
