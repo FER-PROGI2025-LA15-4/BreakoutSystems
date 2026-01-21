@@ -51,7 +51,6 @@ function ProfilePageContent() {
     } else if (user.uloga === "VLASNIK") {
         tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
         tabs.push({ name: "Moje sobe", component: <MyRoomsTab/> });
-        tabs.push({ name: "Termini", component: <AppointmentsTab/> });
         tabs.push({ name: "Unos rezultata", component: <ResultEntryTab/> });
         tabs.push({ name: "Pretplata", component: <SubscriptionTab/> });
     } else {  // uloga POLAZNIK
@@ -566,6 +565,7 @@ function MyRoomsTab() {
 
     const [myRooms, setMyRooms] = useState(null);
     const [newRoomMode, setNewRoomMode] = useState(false);
+    const [newAppointmentMode, setNewAppointmentMode] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
     useEffect(() => {
         fetchMyRooms().then((response) => {
@@ -584,6 +584,13 @@ function MyRoomsTab() {
             setPopup({ isOpen: true, title: "Nije moguće dodati sobu", message: "Morate imati aktivnu pretplatu da biste dodali novu sobu." });
         } else {
             setNewRoomMode(true);
+        }
+    }
+    const handleNewAppointmentClick = () => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Nije moguće dodati termin", message: "Morate imati aktivnu pretplatu da biste dodali novi termin." });
+        } else {
+            setNewAppointmentMode(true);
         }
     }
 
@@ -672,6 +679,43 @@ function MyRoomsTab() {
         console.log(images)
     }, [images]);
 
+
+    const [dtTime, setDtTime] = useState(new Date());
+    const handleAddAppointment = () => {
+        if (dtTime < new Date()) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Termin ne može biti u prošlosti." });
+        } else {
+            authFetch("/api/owner/add-appointment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    room_id: selectedRoom.room_id,
+                    dt: dtTime.toISOString()
+                })
+            }).then((response) => {
+                if (response.ok) {
+                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno dodan." });
+                    setDtTime(new Date());
+                    setNewAppointmentMode(false);
+                } else {
+                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+                }
+            })
+        }
+    };
+
+    const [selectedAppRoom, setSelectedAppRoom] = useState(null);
+    const handleAppRoomSelect = (opt) => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Morate imati aktivnu pretplatu da biste dodali termine." });
+        } else {
+            setSelectedAppRoom(opt ? opt.value : null);
+        }
+    }
+
+
     let body;
     if (newRoomMode) {
         body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"} encType={"multipart/form-data"}>
@@ -737,6 +781,30 @@ function MyRoomsTab() {
                 <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
             </div>
         </form>;
+    } else if (newAppointmentMode) {
+        body = <>
+        <div className="new-appointment">
+            <div className="appointment-header">
+                <p>Novi termin:</p>
+                <button className="novi-termin-natrag" type="button" onClick={() => setNewAppointmentMode(false)}>Natrag</button>
+            </div>
+            <Select
+                components={animatedComponents}
+                value={selectedAppRoom ? ({ value: selectedAppRoom, label: selectedAppRoom.naziv }) : null}
+                options={myRooms ? myRooms.map((room) => ({ value: room, label: room.naziv })) : []}
+                isLoading={myRooms === null}
+                isMulti={false}
+                isClearable={true}
+                placeholder="Escape Room"
+                onChange={handleAppRoomSelect}
+                className="profile-page-result-entry-tab-select-room"
+            />
+            {selectedAppRoom && <>
+                <DateTimePicker value={dtTime} onChange={setDtTime} />
+                <button className="dodaj-termin" onClick={handleAddAppointment}>Dodaj termin</button>
+            </>}
+        </div>
+        </>;
     } else if (selectedRoom) {
         body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"} encType={"multipart/form-data"}>
             <input type={"text"} name={"room_id"} hidden={true} value={selectedRoom.room_id}/>
@@ -804,9 +872,15 @@ function MyRoomsTab() {
         </form>;
     } else {
         body = <>
-            <div className="new-room" onClick={handleNewRoomClick}>
-                <img src={plus_icon} alt="plus icon" />
-                <p>Dodaj novu sobu</p>
+            <div className="my-rooms-actions">
+                <div className="new-room" onClick={handleNewRoomClick}>
+                    <img src={plus_icon} alt="plus icon" />
+                    <p>Dodaj novu sobu</p>
+                </div>
+                <div className="new-room" onClick={handleNewAppointmentClick}>
+                    <img src={plus_icon} alt="plus icon" />
+                    <p>Dodaj termin</p>
+                </div>
             </div>
             {myRooms && <div className="my-rooms-list">
                 {myRooms.map((room) => (
@@ -1068,169 +1142,6 @@ function SubscriptionTab() {
         </div>
     </div>;
 }
-function AppointmentsTab() {
-    const { user } = useAuth();
-    const animatedComponents = makeAnimated();
-    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
-    const handleClosePopup = () => {
-        const localPopup = { ...popup };
-        localPopup.isOpen = false;
-        setPopup(localPopup);
-    }
-    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
-    if (!user || user.uloga === "POLAZNIK") {
-        return null;
-    }
-    const [myRooms, setMyRooms] = useState(null);
-    useEffect(() => {
-        fetchMyRooms().then((response) => {
-            setMyRooms(response);
-        })
-    }, [user]);
-    const [selectedRoom, setSelectedRoom] = useState(null);
-    const handleRoomSelect = (opt) => {
-        if (!activeSubscription) {
-            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Morate imati aktivnu pretplatu da biste dodali termine." });
-        } else {
-            setSelectedRoom(opt ? opt.value : null);
-        }
-    }
-    const [dtTime, setDtTime] = useState(new Date());
-    const handleAddAppointment = () => {
-        if (dtTime < new Date()) {
-            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Termin ne može biti u prošlosti." });
-        } else {
-            authFetch("/api/owner/add-appointment", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    room_id: selectedRoom.room_id,
-                    dt: dtTime.toISOString()
-                })
-            }).then((response) => {
-                if (response.ok) {
-                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno dodan." });
-                    setDtTime(new Date());
-                } else {
-                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
-                }
-            })
-        }
-    }
-
-    return <div className={"profile-page-appointments-tab"}>
-        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
-        <Select
-            components={animatedComponents}
-            value={selectedRoom ? ({ value: selectedRoom, label: selectedRoom.naziv }) : null}
-            options={myRooms ? myRooms.map((room) => ({ value: room, label: room.naziv })) : []}
-            isLoading={myRooms === null}
-            isMulti={false}
-            isClearable={true}
-            placeholder="Escape Room"
-            onChange={handleRoomSelect}
-            className="profile-page-result-entry-tab-select-room"
-        />
-        {selectedRoom && <>
-            <DateTimePicker value={dtTime} onChange={setDtTime} />
-            <button onClick={handleAddAppointment}>Dodaj termin</button>
-        </>}
-    </div>;
-}
-
-function AdminAppointmentsTab() {
-    const { user } = useAuth();
-    if (!user || user.uloga !== "ADMIN") {
-        return null;
-    }
-    return <div className={"profile-page-admin-appointments-tab"}>appointments admin tab
-    </div>;
-}
-function AdminSubscriptionsTab() {
-    const { user } = useAuth();
-    const animatedComponents = makeAnimated();
-    if (!user || user.uloga !== "ADMIN") {
-        return null;
-    }
-    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
-    const handleClosePopup = () => {
-        const localPopup = { ...popup };
-        localPopup.isOpen = false;
-        setPopup(localPopup);
-    }
-
-    const [users, setUsers] = useState(null);
-    const [selectedUser, setSelectedUser] = useState(null);
-    const handleUserSelect = (opt) => {
-        setSelectedUser(opt ? opt.value : null);
-    }
-    useEffect(() => {
-        authFetch("/api/admin/subscriptions").then(async (response) => {
-            if (response.ok) {
-                const data = await response.json();
-                setUsers(data["users"]);
-            }
-        });
-    }, []);
-    const activeSubscription = selectedUser && selectedUser.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
-    const formattedSubscriptionDate = selectedUser && selectedUser.clanarinaDoDatVr ? new Intl.DateTimeFormat("hr-HR", {
-            year: "numeric",
-            month: "long",
-            day: "2-digit"
-        }).format(new Date(selectedUser.clanarinaDoDatVr)) : null;
-
-    const handleSubscriptionExtension = (type) => {
-        authFetch("/api/admin/subscription", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: selectedUser.username,
-                tip: type                    //mjesečna ili godišnja
-            })
-        }).then((response) => {
-            if (response.ok) {
-                setPopup({ isOpen: true, title: "Uspjeh!", message: "Pretplata je uspješno produžena." });
-                // refresh user data
-                authFetch("/api/admin/subscriptions").then(async (response) => {
-                    if (response.ok) {
-                        const data = await response.json();
-                        setUsers(data["users"]);
-                        const updatedUser = data["users"].find((u) => u.username === selectedUser.username);
-                        setSelectedUser(updatedUser);
-                    }
-                });
-            } else {
-                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
-            }
-        });
-    }
-
-    return <div className={"profile-page-admin-subscriptions-tab"}>
-        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
-        <Select
-            components={animatedComponents}
-            value={selectedUser ? ({ value: selectedUser, label: selectedUser.naziv }) : null}
-            options={users ? users.map((user) => ({ value: user.username, label: user.username })) : []}
-            isLoading={users === null}
-            isMulti={false}
-            isClearable={true}
-            placeholder="Korisnik"
-            onChange={handleUserSelect}
-            className="profile-page-result-entry-tab-select-room"
-        />
-        {selectedUser && <>
-            <p>Status pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "nemate aktivnu članarinu" }</p>
-            { activeSubscription && <img src={tick_icon} alt={"tick icon"}/> }
-            <button onClick={() => handleSubscriptionExtension("mjesečna")}>Produži mjesec dana</button>
-            <button onClick={() => handleSubscriptionExtension("godišnja")}>Produži godinu dana</button>
-        </>}
-    </div>;
-}
-
 
 async function fetchMyRooms() {
     const response = await authFetch("/api/my-rooms")

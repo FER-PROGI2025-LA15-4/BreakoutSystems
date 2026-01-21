@@ -376,16 +376,23 @@
 .new-room {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 0.75em;
+  gap: 0.5em;
   cursor: pointer;
   margin-bottom: 1.25em;
 
   img {
     width: 3em;
   }
+}
+
+.my-rooms-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 3em;
 }
 
 .my-rooms-list {
@@ -977,6 +984,39 @@
   }
 }
 
+.new-appointment {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 1em;
+}
+
+.novi-termin-natrag, .dodaj-termin {
+  font-family: Montserrat, sans-serif;
+  font-size: 1em;
+  font-weight: 500;
+  background-color: #42d2f5;
+  color: #fff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: none;
+  cursor: pointer;
+  margin-top: 0;
+  width: fit-content;
+}
+
+.appointment-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+
+  p{
+    align-self: flex-end;
+  }
+}
+
 @media (max-width: 768px) {
   .profile-page > h1 {
     font-size: 2.5em;
@@ -1119,5 +1159,9 @@
         width: 100%;
       }
     }
+  }
+
+  .my-rooms-actions {
+    gap: 0.8em;
   }
 }
