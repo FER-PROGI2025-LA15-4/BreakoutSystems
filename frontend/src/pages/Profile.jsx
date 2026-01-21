@@ -49,6 +49,7 @@ function ProfilePageContent() {
     if (user.uloga === "ADMIN") {
         tabs.push({ name: "Termini", component: <AdminAppointmentsTab/> });
         tabs.push({ name: "Članarine", component: <AdminSubscriptionsTab/> });
+        tabs.push({ name: "Sobe", component: <MyRoomsTab/> });
     } else if (user.uloga === "VLASNIK") {
         tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
         tabs.push({ name: "Moje sobe", component: <MyRoomsTab/> });
@@ -552,7 +553,7 @@ function GameHistoryTab() {
 }
 function MyRoomsTab() {
     const { user } = useAuth();
-    if (!user || user.uloga !== "VLASNIK") {
+    if (!user || (user.uloga !== "VLASNIK" && user.uloga !== "ADMIN")) {
         return null;
     }
     const animatedComponents = makeAnimated();
@@ -574,7 +575,7 @@ function MyRoomsTab() {
         })
     }, [user]);
     const handleRoomClick = (room) => {
-        if (!activeSubscription) {
+        if (user.uloga === "VLASNIK" && !activeSubscription) {
             setPopup({ isOpen: true, title: "Nije moguće urediti sobu", message: "Morate imati aktivnu pretplatu da biste uredili sobu." });
         } else {
             setSelectedRoom(room);
@@ -887,16 +888,18 @@ function MyRoomsTab() {
         </form>;
     } else {
         body = <>
-            <div className="my-rooms-actions">
-                <div className="new-room" onClick={handleNewRoomClick}>
-                    <img src={plus_icon} alt="plus icon" />
-                    <p>Dodaj novu sobu</p>
+            {user.uloga === "VLASNIK" &&
+                <div className="my-rooms-actions">
+                    <div className="new-room" onClick={handleNewRoomClick}>
+                        <img src={plus_icon} alt="plus icon" />
+                        <p>Dodaj novu sobu</p>
+                    </div>
+                    <div className="new-room" onClick={handleNewAppointmentClick}>
+                        <img src={plus_icon} alt="plus icon" />
+                        <p>Dodaj termin</p>
+                    </div>
                 </div>
-                <div className="new-room" onClick={handleNewAppointmentClick}>
-                    <img src={plus_icon} alt="plus icon" />
-                    <p>Dodaj termin</p>
-                </div>
-            </div>
+            }
             {myRooms && <div className="my-rooms-list">
                 {myRooms.map((room) => (
                 <div key={room.room_id}>
@@ -1398,7 +1401,6 @@ function AdminSubscriptionsTab() {
         </>}
     </div>;
 }
-
 
 async function fetchMyRooms() {
     const response = await authFetch("/api/my-rooms")
