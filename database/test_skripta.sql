@@ -18,7 +18,7 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 
 -- VLASNICI
 INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl, clanarinaDoDatVr) VALUES
-('marko123', 'Mystery Masters d.o.o.', 'Ilica 98', 'Zagreb', '0953554728', 'https://picsum.photos/500/501', '2026-02-15T00:00:00'),
+('marko123', 'Mystery Masters d.o.o.', 'Ilica 98', 'Zagreb', '0953554728', 'https://picsum.photos/500/501', '2025-02-15T00:00:00'),
 ('petra123', 'Mystic Company d.o.o.', 'Ozaljska 34', 'Zagreb', '0981324562', 'https://picsum.photos/500/502', '2026-02-15T00:00:00'),
 ('maja123', 'Split Adventures d.o.o.', 'Poljička cesta 25', 'Split', '0987654321', 'https://picsum.photos/500/503', '2026-02-15T00:00:00'),
 ('tomislav123', 'Rijeka Rooms d.o.o.', 'Trg Ivana Koblera 1', 'Rijeka', '0911122334', 'https://picsum.photos/500/504', '2026-02-15T00:00:00'),

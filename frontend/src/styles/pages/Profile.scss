@@ -859,7 +859,17 @@
     .back-button {
       position: absolute;
       bottom: 3em;
+      left: 12em;
+    }
+
+    .back-button-leader {
+      position: absolute;
+      bottom: 3em;
       left: 10em;
+    }
+
+    .napusti-tim {
+      margin-top: 1em;
     }
   }
 }

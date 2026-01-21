@@ -437,7 +437,7 @@ function MyTeamsTab() {
                         )}
                     </ul>
                 </>}
-                {user.username !== selectedTeam.leader && <button onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
+                {user.username !== selectedTeam.leader && <button className="napusti-tim" onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
                 {user.username === selectedTeam.leader && <>
                     <form onSubmit={submitEditTeam} encType={"multipart/form-data"}>
                         <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
@@ -470,7 +470,7 @@ function MyTeamsTab() {
                         </div>
                     }
                 </>}
-                <button className="back-button" onClick={() => setView("list")}>Natrag</button>
+                <button className={user.username !== selectedTeam.leader ? "back-button" : "back-button-leader"} onClick={() => setView("list")}>Natrag</button>
             </div>
         }
     </div>;
