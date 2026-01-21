@@ -1272,7 +1272,7 @@ function AdminAppointmentsTab() {
         <Select
             components={animatedComponents}
             value={selectedRoom ? ({ value: selectedRoom, label: selectedRoom.naziv }) : null}
-            options={rooms ? rooms.map((room) => ({ value: room.naziv, label: room.naziv })) : []}
+            options={rooms ? rooms.map((room) => ({ value: room, label: room.naziv })) : []}
             isLoading={rooms === null}
             isMulti={false}
             isClearable={true}
@@ -1288,12 +1288,12 @@ function AdminAppointmentsTab() {
                 isMulti={false}
                 isClearable={true}
                 placeholder="Termin"
-                onChange={handleRoomSelect}
+                onChange={handleTerminSelect}
                 className="profile-page-result-entry-tab-select-room"
             />
             {selectedAppointment && <>
                 <form onSubmit={handleSubmit}>
-                    <input type={"text"} name={"ime_tima"} required={true} defaultValue={selectedAppointment.ime_tima} disabled={!!selectedAppointment.ime_tima}/>
+                    <input className="ime-tima-vlasnik-termin" type={"text"} name={"ime_tima"} required={true} defaultValue={selectedAppointment.ime_tima} disabled={!!selectedAppointment.ime_tima}/>
                     <TimePicker
                         label="Vrijeme rješavanja:"
                         className="timePicker"
@@ -1305,7 +1305,7 @@ function AdminAppointmentsTab() {
                         value={timeValue}
                         onChange={setTimeValue}
                     />
-                    <input type={"submit"} value={"Spremi"}/>
+                    <input className="spremi-vlasnik-termin" type={"submit"} value={"Spremi"}/>
                     {!selectedAppointment.ime_tima && <button onClick={handleDelete}>Obriši</button>}
                 </form>
             </>}
