@@ -73,5 +73,5 @@ def remove_member():
     db.execute("DELETE FROM ClanTima WHERE ime_time = ? AND username = ?", (team, username))
     db.commit()
     db.close()
-    return jsonify({"status": "invite_created"}), 200
+    return jsonify({"status": "member_deleted"}), 200
 
