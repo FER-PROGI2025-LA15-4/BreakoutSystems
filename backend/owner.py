@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
-from auth import get_db_connection
+from auth import get_db_connection, save_temp_file, move_temp_image
 from datetime import datetime, timedelta,timezone
-
 
 owner_bp = Blueprint('owner', __name__)
 
@@ -59,7 +58,7 @@ def get_my_rooms():
         """, (room_id,)).fetchall()
 
         for img in images:
-            if img["cover"]:
+            if img["image_index"] == 0:
                 images.remove(img)
                 images.insert(0, img)
 
@@ -165,5 +164,113 @@ def add_appointment():
     except Exception as e:
         db.rollback()
         return jsonify({'error': str(e)}), 403
+    finally:
+        db.close()
+
+
+import json
+import sqlite3
+from flask import Blueprint, request, jsonify, current_app
+from flask_login import login_required, current_user
+from auth import get_db_connection, save_temp_file, move_temp_image, delete_image_file
+
+
+@owner_bp.route('/api/owner/editRoom', methods=['POST'])
+@login_required
+def edit_room():
+    # 1. Provjera uloge
+    if current_user.uloga != 'VLASNIK':
+        return jsonify({'error': 'Pristup dopušten samo vlasnicima'}), 403
+
+    db = get_db_connection()
+
+    # 2. Provjera članarine (prema tvojoj shemi, članarina je u tablici Vlasnik)
+    vlasnik = db.execute("SELECT clanarinaDoDatVr FROM Vlasnik WHERE username = ?",
+                         (current_user.username,)).fetchone()
+
+    # Ovdje bi trebala ići logika provjere datuma, ovisno o formatu koji spremaš
+    # Primjerice: if not vlasnik or not vlasnik['clanarinaDoDatVr']: return ...
+    if not vlasnik:
+        return jsonify({'error': 'Nemate aktivnu članarinu'}), 403
+
+    try:
+        # Dohvat podataka iz forme
+        room_id = request.form.get('room_id')
+        naziv = request.form.get('naziv')
+        opis = request.form.get('opis')
+        min_igraca = request.form.get('minBrClanTima')
+        max_igraca = request.form.get('maxBrClanTima')
+        cijena = request.form.get('cijena')
+        adresa = request.form.get('adresa')
+        grad = request.form.get('grad')
+        kategorija = request.form.get('kat')  # U formi se šalje kao 'kat'
+        tezina = request.form.get('rating')  # U formi se šalje kao 'rating'
+
+        # Lokacija (lat/lng šalješ preko state-a, provjeri kako ih frontend pakira u formi)
+        # Ako ih šalješ kao skrivena polja ili slično:
+        geo_lat = request.form.get('geo_lat', 45.0)
+        geo_long = request.form.get('geo_long', 16.5)
+
+        # 3. CREATE ili UPDATE
+        if room_id:
+            # Provjera vlasništva
+            existing = db.execute("SELECT vlasnik_username FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
+            if not existing:
+                return jsonify({'error': 'Soba ne postoji'}), 404
+            if existing['vlasnik_username'] != current_user.username:
+                return jsonify({'error': 'Niste vlasnik ove sobe'}), 403
+
+            db.execute("""
+                UPDATE EscapeRoom SET 
+                naziv=?, opis=?, geo_lat=?, geo_long=?, adresa=?, grad=?, 
+                inicijalna_tezina=?, cijena=?, minBrClanTima=?, maxBrClanTima=?, kategorija=?
+                WHERE room_id=?
+            """, (
+            naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, min_igraca, max_igraca, kategorija, room_id))
+        else:
+            cursor = db.execute("""
+                INSERT INTO EscapeRoom 
+                (vlasnik_username, naziv, opis, geo_lat, geo_long, adresa, grad, inicijalna_tezina, cijena, minBrClanTima, maxBrClanTima, kategorija)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+            current_user.username, naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, min_igraca, max_igraca,
+            kategorija))
+            room_id = cursor.lastrowid
+
+        # 4. Obrada slika (images_list i images)
+        images_list_raw = request.form.get('images_list', '[]')
+        images_list = json.loads(images_list_raw)
+        uploaded_files = request.files.getlist('images')  # Atribut 'images' sadrži listu fajlova
+
+        # Prvo obrišemo stare zapise slika iz baze za tu sobu (lakše je napraviti re-insert)
+        # Napomena: U produkciji bi ovdje trebali paziti da ne obrišemo fajlove s diska koji nam još trebaju
+        db.execute("DELETE FROM EscapeRoomImage WHERE room_id = ?", (room_id,))
+
+        file_index = 0
+        for idx, img_obj in enumerate(images_list):
+            final_url = None
+
+            if img_obj.get('nova') is True:
+                # Uzmi sljedeći file iz uploada
+                if file_index < len(uploaded_files):
+                    f = uploaded_files[file_index]
+                    tmp_name = save_temp_file(f)
+                    final_url = move_temp_image(tmp_name)
+                    file_index += 1
+            else:
+                # Slika već postoji, samo zadrži URL
+                final_url = img_obj.get('src')
+
+            if final_url:
+                db.execute("INSERT INTO EscapeRoomImage (image_url, image_index, room_id) VALUES (?, ?, ?)",
+                           (final_url, idx, room_id))
+
+        db.commit()
+        return jsonify({'success': True, 'room_id': room_id}), 200
+
+    except Exception as e:
+        db.rollback()
+        print(f"Error editing room: {e}")
+        return jsonify({'error': str(e)}), 500
     finally:
         db.close()
