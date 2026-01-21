@@ -848,6 +848,79 @@
       cursor: pointer;
     }
 
+    .team-invites {
+      >p:first-of-type {
+        font-weight: 600;
+      }
+
+      >ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6em;
+      }
+
+      >ul > li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1em;
+        background-color: white;
+        border: 1px solid #e3e3e3;
+        border-radius: 10px;
+        padding: 0.6em 0.9em;
+      }
+
+      >ul > li > p {
+        margin: 0;
+        font-weight: 500;
+        color: #1c1c1c;
+      }
+
+      >ul > li > button {
+        font-family: Montserrat, sans-serif;
+        font-size: 0.9em;
+        font-weight: 500;
+        background-color: #f0de37;
+        color: #1c1c1c;
+        border: none;
+        border-radius: 999px;
+        padding: 6px 14px;
+        cursor: pointer;
+      }
+
+      .pozvani-korisnici-naslov{
+        font-weight: 600;
+        margin: 1em 0;
+      }
+
+      form{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 1em;
+        margin-top: 1em;
+        .pozovi{
+          padding: 5px;
+        }
+        .dodaj-korisnika{
+          font-family: Montserrat, sans-serif;
+          font-size: 1em;
+          font-weight: 500;
+          background-color: #42d2f5;
+          color: #fff;
+          border-radius: 999px;
+          padding: 8px 18px;
+          border: none;
+          cursor: pointer;
+          margin-top: 0;
+          width: fit-content;
+        }
+      }
+    }
+
     >button {
       font-family: Montserrat, sans-serif;
       font-size: 1em;
@@ -1031,13 +1104,20 @@
       width: 100%;
     }
 
-    .back-button {
+    .back-button, .back-button-leader {
       bottom: 2em;
       left: 9em;
     }
     img {
       width: 3.5em;
       height: 3.5em;
+    }
+
+    .team-invites{
+      width: 100%;
+      .pozovi{
+        width: 100%;
+      }
     }
   }
 }
