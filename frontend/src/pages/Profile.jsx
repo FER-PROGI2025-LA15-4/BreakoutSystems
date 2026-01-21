@@ -600,56 +600,70 @@ function MyRoomsTab() {
         const form = e.target;
         const fd = new FormData();
 
-        // basic room fields
-        if (form.room_id) {
-            fd.append("room_id", form.room_id.value)
+    // 1. Osnovna polja (pazi na nazive da odgovaraju Pythonu)
+    if (form.room_id) {
+        fd.append("room_id", form.room_id.value);
+    }
+    fd.append("naziv", form.naziv.value);
+    fd.append("opis", form.opis.value);
+    fd.append("minBrClanTima", form.minBrClanTima.value);
+    fd.append("maxBrClanTima", form.maxBrClanTima.value);
+    fd.append("cijena", form.cijena.value);
+    fd.append("adresa", form.adresa.value);
+    fd.append("grad", form.grad.value);
+
+    // BACKEND traži 'kat' i 'rating'
+    fd.append("kat", category);
+    fd.append("rating", rating);
+
+    // 2. Koordinate (latLng state)
+    if (latLng) {
+        const lat = Array.isArray(latLng) ? latLng[0] : (latLng.lat || 45.0);
+        const lng = Array.isArray(latLng) ? latLng[1] : (latLng.lng || 16.5);
+        fd.append("geo_lat", lat);
+        fd.append("geo_long", lng);
+    }
+
+    // 3. Slike (images_list mora imati 'nova' ključ za Python)
+    const localImagesJson = images.map((img) => {
+        if (img.file) {
+            return { nova: true };
+        } else {
+            // Ako je stara slika, šaljemo src
+            return { nova: false, src: img.src || img };
         }
-        fd.append("naziv", form.naziv.value);
-        fd.append("opis", form.opis.value);
-        fd.append("minBrClanTima", form.minBrClanTima.value);
-        fd.append("maxBrClanTima", form.maxBrClanTima.value);
-        fd.append("cijena", form.cijena.value);
-        fd.append("adresa", form.adresa.value);
-        fd.append("grad", form.grad.value);
-        fd.append("kategorija", category);
-        fd.append("tezina", rating);
-        fd.append("geo_lat", latLng[0]);
-        fd.append("geo_long", latLng[1]);
+    });
+    fd.append("images_list", JSON.stringify(localImagesJson));
 
-        // images from ImageEditor
-        const localImages = [];
-        (images || []).forEach((it) => {
-            if (it.isNew) {
-                localImages.push({ nova: true });
-            } else {
-                localImages.push({ nova: false, src: it.src })
-            }
-        });
+    // 4. Slanje datoteka
+    images.forEach((img) => {
+        if (img.file) {
+            fd.append("images", img.file); // Mora biti 'images' (množina)
+        }
+    });
 
-        fd.append("images_list", JSON.stringify(localImages));
-
-        // append new files
-        localImages.forEach((file) => {
-            if (file.nova) {
-                fd.append("images", file, file.name);
-            }
-        });
-
+    try {
         const response = await authFetch("/api/owner/edit-room", {
             method: "POST",
             body: fd,
         });
 
         if (response.ok) {
-            setPopup({ isOpen: true, title: "Uspjeh!", message: "Soba je spremljena." });
+            setPopup({ isOpen: true, title: "Uspjeh!", message: "Soba je uspješno spremljena." });
             setNewRoomMode(false);
             setSelectedRoom(null);
-            fetchMyRooms().then(setMyRooms);
+
+            // Osvježi listu (pazi: fetchMyRooms mora biti dostupna u scopeu)
+            const updatedRooms = await fetchMyRooms();
+            setMyRooms(updatedRooms);
         } else {
             setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
         }
-    };
-
+    } catch (error) {
+        console.error("Greška pri slanju:", error);
+        setPopup({ isOpen: true, title: "Greška", message: "Veza sa serverom nije uspjela." });
+    }
+};
     const [category, setCategory] = useState("Ostalo");
     const [rating, setRating] = useState(0.5);
     const [map, setMap] = useState(null);
