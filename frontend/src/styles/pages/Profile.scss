@@ -1017,6 +1017,45 @@
   }
 }
 
+.status-admin-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 1em 0;
+}
+
+.status-admin {
+  font-weight: 500;
+  margin: 0;
+}
+
+.admin-subscription-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1em;
+
+  button {
+    font-family: Montserrat, sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    background-color: #42d2f5;
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 12px;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+    min-width: 0;
+  }
+}
+
+.status-admin-icon {
+  width: 2em;
+  margin-left: 0.5em;
+  margin-bottom: 0.1em;
+}
+
 @media (max-width: 768px) {
   .profile-page > h1 {
     font-size: 2.5em;

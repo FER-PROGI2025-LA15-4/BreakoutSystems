@@ -1331,7 +1331,7 @@ function AdminSubscriptionsTab() {
         setSelectedUser(opt ? opt.value : null);
     }
     useEffect(() => {
-        authFetch("/api/admin/subscriptions").then(async (response) => {
+        authFetch("/api/admin/subscription").then(async (response) => {
             if (response.ok) {
                 const data = await response.json();
                 setUsers(data["users"]);
@@ -1359,7 +1359,7 @@ function AdminSubscriptionsTab() {
             if (response.ok) {
                 setPopup({ isOpen: true, title: "Uspjeh!", message: "Pretplata je uspješno produžena." });
                 // refresh user data
-                authFetch("/api/admin/subscriptions").then(async (response) => {
+                authFetch("/api/admin/subscription").then(async (response) => {
                     if (response.ok) {
                         const data = await response.json();
                         setUsers(data["users"]);
@@ -1377,8 +1377,8 @@ function AdminSubscriptionsTab() {
         {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
         <Select
             components={animatedComponents}
-            value={selectedUser ? ({ value: selectedUser, label: selectedUser.naziv }) : null}
-            options={users ? users.map((user) => ({ value: user.username, label: user.username })) : []}
+            value={selectedUser ? ({ value: selectedUser, label: selectedUser.username }) : null}
+            options={users ? users.map((user) => ({ value: user, label: user.username })) : []}
             isLoading={users === null}
             isMulti={false}
             isClearable={true}
@@ -1387,10 +1387,14 @@ function AdminSubscriptionsTab() {
             className="profile-page-result-entry-tab-select-room"
         />
         {selectedUser && <>
-            <p>Status pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "nemate aktivnu članarinu" }</p>
-            { activeSubscription && <img src={tick_icon} alt={"tick icon"}/> }
-            <button onClick={() => handleSubscriptionExtension("mjesečna")}>Produži mjesec dana</button>
-            <button onClick={() => handleSubscriptionExtension("godišnja")}>Produži godinu dana</button>
+            <div className="status-admin-row">
+                <p className="status-admin">Status pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "članarina nije aktivna" }</p>
+                { activeSubscription && <img className="status-admin-icon" src={tick_icon} alt={"tick icon"}/> }
+            </div>
+            <div className="admin-subscription-buttons">
+                <button onClick={() => handleSubscriptionExtension("mjesečna")}>Produži mjesec dana</button>
+                <button onClick={() => handleSubscriptionExtension("godišnja")}>Produži godinu dana</button>
+            </div>
         </>}
     </div>;
 }
