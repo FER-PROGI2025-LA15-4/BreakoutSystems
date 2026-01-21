@@ -25,6 +25,7 @@ def get_invites():
     db.close()
     return jsonify({"users": users}), 200
 
+# slanje invitea u tim korisniku
 @leader_bp.route('/api/add-member', methods=['POST'])
 @login_required
 def add_member():
@@ -48,3 +49,29 @@ def add_member():
     db.commit()
     db.close()
     return jsonify({"status": "invite_created"}), 200
+
+# brisanje člana iz tima ili poništavnaje invitea
+@leader_bp.route('/api/remove-member', methods=['POST'])
+@login_required
+def remove_member():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+    data = request.get_json() or {}
+    team = data.get('team_name')
+    username = data.get('username')
+    db = get_db_connection()
+    rows = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?",
+                      (team, current_user.username)).fetchone()
+    if rows is None:
+        db.close()
+        return jsonify({'error': 'forbidden access'}), 403
+
+    existing = db.execute("SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()
+    if not existing:
+        return "", 204
+
+    db.execute("DELETE FROM ClanTima WHERE ime_time = ? AND username = ?", (team, username))
+    db.commit()
+    db.close()
+    return jsonify({"status": "invite_created"}), 200
+
