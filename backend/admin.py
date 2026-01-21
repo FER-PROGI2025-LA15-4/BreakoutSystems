@@ -70,3 +70,39 @@ def update_subscription_status():
     db.commit()
     db.close()
     return jsonify({"status": "subscription_extended"}), 200
+
+# brisanje termina
+@admin_bp.route('/api/admin/appointment', methods=['DELETE'])
+@login_required
+def delete_appointment_status():
+    if current_user.uloga != 'ADMIN':
+        return jsonify({'error': 'forbidden access'}), 403
+    data = request.get_json() or {}
+    room_id = data.get("room_id")
+    datvrpoc = data.get("datVrPoc")
+
+    db = get_db_connection()
+    db.execute("DELETE FROM Termin WHERE room_id = ? AND datVrPoc = ?", (room_id, datvrpoc))
+    db.commit()
+    db.close()
+    return jsonify({"status": "success"}), 200
+
+
+# update termin
+@admin_bp.route('/api/admin/appointment', methods=['PUT'])
+@login_required
+def put_appointment_status():
+    if current_user.uloga != 'ADMIN':
+        return jsonify({'error': 'forbidden access'}), 403
+    data = request.get_json() or {}
+    room_id = data.get("room_id")
+    datvrpoc = data.get("datVrPoc")
+    ime_tima = data.get("ime_tima")
+    rezultatsek = data.get("rezultatSekunde")
+
+    db = get_db_connection()
+    db.execute("UPDATE Termin SET (ime_tima, rezultatSekunde) = (?,?) WHERE room_id = ? AND datVrPoc = ?", (ime_tima, rezultatsek, room_id, datvrpoc))
+    db.commit()
+    db.close()
+    return jsonify({"status": "success"}), 200
+
