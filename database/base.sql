@@ -59,7 +59,7 @@ CREATE TABLE EscapeRoom (
 
 CREATE TABLE EscapeRoomImage (
     image_url VARCHAR(255) PRIMARY KEY,
-    index INT NOT NULL DEFAULT 0,
+    image_index INT NOT NULL DEFAULT 0,
     room_id INT NOT NULL,
     FOREIGN KEY (room_id) REFERENCES EscapeRoom(room_id) ON DELETE CASCADE
 );

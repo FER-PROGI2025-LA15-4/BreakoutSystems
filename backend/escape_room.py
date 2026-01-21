@@ -161,7 +161,7 @@ def filter_rooms():
             SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
-            ORDER BY index
+            ORDER BY image_index
         """, (room_id,)).fetchall()
 
         result.append({
@@ -254,7 +254,7 @@ def top3_most_popular_rooms():
             SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
-            ORDER BY index
+            ORDER BY image_index
         """, (room["room_id"],)).fetchall()
 
 
