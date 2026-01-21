@@ -1,7 +1,8 @@
+import json
 from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
+from datetime import datetime, timezone
 from auth import get_db_connection, save_temp_file, move_temp_image
-from datetime import datetime, timedelta,timezone
 
 owner_bp = Blueprint('owner', __name__)
 
@@ -162,13 +163,6 @@ def add_appointment():
         return jsonify({'error': str(e)}), 403
     finally:
         db.close()
-
-
-import json
-import sqlite3
-from flask import Blueprint, request, jsonify, current_app
-from flask_login import login_required, current_user
-from auth import get_db_connection, save_temp_file, move_temp_image, delete_image_file
 
 
 @owner_bp.route('/api/owner/edit-room', methods=['POST'])
