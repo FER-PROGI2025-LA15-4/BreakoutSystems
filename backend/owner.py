@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
-from auth import get_db_connection, save_temp_file, move_temp_image
 from datetime import datetime, timedelta,timezone
+from auth import get_db_connection
 
 owner_bp = Blueprint('owner', __name__)
 
