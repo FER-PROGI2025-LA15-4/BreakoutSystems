@@ -1056,6 +1056,41 @@
   margin-bottom: 0.1em;
 }
 
+.profile-page-admin-appointments-tab{
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 1em;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 1em;
+    font-family: Montserrat, sans-serif;
+
+    .spremi-vlasnik-termin{
+      font-family: Montserrat, sans-serif;
+      font-size: 1em;
+      font-weight: 500;
+      background-color: #42d2f5;
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      margin-top: 5px;
+      width: fit-content;
+    }
+
+    .ime-tima-vlasnik-termin{
+      padding: 5px;
+      width: fit-content;
+      min-width: 3em;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .profile-page > h1 {
     font-size: 2.5em;
@@ -1202,5 +1237,10 @@
 
   .my-rooms-actions {
     gap: 0.8em;
+  }
+
+  .profile-page-admin-appointments-tab form .ime-tima-vlasnik-termin{
+    width: 100%;
+    margin: 1px;
   }
 }
