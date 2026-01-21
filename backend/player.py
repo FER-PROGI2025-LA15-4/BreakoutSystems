@@ -74,7 +74,7 @@ def get_my_teams():
 
     teams = db.execute(
         """SELECT DISTINCT t.ime, t.image_url, t.voditelj_username 
-        FROM Tim t JOIN ClanTima c 
+        FROM Tim t LEFT JOIN ClanTima c 
         ON c.ime_tima = t.ime 
         WHERE c.username = ? 
         OR t.voditelj_username = ?""", (current_user.username, current_user.username,)

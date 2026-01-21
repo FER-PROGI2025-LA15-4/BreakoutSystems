@@ -7,6 +7,7 @@ from authlib.integrations.flask_client import OAuth
 from models import User
 from werkzeug.utils import secure_filename
 
+
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 oauth = OAuth()
 

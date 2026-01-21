@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, request
-from flask_login import current_user,login_required
-from auth import get_db_connection
+from flask_login import current_user, login_required
+from auth import get_db_connection, save_temp_file, move_temp_image, delete_image_file
 
 leader_bp = Blueprint('leader', __name__)
 
 # vraća sve korisnike koji imaju aktivan invite u neki tim
+
+
 @leader_bp.route('/api/invites', methods=['GET'])
 @login_required
 def get_invites():
@@ -15,10 +17,12 @@ def get_invites():
     db = get_db_connection()
     team = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?", (team_name,current_user.username,)).fetchone()
     if team is None:
+        print("Nema tima ili nije voditelj")
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
 
-    users = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 0", (team_name,)).fetchall()
+    users = db.execute(
+        "SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 0", (team_name,)).fetchall()
 
     users = [user["username"] for user in users]
 
@@ -26,6 +30,8 @@ def get_invites():
     return jsonify({"users": users}), 200
 
 # slanje invitea u tim korisniku
+
+
 @leader_bp.route('/api/add-member', methods=['POST'])
 @login_required
 def add_member():
@@ -36,19 +42,103 @@ def add_member():
     team = data.get('team_name')
     username = data.get('username')
     db = get_db_connection()
-    rows = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?", (team, current_user.username)).fetchone()
+    rows = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?",
+                      (team, current_user.username)).fetchone()
     if rows is None:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
 
-    existing = db.execute("SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()
+    existing = db.execute(
+        "SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()
     if existing:
         return "", 204
 
-    db.execute("INSERT INTO ClanTima (ime_tima, username, accepted) VALUES (?, ?, 0)", (team, username))
+    db.execute(
+        "INSERT INTO ClanTima (ime_tima, username, accepted) VALUES (?, ?, 0)", (team, username))
     db.commit()
     db.close()
     return jsonify({"status": "invite_created"}), 200
+
+
+@leader_bp.route('/api/create-team', methods=['POST'])
+@login_required
+def create_team():
+
+    # name - ime tima
+    # image - slika tima
+
+    if current_user.uloga != 'POLAZNIK':
+        return jsonify({'error': 'forbidden access'}), 403
+
+    team_name = request.form.get("name")
+    image_file = request.files.get("image")
+
+    if not team_name:
+        return jsonify({'error': 'team name missing'}), 400
+
+    db = get_db_connection()
+
+    name_is_taken = db.execute(
+        'SELECT 1 FROM Tim WHERE ime = ?', (team_name,)).fetchone()
+
+    if name_is_taken:
+        db.close()
+        return jsonify({'error': 'Team name already taken!'}), 400
+
+    image_url = None
+    if image_file and image_file.filename:
+        temp_filename = save_temp_file(image_file)
+        image_url = move_temp_image(temp_filename)
+
+    db.execute('INSERT INTO Tim (ime, image_url, voditelj_username) VALUES (?,?,?)',
+               (team_name, image_url, current_user.username),)
+
+    db.commit()
+    db.close()
+    print("Stvoren tim")
+
+    return jsonify({'status': 'Team created'}), 200
+
+
+@leader_bp.route('/api/edit-team', methods=['POST'])
+@login_required
+def edit_team():
+    # name - ime tima
+    # image - slika tima
+
+    if current_user.uloga != 'POLAZNIK':
+        return jsonify({'error': 'forbidden access'}), 403
+
+    team_name = request.form.get("name")
+    image_file = request.files.get("image")
+
+    if not team_name:
+        return jsonify({'error': 'team name missing'}), 400
+
+    db = get_db_connection()
+
+    team = db.execute('SELECT image_url FROM Tim WHERE ime = ? AND voditelj_username = ?',
+                      (team_name, current_user.username,)).fetchone()
+
+    if team is None:
+        db.close()
+        return jsonify({'error': 'forbidden access'}), 403
+
+    if image_file and image_file.filename:
+        # Brisanje stare slike ako dodajemo novu za stednju memorije - salje se ime fajla za brisanje
+        if team['image_url']:
+            delete_image_file(team['image_url'].split('/')[-1])
+        temp_filename = save_temp_file(image_file)
+        image_url = move_temp_image(temp_filename)
+
+        db.execute('UPDATE Tim SET image_url = ? WHERE ime = ?',
+                   (image_url, team_name),)
+
+    db.commit()
+    db.close()
+
+    return jsonify({'status': 'Team data edited'}), 200
+
 
 # brisanje člana iz tima ili poništavnaje invitea
 @leader_bp.route('/api/remove-member', methods=['POST'])
@@ -66,12 +156,13 @@ def remove_member():
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
 
-    existing = db.execute("SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()
+    existing = db.execute(
+        "SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()
     if not existing:
         return "", 204
 
-    db.execute("DELETE FROM ClanTima WHERE ime_time = ? AND username = ?", (team, username))
+    db.execute(
+        "DELETE FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username))
     db.commit()
     db.close()
     return jsonify({"status": "member_deleted"}), 200
-
