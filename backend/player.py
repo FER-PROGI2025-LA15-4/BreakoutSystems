@@ -137,7 +137,7 @@ def update_invite():
 
 
 # timovi u koje je korisnik pozvan, ali još nije prihvatio ulazak
-@player_bp.route('/api/my-invites', methods=['GET'])
+@player_bp.route('/api/team-invites', methods=['GET'])
 @login_required
 def get_my_invites():
     if current_user.uloga != "POLAZNIK":

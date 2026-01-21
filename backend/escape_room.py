@@ -161,13 +161,8 @@ def filter_rooms():
             SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
+            ORDER BY index
         """, (room_id,)).fetchall()
-
-        for img in images:
-            if img["cover"]:
-                images.remove(img)
-                images.insert(0, img)
-                break
 
         result.append({
             "room_id": room_id,
@@ -201,12 +196,7 @@ def get_room(room_id):
 
     tezina = calculate_weight(room_id)
 
-    images = db.execute("SELECT * FROM EscapeRoomImage WHERE room_id = ?", (room_id,)).fetchall()
-    for img in images:
-        if img["cover"]:
-            images.remove(img)
-            images.insert(0, img)
-            break
+    images = db.execute("SELECT * FROM EscapeRoomImage WHERE room_id = ? ORDER BY index", (room_id,)).fetchall()
 
     db.close()
     return jsonify({
@@ -264,13 +254,9 @@ def top3_most_popular_rooms():
             SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
+            ORDER BY index
         """, (room["room_id"],)).fetchall()
 
-        for img in images:
-            if img["cover"]:
-                images.remove(img)
-                images.insert(0, img)
-                break
 
         result.append({
             "room_id": room["room_id"],

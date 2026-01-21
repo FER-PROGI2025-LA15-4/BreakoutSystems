@@ -8,7 +8,7 @@ leader_bp = Blueprint('leader', __name__)
 @leader_bp.route('/api/invites', methods=['GET'])
 @login_required
 def get_invites():
-    if current_user.uloga != "POLAZNIK":
+    if current_user.uloga != "VLASNIK":
         return jsonify({'error': 'forbidden access'}), 403
 
     team_name = request.args.get('team_name')
