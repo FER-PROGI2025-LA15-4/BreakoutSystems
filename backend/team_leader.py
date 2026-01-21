@@ -8,12 +8,12 @@ leader_bp = Blueprint('leader', __name__)
 @leader_bp.route('/api/invites', methods=['GET'])
 @login_required
 def get_invites():
-    if current_user.uloga != "VLASNIK":
+    if current_user.uloga != "POLAZNIK":
         return jsonify({'error': 'forbidden access'}), 403
 
-    team_name = request.args.get('team_name')
+    team_name = request.args.get('teamName')
     db = get_db_connection()
-    team = db.execute("SELECT * FROM Tim WHERE ime_tima = ? AND voditelj_username = ?", (team_name,current_user.username,)).fetchone()
+    team = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?", (team_name,current_user.username,)).fetchone()
     if team is None:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
