@@ -7,6 +7,12 @@ from auth import auth_bp, init_oauth, get_db_connection
 from models import User
 from apscheduler.schedulers.background import BackgroundScheduler
 from mail import send_reminder
+from escape_room import room_bp
+from leaderboard import leaderboard_bp
+from owner import owner_bp
+from payment import payment_bp
+from player import player_bp
+from team_leader import leader_bp
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -26,6 +32,12 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 init_oauth(app)
 app.register_blueprint(auth_bp)
+app.register_blueprint(room_bp)
+app.register_blueprint(player_bp)
+app.register_blueprint(leader_bp)
+app.register_blueprint(leaderboard_bp)
+app.register_blueprint(owner_bp)
+app.register_blueprint(payment_bp)
 
 SCHEMA_SQL_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'base.sql')
 

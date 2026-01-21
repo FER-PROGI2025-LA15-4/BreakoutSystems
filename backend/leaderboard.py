@@ -1,13 +1,10 @@
-from flask import jsonify, request
-from flask_login import login_required
-
-from backend.app import app
+from flask import Blueprint, jsonify, request
 from auth import get_db_connection
 from escape_room import calculate_weight
 
-
+leaderboard_bp = Blueprint('leaderboard', __name__)
 # generira globalni leaderboard ako zahtjev nema parametara, inače lokalni leaderboard za neku sobu
-@app.route('/api/leaderboard', methods=['GET'])
+@leaderboard_bp.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
     db = get_db_connection()
     room_id = request.args.get('room_id')

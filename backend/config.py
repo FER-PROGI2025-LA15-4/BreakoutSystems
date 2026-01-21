@@ -1,9 +1,6 @@
-# config.py
-# Konfiguracija aplikacije - sve postavke na jednom mjestu
 import os
 from dotenv import load_dotenv
 
-# Učitaj environment varijable iz .env filea
 load_dotenv()
 
 

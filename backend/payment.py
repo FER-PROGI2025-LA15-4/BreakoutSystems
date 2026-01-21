@@ -1,16 +1,15 @@
 import os
-from flask import jsonify, request
+from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
 from auth import get_db_connection
 import stripe
 from datetime import datetime, timedelta
-from backend.app import app
 
-
+payment_bp = Blueprint('payment', __name__)
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 # početak plaćanja
-@app.route('/api/start-payment', methods=['POST'])
+@payment_bp.route('/api/start-payment', methods=['POST'])
 @login_required
 def test_stripe_payment():
     data = request.get_json()
@@ -88,7 +87,7 @@ def test_stripe_payment():
             return jsonify(error=str(e)), 500
 
 # potvrda plaćanja
-@app.route('/api/confirm-payment', methods=['POST'])
+@payment_bp.route('/api/confirm-payment', methods=['POST'])
 @login_required
 def confirm_payment():
     data = request.get_json()

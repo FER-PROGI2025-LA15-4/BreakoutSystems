@@ -1,8 +1,8 @@
-from flask import jsonify, request
+from flask import Blueprint, jsonify, request
 from flask_login import current_user
-from backend.app import app
 from auth import get_db_connection
 
+room_bp = Blueprint('room', __name__)
 # računa težinu sobe
 def calculate_weight(room_id):
     db = get_db_connection()
@@ -21,7 +21,7 @@ def calculate_weight(room_id):
 
 
 # dohvat kategorija soba
-@app.route('/api/categories', methods=['GET'])
+@room_bp.route('/api/categories', methods=['GET'])
 def get_categories():
     db = get_db_connection()
     rows = db.execute(
@@ -34,7 +34,7 @@ def get_categories():
 
 
 # vraća podatke o vlasniku neke sobe
-@app.route('/api/rooms/<int:room_id>/owner', methods=['GET'])
+@room_bp.route('/api/rooms/<int:room_id>/owner', methods=['GET'])
 def get_owner(room_id):
 
     db = get_db_connection()
@@ -66,7 +66,7 @@ def get_owner(room_id):
 
 
 # API za dohvat gradova
-@app.route('/api/cities', methods=['GET'])
+@room_bp.route('/api/cities', methods=['GET'])
 def get_cities():
     db = get_db_connection()
 
@@ -79,7 +79,7 @@ def get_cities():
 
 
 # vraća sobe koje ispunjavaju odabrane kategorije
-@app.route('/api/rooms/filter', methods=['POST'])
+@room_bp.route('/api/rooms/filter', methods=['POST'])
 def filter_rooms():
     data = request.get_json() or {}
 
@@ -190,7 +190,7 @@ def filter_rooms():
 
 
 # dohvat sobe za određeni room_id
-@app.route('/api/rooms/<int:room_id>', methods=['GET'])
+@room_bp.route('/api/rooms/<int:room_id>', methods=['GET'])
 def get_room(room_id):
     db = get_db_connection()
     room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
@@ -227,7 +227,7 @@ def get_room(room_id):
 
 
 # dohvat 3 najpopularnije sobe
-@app.route('/api/rooms/most_popular', methods=['GET'])
+@room_bp.route('/api/rooms/most_popular', methods=['GET'])
 def top3_most_popular_rooms():
     db = get_db_connection()
 
@@ -261,7 +261,7 @@ def top3_most_popular_rooms():
         tezina = calculate_weight(room["room_id"])
 
         images = db.execute("""
-            SELECT image_url
+            SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
         """, (room["room_id"],)).fetchall()
@@ -292,7 +292,7 @@ def top3_most_popular_rooms():
     return jsonify({"rooms": result}), 200
 
 # dohvat termina u nekoj sobi
-@app.route('/api/appointments', methods=['GET'])
+@room_bp.route('/api/appointments', methods=['GET'])
 def get_appointments():
     #{ appointments: [podaci_o_terminu1, podaci_o_terminu2, ...]}
     #{ ime_tima, datVrPoc, rezultatSekunde }

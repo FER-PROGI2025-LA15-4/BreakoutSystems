@@ -1,11 +1,11 @@
-from flask import jsonify, request
+from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
-from backend.app import app
 from auth import get_db_connection
 
+owner_bp = Blueprint('owner', __name__)
 
 # unos rezultata
-@app.route("/api/owner/enter-result", methods=["POST"])
+@owner_bp.route("/api/owner/enter-result", methods=["POST"])
 @login_required
 def enter_result():
     if current_user.uloga != "VLASNIK":
@@ -36,7 +36,7 @@ def enter_result():
     return jsonify({"success": True}), 200
 
 # dohvat soba jednog vlasnika
-@app.route('/api/my-rooms', methods=['GET'])
+@owner_bp.route('/api/my-rooms', methods=['GET'])
 @login_required
 def get_my_rooms():
     if current_user.uloga != "VLASNIK":
@@ -81,7 +81,7 @@ def get_my_rooms():
     return jsonify({"rooms": result}), 200
 
 # dohvat podataka o timu prilikom unosa rezultata
-@app.route('/api/owner/team-info')
+@owner_bp.route('/api/owner/team-info')
 @login_required
 def get_owner_team_info():
     if current_user.uloga != "VLASNIK":
