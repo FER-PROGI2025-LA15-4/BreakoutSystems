@@ -54,12 +54,8 @@ def get_my_rooms():
             SELECT *
             FROM EscapeRoomImage
             WHERE room_id = ?
+            ORDER BY image_index
         """, (room_id,)).fetchall()
-
-        for img in images:
-            if img["cover"]:
-                images.remove(img)
-                images.insert(0, img)
 
         result.append({
             "room_id": room_id,
