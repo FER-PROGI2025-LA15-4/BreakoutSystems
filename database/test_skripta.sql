@@ -13,12 +13,12 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('matej123', 'oauth_polaznik_333', 'POLAZNIK'),
 ('elena123', 'oauth_polaznik_444', 'POLAZNIK'),
 ('antonio123', 'oauth_polaznik_555', 'POLAZNIK'),
-('am', 'oauth_polaznik_666', 'VLASNIK'),
-('sara123', '40371578', 'POLAZNIK');
+('am', '40371578', 'VLASNIK'),
+('sara123', 'oauth_polaznik_666', 'POLAZNIK');
 
 -- VLASNICI
 INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl, clanarinaDoDatVr) VALUES
-('marko123', 'Mystery Masters d.o.o.', 'Ilica 98', 'Zagreb', '0953554728', 'https://picsum.photos/500/501', '2026-02-15T00:00:00'),
+('marko123', 'Mystery Masters d.o.o.', 'Ilica 98', 'Zagreb', '0953554728', 'https://picsum.photos/500/501', '2025-02-15T00:00:00'),
 ('petra123', 'Mystic Company d.o.o.', 'Ozaljska 34', 'Zagreb', '0981324562', 'https://picsum.photos/500/502', '2026-02-15T00:00:00'),
 ('maja123', 'Split Adventures d.o.o.', 'Poljička cesta 25', 'Split', '0987654321', 'https://picsum.photos/500/503', '2026-02-15T00:00:00'),
 ('tomislav123', 'Rijeka Rooms d.o.o.', 'Trg Ivana Koblera 1', 'Rijeka', '0911122334', 'https://picsum.photos/500/504', '2026-02-15T00:00:00'),
@@ -49,9 +49,9 @@ INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, i
 (9, 'Vitezovi Okruglog stola', 'Srednjovjekovna avantura u dvorcu. Pronađite Excalibur i spriječite rat.', 43.5101470, 16.4378410, 'Ulica kralja Tomislava 3', 'Split', 3, 60.00, 3, 7, 'Fantasy', 'maja123'),
 (10, 'Zatvorska pobuna', 'Optuženi ste za zločin koji niste počinili. Pobjegnite prije smaknuća u zoru.', 45.3291500, 14.4413490, 'Ulica Ivana Dežmana 6', 'Rijeka', 4, 65.00, 2, 5, 'Krimi', 'tomislav123'),
 (11, 'Podmornica kapetana Nema', 'Istražite potonulu podmornicu i otkrijte tajne dubina oceana.', 43.5085640, 16.4557870, 'Ulica Matice hrvatske 7', 'Split', 3, 70.00, 2, 6, 'Ostalo', 'maja123'),
-(12, 'Djed Mrazova radionica', 'Pomozite vilenjacima spasiti Božić! Idealno za najmlađe istraživače.', 45.8064080, 15.9227310, 'Ulica Joze Martinovića 9', 'Zagreb', 1, 40.00, 4, 10, 'Obitelj', 'petra123'),
-(13, 'Hladni rat', 'Berlin, 1961. Morate prijeći Zid prije nego što vas otkrije Stasi.', 45.3388650, 14.4141550, 'Ulica Eugena Kovačića 88', 'Rijeka', 4, 70.00, 2, 5, 'Povijest', 'katarina123'),
-(14, 'Laboratorij ludog znanstvenika', 'Eksperiment je pošao po zlu. Zaustavite reakciju prije eksplozije!',  43.5069960, 16.4876770, 'Primoštenska ulica 8', 'Split', 4, 65.00, 2, 6, 'SF', 'petra123');
+(12, 'Djed Mrazova radionica', 'Pomozite vilenjacima spasiti Božić! Idealno za najmlađe istraživače.', 45.8064080, 15.9227310, 'Ulica Joze Martinovića 9', 'Zagreb', 1, 40.00, 4, 10, 'Obitelj', 'am'),
+(13, 'Hladni rat', 'Berlin, 1961. Morate prijeći Zid prije nego što vas otkrije Stasi.', 45.3388650, 14.4141550, 'Ulica Eugena Kovačića 88', 'Rijeka', 4, 70.00, 2, 5, 'Povijest', 'am'),
+(14, 'Laboratorij ludog znanstvenika', 'Eksperiment je pošao po zlu. Zaustavite reakciju prije eksplozije!',  43.5069960, 16.4876770, 'Primoštenska ulica 8', 'Split', 4, 65.00, 2, 6, 'SF', 'am');
 
 
 

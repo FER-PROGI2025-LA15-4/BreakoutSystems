@@ -437,7 +437,7 @@ function MyTeamsTab() {
                         )}
                     </ul>
                 </>}
-                {user.username !== selectedTeam.leader && <button onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
+                {user.username !== selectedTeam.leader && <button className="napusti-tim" onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
                 {user.username === selectedTeam.leader && <>
                     <form onSubmit={submitEditTeam} encType={"multipart/form-data"}>
                         <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
@@ -470,7 +470,7 @@ function MyTeamsTab() {
                         </div>
                     }
                 </>}
-                <button className="back-button" onClick={() => setView("list")}>Natrag</button>
+                <button className={user.username !== selectedTeam.leader ? "back-button" : "back-button-leader"} onClick={() => setView("list")}>Natrag</button>
             </div>
         }
     </div>;
@@ -549,48 +549,102 @@ function GameHistoryTab() {
 }
 function MyRoomsTab() {
     const { user } = useAuth();
-    const animatedComponents = makeAnimated();
-
     if (!user || user.uloga !== "VLASNIK") {
         return null;
     }
+    const animatedComponents = makeAnimated();
+    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
 
     const [myRooms, setMyRooms] = useState(null);
+    const [newRoomMode, setNewRoomMode] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState(null);
     useEffect(() => {
         fetchMyRooms().then((response) => {
             setMyRooms(response);
         })
     }, [user]);
-
-    const [selectedRoom, setSelectedRoom] = useState(null);
-    const handleRoomSelect = (opt) => {
-        setSelectedRoom(opt ? opt.value : null);
+    const handleRoomClick = (room) => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Nije moguće urediti sobu", message: "Morate imati aktivnu pretplatu da biste uredili sobu." });
+        } else {
+            setSelectedRoom(room);
+        }
+    };
+    const handleNewRoomClick = () => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Nije moguće dodati sobu", message: "Morate imati aktivnu pretplatu da biste dodali novu sobu." });
+        } else {
+            setNewRoomMode(true);
+        }
     }
-
-    const [newRoomMode, setNewRoomMode] = useState(false);
 
     const handleSubmit = async (e) => {
         e && e.preventDefault();
+
+        const form = e.target;
         const fd = new FormData();
 
-        result.items.forEach((it) => {
+        // basic room fields
+        if (form.room_id) {
+            fd.append("room_id", form.room_id.value)
+        }
+        fd.append("naziv", form.naziv.value);
+        fd.append("opis", form.opis.value);
+        fd.append("minBrClanTima", form.minBrClanTima.value);
+        fd.append("maxBrClanTima", form.maxBrClanTima.value);
+        fd.append("cijena", form.cijena.value);
+        fd.append("adresa", form.adresa.value);
+        fd.append("grad", form.grad.value);
+        fd.append("kategorija", category);
+        fd.append("tezina", rating);
+        fd.append("geo_lat", latLng[0]);
+        fd.append("geo_long", latLng[1]);
+
+        // images from ImageEditor
+        const localImages = [];
+        (images || []).forEach((it) => {
             if (it.isNew) {
-                order.push(`NEW_${newIndex}`);
-                newFiles.push(it.file);
-                newIndex += 1;
+                localImages.push({ nova: true });
             } else {
-                order.push(it.id);
+                localImages.push({ nova: false, src: it.src })
             }
         });
 
-        fd.append("removed_ids", JSON.stringify(removedIds));
-        fd.append("order", JSON.stringify(order));
-        newFiles.forEach((file) => fd.append(fieldNewFiles, file, file.name));
+        fd.append("images_list", JSON.stringify(localImages));
+
+        // append new files
+        localImages.forEach((file) => {
+            if (file.nova) {
+                fd.append("images", file, file.name);
+            }
+        });
+
+        const response = await authFetch("/api/editRoom", {
+            method: "POST",
+            body: fd,
+        });
+
+        if (response.ok) {
+            setPopup({ isOpen: true, title: "Uspjeh!", message: "Soba je spremljena." });
+            setNewRoomMode(false);
+            setSelectedRoom(null);
+            fetchMyRooms().then(setMyRooms);
+        } else {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+        }
     };
-    const result = { items: [] };
-    const [selectedCategory, setSelectedCategory] = useState("Ostalo");
+
+    const [category, setCategory] = useState("Ostalo");
+    const [rating, setRating] = useState(0.5);
     const [map, setMap] = useState(null);
-    const [latLng, setLatLng] = useState([0, 0]);
+    const [latLng, setLatLng] = useState(null);
+    const [images, setImages] = useState([]);
     useEffect(() => {
         if (map) {
             map.on('click', (e) => {
@@ -598,10 +652,26 @@ function MyRoomsTab() {
             });
         }
     }, [map]);
+    useEffect(() => {
+        setImages([]);
+        if (selectedRoom && !newRoomMode) {
+            setLatLng([selectedRoom.geo_lat, selectedRoom.geo_long]);
+            setCategory(selectedRoom.kategorija);
+            setRating(selectedRoom.tezina);
+        } else {
+            setLatLng([45, 16.5]);
+            setCategory("Ostalo");
+            setRating(0.5);
+        }
+    }, [selectedRoom, newRoomMode]);
+
+    useEffect(() => {
+        console.log(images)
+    }, [images]);
 
     let body;
     if (newRoomMode) {
-        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"}>
+        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"} encType={"multipart/form-data"}>
             <div className="polje">
                 <label htmlFor="naziv">Naziv sobe:</label>
                 <input type="text" id="naziv" placeholder="Naziv sobe" name={"naziv"} required={true} />
@@ -634,54 +704,123 @@ function MyRoomsTab() {
                     <input type="text" id="grad" placeholder="Grad" name={"grad"} required={true} />
                 </div>
             </div>
-            <MapContainer className={"mapa"} center={[45.5, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                <Marker position={latLng}/>
-            </MapContainer>
+            <div className={"mapa-polje"}>
+                <label htmlFor="mapa">Lokacija:</label>
+                <MapContainer className={"mapa"} center={[45, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap} name="mapa">
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                    {latLng && (<Marker position={latLng}/>)}
+                </MapContainer>
+            </div>
             <div className="polje">
                 <label htmlFor="kat">Kategorija sobe:</label>
                 <Select
                     components={animatedComponents}
-                    value={({ value: selectedCategory, label: selectedCategory })}
+                    value={({ value: category, label: category })}
                     options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
                     isClearable={false}
                     placeholder="Kategorija"
-                    onChange={(opt) => setSelectedCategory(opt ? opt.value : "Ostalo")}
+                    onChange={(opt) => setCategory(opt ? opt.value : "Ostalo")}
                     className="profile-page-result-entry-tab-select-room"
                     name="kat"
                 />
             </div>
             <div className="polje">
                 <label htmlFor="rating" id="tezina">Težina sobe:</label>
-                <Rating size={30} readonly={false} allowFraction={true} initialValue={0} name="rating" />
+                <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
             </div>
-            <ImageEditor initialImages={myRooms[1].slike} result={result}/>
+            <ImageEditor initialImages={[]} setImages={setImages}/>
             <div className="buttons">
                 <input type="submit" value={"Dodaj sobu"} className="dodaj"/>
                 <button type="button" onClick={() => setNewRoomMode(false)}>Natrag</button>
             </div>
         </form>;
     } else if (selectedRoom) {
-        body = <p>room details</p>;
+        body = <form onSubmit={handleSubmit} className={"profile-page-new-room-form"} encType={"multipart/form-data"}>
+            <input type={"text"} name={"room_id"} hidden={true} value={selectedRoom.room_id}/>
+            <div className="polje">
+                <label htmlFor="naziv">Naziv sobe:</label>
+                <input type="text" id="naziv" placeholder="Naziv sobe" name={"naziv"} required={true} defaultValue={selectedRoom.naziv}/>
+            </div>
+            <div className="polje">
+                <label htmlFor="opis">Opis sobe:</label>
+                <input type="text" id="opis" placeholder="Opis sobe" name={"opis"} required={true} defaultValue={selectedRoom.opis} />
+            </div>
+            <div className="grouped-polje">
+                <div className="polje">
+                    <label htmlFor="minBrClanTima">Minimalan broj igrača:</label>
+                    <input type="number" id="minBrClanTima" name={"minBrClanTima"} required={true} min={1} defaultValue={selectedRoom.minBrClanTima}/>
+                </div>
+                <div className="polje">
+                    <label htmlFor="maxBrClanTima">Maksimalan broj igrača:</label>
+                    <input type="number" id="maxBrClanTima" name={"maxBrClanTima"} required={true} min={1} defaultValue={selectedRoom.maxBrClanTima}/>
+                </div>
+            </div>
+            <div className="polje">
+                <label htmlFor="cijena">Cijena (€):</label>
+                <input type="number" id="cijena" placeholder="Cijena (€)" step="0.01" name={"cijena"} required={true} min={0.01} defaultValue={selectedRoom.cijena}/>
+            </div>
+            <div className="grouped-polje">
+                <div className="polje">
+                    <label htmlFor="adresa">Adresa:</label>
+                    <input type="text" id="adresa" placeholder="Adresa" name={"adresa"} required={true} defaultValue={selectedRoom.adresa}/>
+                </div>
+                <div className="polje">
+                    <label htmlFor="grad">Grad:</label>
+                    <input type="text" id="grad" placeholder="Grad" name={"grad"} required={true} defaultValue={selectedRoom.grad}/>
+                </div>
+            </div>
+            <div className={"mapa-polje"}>
+                <label htmlFor="mapa">Lokacija:</label>
+                <MapContainer className={"mapa"} center={[45, 16.5]} zoom={7} scrollWheelZoom={false} attributionControl={false} ref={setMap} name="mapa">
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                    {latLng && (<Marker position={latLng}/>)}
+                </MapContainer>
+            </div>
+            <div className="polje">
+                <label htmlFor="kat">Kategorija sobe:</label>
+                <Select
+                    components={animatedComponents}
+                    value={({ value: category, label: category })}
+                    options={['Horor', 'SF', 'Povijest', 'Fantasy', 'Krimi', 'Obitelj', 'Ostalo'].map(cat => ({ value: cat, label: cat }))}
+                    isClearable={false}
+                    placeholder="Kategorija"
+                    onChange={(opt) => setCategory(opt ? opt.value : "Ostalo")}
+                    className="profile-page-result-entry-tab-select-room"
+                    name="kat"
+                />
+            </div>
+            <div className="polje">
+                <label htmlFor="rating" id="tezina">Težina sobe:</label>
+                <Rating size={30} readonly={false} allowFraction={true} initialValue={rating} onClick={(rate) => setRating(rate)} name="rating" />
+            </div>
+            <ImageEditor initialImages={[...selectedRoom.slike]} setImages={setImages}/>
+            <div className="buttons">
+                <input type="submit" value={"Spremi"} className="dodaj"/>
+                <button type="button" onClick={() => setSelectedRoom(false)}>Natrag</button>
+            </div>
+        </form>;
     } else {
         body = <>
-            <div className="new-room" onClick={() => setNewRoomMode(true)}>
+            <div className="new-room" onClick={handleNewRoomClick}>
                 <img src={plus_icon} alt="plus icon" />
                 <p>Dodaj novu sobu</p>
             </div>
             {myRooms && <div className="my-rooms-list">
                 {myRooms.map((room) => (
-                <div key={room.room_id} onClick={() => handleRoomSelect(room)}>
+                <div key={room.room_id}>
                     <img src={room.slike[0]} alt={"room img"} />
                     <h3>{room.naziv}</h3>
-                    <button onClick={() => handleRoomSelect(room)}>DETALJI</button>
+                    <button onClick={() => handleRoomClick(room)}>DETALJI</button>
                 </div>
                 ))}
             </div>}
         </>;
     }
 
-    return <div>{body}</div>;
+    return <div>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
+        {body}
+    </div>;
 }
 function ResultEntryTab() {
     const { user } = useAuth();
@@ -692,6 +831,7 @@ function ResultEntryTab() {
         localPopup.isOpen = false;
         setPopup(localPopup);
     }
+    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
 
     if (!user || user.uloga !== "VLASNIK") {
         return null;
@@ -705,7 +845,11 @@ function ResultEntryTab() {
     }, [user]);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const handleRoomSelect = (opt) => {
-        setSelectedRoom(opt ? opt.value : null);
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Morate imati aktivnu pretplatu da biste unijeli rezultate." });
+        } else {
+            setSelectedRoom(opt ? opt.value : null);
+        }
     }
 
     const [appointments, setAppointments] = useState(null);
@@ -977,7 +1121,7 @@ async function fetchTeamInvites() {
     }
 }
 
-function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] } }) {
+function ImageEditor({ initialImages = [], maxFiles = 20, setImages = () => {} }) {
     const fileInputRef = useRef(null);
     const dragIndexRef = useRef(null);
 
@@ -992,15 +1136,11 @@ function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] }
         });
     };
 
-    const [items, setItems] = useState(() => normalizeInitial(initialImages));
+    const [items, setItems] = useState(normalizeInitial(initialImages));
 
     useEffect(() => {
-        result.items = items;
+        setImages(items);
     }, [items]);
-
-    useEffect(() => {
-        setItems(normalizeInitial(initialImages));
-    }, [JSON.stringify(initialImages)]);
 
     useEffect(() => {
         return () => {
@@ -1033,6 +1173,17 @@ function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] }
             if (removed.isNew) {
                 if (removed.src && removed.src.startsWith("blob:")) URL.revokeObjectURL(removed.src);
             }
+            return copy;
+        });
+    };
+
+    const moveBy = (index, delta) => {
+        setItems((prev) => {
+            const nextIndex = index + delta;
+            if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+            const copy = [...prev];
+            const [moved] = copy.splice(index, 1);
+            copy.splice(nextIndex, 0, moved);
             return copy;
         });
     };
@@ -1112,7 +1263,25 @@ function ImageEditor({ initialImages = [], maxFiles = 20, result = { items: [] }
                             onDragEnd={onDragEnd}
                         />
                         {!it.isNew && it.id !== null && <div className="image-editor-meta">#{it.id}</div>}
-                        <button type="button" aria-label="Remove image" onClick={() => removeAt(idx)} className="image-editor-remove">×</button>
+                        <button type="button" aria-label="Ukloni sliku" onClick={() => removeAt(idx)} className="image-editor-remove">×</button>
+                        <button
+                            type="button"
+                            aria-label="Pomakni lijevo"
+                            onClick={() => moveBy(idx, -1)}
+                            className="image-editor-move image-editor-move-left"
+                            disabled={idx === 0}
+                        >
+                            &lt;
+                        </button>
+                        <button
+                            type="button"
+                            aria-label="Pomakni desno"
+                            onClick={() => moveBy(idx, 1)}
+                            className="image-editor-move image-editor-move-right"
+                            disabled={idx === items.length - 1}
+                        >
+                            &gt;
+                        </button>
                         <div className="image-editor-order">{idx + 1}</div>
                     </div>
                 ))}

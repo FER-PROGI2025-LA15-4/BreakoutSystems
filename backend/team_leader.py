@@ -25,6 +25,7 @@ def get_invites():
     db.close()
     return jsonify({"users": users}), 200
 
+# slanje invitea u tim korisniku
 @leader_bp.route('/api/add-member', methods=['POST'])
 @login_required
 def add_member():
