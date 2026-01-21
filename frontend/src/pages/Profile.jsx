@@ -8,7 +8,7 @@ import LoadingScreen from "../components/LoadingScreen";
 import Select from "react-select";
 import makeAnimated from 'react-select/animated';
 import sortArr from "../utils/sortArray";
-import { TimePicker } from '@mantine/dates';
+import { TimePicker, DateTimePicker } from '@mantine/dates';
 import Popup from "../components/Popup";
 import tick_icon from '../assets/icons/tick-circle.svg';
 import plus_icon from '../assets/icons/plus.svg';
@@ -49,6 +49,7 @@ function ProfilePageContent() {
     } else if (user.uloga === "VLASNIK") {
         tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
         tabs.push({ name: "Moje sobe", component: <MyRoomsTab/> });
+        tabs.push({ name: "Termini", component: <AppointmentsTab/> });
         tabs.push({ name: "Unos rezultata", component: <ResultEntryTab/> });
         tabs.push({ name: "Pretplata", component: <SubscriptionTab/> });
     } else {  // uloga POLAZNIK
@@ -625,7 +626,7 @@ function MyRoomsTab() {
             }
         });
 
-        const response = await authFetch("/api/editRoom", {
+        const response = await authFetch("/api/owner/edit-room", {
             method: "POST",
             body: fd,
         });
@@ -1063,6 +1064,77 @@ function SubscriptionTab() {
                 <button onClick={() => handlePaymentClick("godišnja")}>IDI NA PLAĆANJE</button>
             </div>
         </div>
+    </div>;
+}
+function AppointmentsTab() {
+    const { user } = useAuth();
+    const animatedComponents = makeAnimated();
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
+    const activeSubscription = user.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+    if (!user || user.uloga === "POLAZNIK") {
+        return null;
+    }
+    const [myRooms, setMyRooms] = useState(null);
+    useEffect(() => {
+        fetchMyRooms().then((response) => {
+            setMyRooms(response);
+        })
+    }, [user]);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const handleRoomSelect = (opt) => {
+        if (!activeSubscription) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Morate imati aktivnu pretplatu da biste dodali termine." });
+        } else {
+            setSelectedRoom(opt ? opt.value : null);
+        }
+    }
+    const [dtTime, setDtTime] = useState(new Date());
+    const handleAddAppointment = () => {
+        if (dtTime < new Date()) {
+            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Termin ne može biti u prošlosti." });
+        } else {
+            authFetch("/api/owner/add-appointment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    room_id: selectedRoom.room_id,
+                    dt: dtTime.toISOString()
+                })
+            }).then((response) => {
+                if (response.ok) {
+                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno dodan." });
+                    setDtTime(new Date());
+                } else {
+                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+                }
+            })
+        }
+    }
+
+    return <div className={"profile-page-appointments-tab"}>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
+        <Select
+            components={animatedComponents}
+            value={selectedRoom ? ({ value: selectedRoom, label: selectedRoom.naziv }) : null}
+            options={myRooms ? myRooms.map((room) => ({ value: room, label: room.naziv })) : []}
+            isLoading={myRooms === null}
+            isMulti={false}
+            isClearable={true}
+            placeholder="Escape Room"
+            onChange={handleRoomSelect}
+            className="profile-page-result-entry-tab-select-room"
+        />
+        {selectedRoom && <>
+            <DateTimePicker value={dtTime} onChange={setDtTime} />
+            <button onClick={handleAddAppointment}>Dodaj termin</button>
+        </>}
     </div>;
 }
 
