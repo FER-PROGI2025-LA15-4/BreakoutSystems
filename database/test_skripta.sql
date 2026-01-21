@@ -13,7 +13,8 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('matej123', 'oauth_polaznik_333', 'POLAZNIK'),
 ('elena123', 'oauth_polaznik_444', 'POLAZNIK'),
 ('antonio123', 'oauth_polaznik_555', 'POLAZNIK'),
-('am', '40371578', 'VLASNIK'),
+('am', 'oauth_vlasnik_648', 'VLASNIK'),
+('am2', '40371578', 'ADMIN'),
 ('sara123', 'oauth_polaznik_666', 'POLAZNIK');
 
 -- VLASNICI

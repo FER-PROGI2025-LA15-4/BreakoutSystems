@@ -46,6 +46,8 @@ function ProfilePageContent() {
 
     let tabs = [];
     if (user.uloga === "ADMIN") {
+        tabs.push({ name: "Termini", component: <AdminAppointmentsTab/> });
+        tabs.push({ name: "Članarine", component: <AdminSubscriptionsTab/> });
     } else if (user.uloga === "VLASNIK") {
         tabs.push({ name: "Osobni podaci", component: <PersonalInfoTab/> });
         tabs.push({ name: "Moje sobe", component: <MyRoomsTab/> });
@@ -1134,6 +1136,97 @@ function AppointmentsTab() {
         {selectedRoom && <>
             <DateTimePicker value={dtTime} onChange={setDtTime} />
             <button onClick={handleAddAppointment}>Dodaj termin</button>
+        </>}
+    </div>;
+}
+
+function AdminAppointmentsTab() {
+    const { user } = useAuth();
+    if (!user || user.uloga !== "ADMIN") {
+        return null;
+    }
+    return <div className={"profile-page-admin-appointments-tab"}>appointments admin tab
+    </div>;
+}
+function AdminSubscriptionsTab() {
+    const { user } = useAuth();
+    const animatedComponents = makeAnimated();
+    if (!user || user.uloga !== "ADMIN") {
+        return null;
+    }
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
+
+    const [users, setUsers] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const handleUserSelect = (opt) => {
+        setSelectedUser(opt ? opt.value : null);
+    }
+    useEffect(() => {
+        authFetch("/api/admin/subscriptions").then(async (response) => {
+            if (response.ok) {
+                const data = await response.json();
+                setUsers(data["users"]);
+            }
+        });
+    }, []);
+    const activeSubscription = selectedUser && selectedUser.clanarinaDoDatVr && new Date(user.clanarinaDoDatVr) > new Date();
+    const formattedSubscriptionDate = selectedUser && selectedUser.clanarinaDoDatVr ? new Intl.DateTimeFormat("hr-HR", {
+            year: "numeric",
+            month: "long",
+            day: "2-digit"
+        }).format(new Date(selectedUser.clanarinaDoDatVr)) : null;
+
+    const handleSubscriptionExtension = (type) => {
+        authFetch("/api/admin/subscription", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: selectedUser.username,
+                tip: type                    //mjesečna ili godišnja
+            })
+        }).then((response) => {
+            if (response.ok) {
+                setPopup({ isOpen: true, title: "Uspjeh!", message: "Pretplata je uspješno produžena." });
+                // refresh user data
+                authFetch("/api/admin/subscriptions").then(async (response) => {
+                    if (response.ok) {
+                        const data = await response.json();
+                        setUsers(data["users"]);
+                        const updatedUser = data["users"].find((u) => u.username === selectedUser.username);
+                        setSelectedUser(updatedUser);
+                    }
+                });
+            } else {
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            }
+        });
+    }
+
+    return <div className={"profile-page-admin-subscriptions-tab"}>
+        {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup}/>}
+        <Select
+            components={animatedComponents}
+            value={selectedUser ? ({ value: selectedUser, label: selectedUser.naziv }) : null}
+            options={users ? users.map((user) => ({ value: user.username, label: user.username })) : []}
+            isLoading={users === null}
+            isMulti={false}
+            isClearable={true}
+            placeholder="Korisnik"
+            onChange={handleUserSelect}
+            className="profile-page-result-entry-tab-select-room"
+        />
+        {selectedUser && <>
+            <p>Status pretplate: { activeSubscription ? `vrijedi do ${formattedSubscriptionDate}` : "nemate aktivnu članarinu" }</p>
+            { activeSubscription && <img src={tick_icon} alt={"tick icon"}/> }
+            <button onClick={() => handleSubscriptionExtension("mjesečna")}>Produži mjesec dana</button>
+            <button onClick={() => handleSubscriptionExtension("godišnja")}>Produži godinu dana</button>
         </>}
     </div>;
 }
