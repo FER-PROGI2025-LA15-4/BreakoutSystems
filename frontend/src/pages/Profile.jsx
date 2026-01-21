@@ -1136,6 +1136,17 @@ function ImageEditor({ images = [], maxFiles = 20, setImages = () => {} }) {
         });
     };
 
+    const moveBy = (index, delta) => {
+        setItems((prev) => {
+            const nextIndex = index + delta;
+            if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+            const copy = [...prev];
+            const [moved] = copy.splice(index, 1);
+            copy.splice(nextIndex, 0, moved);
+            return copy;
+        });
+    };
+
     // drag-and-drop handlers for reorder
     const onDragStart = (e, index) => {
         dragIndexRef.current = index;
@@ -1211,7 +1222,25 @@ function ImageEditor({ images = [], maxFiles = 20, setImages = () => {} }) {
                             onDragEnd={onDragEnd}
                         />
                         {!it.isNew && it.id !== null && <div className="image-editor-meta">#{it.id}</div>}
-                        <button type="button" aria-label="Remove image" onClick={() => removeAt(idx)} className="image-editor-remove">×</button>
+                        <button type="button" aria-label="Ukloni sliku" onClick={() => removeAt(idx)} className="image-editor-remove">×</button>
+                        <button
+                            type="button"
+                            aria-label="Pomakni lijevo"
+                            onClick={() => moveBy(idx, -1)}
+                            className="image-editor-move image-editor-move-left"
+                            disabled={idx === 0}
+                        >
+                            &lt;
+                        </button>
+                        <button
+                            type="button"
+                            aria-label="Pomakni desno"
+                            onClick={() => moveBy(idx, 1)}
+                            className="image-editor-move image-editor-move-right"
+                            disabled={idx === items.length - 1}
+                        >
+                            &gt;
+                        </button>
                         <div className="image-editor-order">{idx + 1}</div>
                     </div>
                 ))}
