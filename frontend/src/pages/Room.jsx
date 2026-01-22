@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import PageTemplate from "./PageTemplate";
-import {useParams} from "react-router";
+import {useParams, useSearchParams} from "react-router";
 import {NotFoundContent} from "./NotFound";
 import LoadingScreen from "../components/LoadingScreen";
 import horor_img1 from "../assets/images/horror-background.png";
@@ -24,6 +24,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import hrLocale from "@fullcalendar/core/locales/hr";
+import Popup from "../components/Popup";
 
 
 async function fetchRoom(room_id) {
@@ -120,9 +121,54 @@ function RoomContent({ room }) {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [reservationNote, setReservationNote] = useState(null);
     const [currentView, setCurrentView] = useState("dayGridMonth");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [popup, setPopup] = useState({ isOpen: false, title: "", message: "" });
+    const handleClosePopup = () => {
+        const localPopup = { ...popup };
+        localPopup.isOpen = false;
+        setPopup(localPopup);
+    }
+    const [refreshAppointments, setRefreshAppointments] = useState(0);
+    useEffect(() => {
+        // callback from stripe after payment
+        let payment_status = searchParams.get('payment_status');
+        if (payment_status) {
+            // remove payment_status from URL after reading it
+            searchParams.delete('payment_status');
+            setSearchParams(searchParams, { replace: true });
+        }
+        let sessionId = searchParams.get('session_id');
+        if (sessionId) {
+            // remove session_id from URL after reading it
+            searchParams.delete('session_id');
+            setSearchParams(searchParams, { replace: true });
+        }
+        const asyncFunc = async () => {
+            try {
+                const response = await fetch('/api/confirm-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                })
+                if (response.ok) {
+                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Vaša rezervacija je zabilježena." });
+                    setRefreshAppointments((prev) => prev + 1);
+                } else {
+                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+                }
+            } catch (err) {
+                setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
+            }
+        };
+
+        if (payment_status && payment_status === "true" && sessionId) {
+            asyncFunc();
+        } else if (payment_status && payment_status === "false") {
+            setPopup({ isOpen: true, title: "Plaćanje nije uspjelo", message: "Rezervacija nije zabilježena. Pokušajte ponovno." });
+        }
+    }, []);
     useEffect(() => {
         fetchOwner(room.room_id).then(response => {
-            console.log(response);
             setOwner(response);
         })
     }, [room]);
@@ -156,7 +202,7 @@ function RoomContent({ room }) {
         return () => {
             active = false;
         };
-    }, [room]);
+    }, [room, refreshAppointments]);
 
     const [leaderboard, setLeaderboard] = useState(null);
     useEffect(() => {
@@ -218,22 +264,39 @@ function RoomContent({ room }) {
         .filter(Boolean);
     const reservationDisabled = !selectedTeam || !selectedAppointment;
     const selectedLabel = formatAppointmentLabel(selectedAppointment?.start || selectedAppointment?.startStr);
-    const handleReserveClick = () => {
+    const handleReserveClick = async () => {
         if (reservationDisabled) {
             setReservationNote("Odaberite tim i termin.");
             return;
         }
         const payload = {
+            tip_placanja: "reservation",
             room_id: room.room_id,
             ime_tima: selectedTeam.name,
             datVrPoc: selectedAppointment?.raw?.datVrPoc || toBackendDate(selectedAppointment.start)
         };
+
+        try {
+            const response = await fetch('/api/start-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            console.error("Greška:", err);
+        }
+
         console.log("Podaci rezervacije", payload);
         setReservationNote("Rezervacija je spremna za slanje.");
     };
 
     return (
         <div className={"room-page"}>
+            {popup.isOpen && <Popup title={popup.title} message={popup.message} onClose={handleClosePopup} />}
             <section className={"room-page-section-title"}>
                 <img src={img1} alt="background image" />
                 <p>{room.kategorija}</p>
