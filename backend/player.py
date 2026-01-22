@@ -77,7 +77,8 @@ def get_my_teams():
         FROM Tim t LEFT JOIN ClanTima c 
         ON c.ime_tima = t.ime 
         WHERE c.username = ? 
-        OR t.voditelj_username = ?""", (current_user.username, current_user.username,)
+        OR t.voditelj_username = ?
+        AND c.accepted = 1""", (current_user.username, current_user.username,)
     ).fetchall()
 
     result = []
@@ -147,7 +148,7 @@ def get_my_invites():
     result = []
     for invite in invites:
         team_name = invite["ime_tima"]
-        team = db.execute("SELECT * FROM Tim WHERE ime_tima = ?", (team_name,)).fetchone()
+        team = db.execute("SELECT * FROM Tim WHERE ime = ?", (team_name,)).fetchone()
         result.append({
             "name": team["ime"],
             "logo": team["image_url"],
