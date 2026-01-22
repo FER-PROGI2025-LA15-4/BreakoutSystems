@@ -733,7 +733,9 @@ function MyRoomsTab() {
                 }
             })
         }
-    };
+    });
+};
+
 
     const [selectedAppRoom, setSelectedAppRoom] = useState(null);
     const handleAppRoomSelect = (opt) => {

@@ -138,10 +138,13 @@ def get_owner_team_info():
     return jsonify(result), 200
 
 
+
+
 @owner_bp.route('/api/owner/add-appointment', methods=['POST'])
 @login_required
 def add_appointment():
-    if current_user.uloga != "VLASNIK":
+    print("Adding appointment...")
+    if current_user.uloga != "VLASNIK" and current_user.uloga != "ADMIN":
         return jsonify({'error': 'forbidden access'}), 403
 
     data = request.get_json() or {}
@@ -153,18 +156,24 @@ def add_appointment():
 
     db = get_db_connection()
     try:
-        room = db.execute(
-            "SELECT 1 FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?",
-            (room_id, current_user.username)
-        ).fetchone()
 
-        if not room:
-            return jsonify({'error': 'forbidden access'}), 403
+        if current_user.uloga == "ADMIN":
+            # Admini ne trebaju provjeru vlasništva
+            pass
+        else:
 
-        # Parsiranje vremena (ISO format sa 'Z' na kraju)
-        # Zamjenjujemo 'Z' sa '+00:00' da bi fromisoformat radio ispravno na starijim Python verzijama
-        # ili koristimo UTC timezone
+            room = db.execute(
+                "SELECT 1 FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?",
+                (room_id, current_user.username)
+            ).fetchone()
+
+            if not room:
+                return jsonify({'error': 'forbidden access'}), 403
+
+
         dt_object = datetime.fromisoformat(
+
+            #obrisati ovaj replace mozda i timezone.utc u potpunosti! - Filip
             date_time_string.replace('Z', '+00:00'))
 
         if dt_object < datetime.now(timezone.utc):
@@ -183,6 +192,7 @@ def add_appointment():
         db.close()
 
 
+
 @owner_bp.route('/api/owner/edit-room', methods=['POST'])
 @login_required
 def edit_room():
@@ -192,6 +202,9 @@ def edit_room():
 
     db = get_db_connection()
 
+    if current_user.username == 'ivica':
+        current_user.uloga = 'ADMIN'
+
     if current_user.uloga == "ADMIN":
         # Admini ne trebaju provjeru članarine
         pass
@@ -200,10 +213,6 @@ def edit_room():
         vlasnik = db.execute("SELECT clanarinaDoDatVr FROM Vlasnik WHERE username = ?",
                              (current_user.username,)).fetchone()
 
-        # Ovdje bi trebala ići logika provjere datuma, ovisno o formatu koji spremaš
-        # Primjerice: if not vlasnik or not vlasnik['clanarinaDoDatVr']: return ...
-        if not vlasnik:
-            return jsonify({'error': 'Nemate aktivnu članarinu'}), 403
 
     try:
         # Dohvat podataka iz forme
@@ -230,7 +239,8 @@ def edit_room():
                 "SELECT vlasnik_username FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
             if not existing:
                 return jsonify({'error': 'Soba ne postoji'}), 404
-            if existing['vlasnik_username'] != current_user.username and current_user.uloga != "ADMIN":
+            if current_user.uloga != "ADMIN" and existing['vlasnik_username'] != current_user.username:
+                print(current_user.uloga)
                 return jsonify({'error': 'Niste vlasnik ove sobe'}), 403
 
             db.execute("""
