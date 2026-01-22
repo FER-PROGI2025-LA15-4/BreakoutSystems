@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, jsonify, request
 from flask_login import current_user,login_required
-from auth import get_db_connection
+from app import get_db_connection
 import stripe
 from datetime import datetime, timedelta
 

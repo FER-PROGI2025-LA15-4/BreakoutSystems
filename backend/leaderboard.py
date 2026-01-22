@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from auth import get_db_connection
+from app import get_db_connection
 from escape_room import calculate_weight
 
 leaderboard_bp = Blueprint('leaderboard', __name__)

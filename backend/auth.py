@@ -1,25 +1,16 @@
 import uuid
-import sqlite3
 from pathlib import Path
 from flask import Blueprint, redirect, url_for, request, jsonify, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from models import User
 from werkzeug.utils import secure_filename
+from app import get_db_connection
 
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 oauth = OAuth()
 
-
-def get_db_connection():
-    db_path = Path(current_app.instance_path) / "escape_room.db"
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-
-    conn = sqlite3.connect(db_path)
-    conn.execute("PRAGMA foreign_keys = ON")
-    conn.row_factory = sqlite3.Row
-    return conn
 
 def init_oauth(app):
     oauth.init_app(app)
