@@ -129,6 +129,7 @@ function RoomContent({ room }) {
         setPopup(localPopup);
     }
     const [refreshAppointments, setRefreshAppointments] = useState(0);
+    const [checkedTeammates, setCheckedTeammates] = useState(false);
     useEffect(() => {
         // callback from stripe after payment
         let payment_status = searchParams.get('payment_status');
@@ -237,10 +238,12 @@ function RoomContent({ room }) {
     }
 
     const handleTeamSelect = (opt) => {
+        setCheckedTeammates(false);
         setSelectedTeam(opt ? opt.team : null);
         setReservationNote(null);
     };
     const handleEventClick = (info) => {
+        setCheckedTeammates(false);
         setSelectedAppointment({
             id: info.event.id,
             start: info.event.start,
@@ -269,6 +272,30 @@ function RoomContent({ room }) {
             setReservationNote("Odaberite tim i termin.");
             return;
         }
+
+        if (!checkedTeammates) {
+            const payload = {
+                room_id: room.room_id,
+                ime_tima: selectedTeam.name,
+            };
+
+            try {
+                const response = await fetch('/api/has-played', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                setCheckedTeammates(true);
+                if (data["netko_igrao"]) {
+                    setPopup({ isOpen: true, title: "Upozorenje!", message: "Jedan ili više članova vašeg tima već su igrali ovu sobu. Ako želite nastaviti s rezervacijom, ponovno kliknite REZERVIRAJ, ali pripazite da na termin dođu isključivo članovi tima koji nisu igrali ovu sobu." });
+                    return;
+                }
+            } catch (err) {
+                console.error("Greška:", err);
+            }
+        }
+
         const payload = {
             tip_placanja: "reservation",
             room_id: room.room_id,
@@ -289,9 +316,6 @@ function RoomContent({ room }) {
         } catch (err) {
             console.error("Greška:", err);
         }
-
-        console.log("Podaci rezervacije", payload);
-        setReservationNote("Rezervacija je spremna za slanje.");
     };
 
     return (
