@@ -1,9 +1,9 @@
 import os
-from pathlib import Path
-from flask import Flask, jsonify, send_from_directory
+import sqlite3
+from flask import Flask, jsonify, send_from_directory, current_app
 from flask_login import LoginManager
 from config import Config
-from auth import auth_bp, init_oauth, get_db_connection
+from auth import auth_bp, init_oauth
 from models import User
 from apscheduler.schedulers.background import BackgroundScheduler
 from mail import send_reminder
@@ -14,6 +14,7 @@ from payment import payment_bp
 from player import player_bp
 from team_leader import leader_bp
 from admin import admin_bp
+from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -43,7 +44,14 @@ app.register_blueprint(admin_bp)
 
 SCHEMA_SQL_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'base.sql')
 
+def get_db_connection():
+    db_path = Path(current_app.instance_path) / "escape_room.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
 
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA foreign_keys = ON")
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @login_manager.user_loader
 def load_user(username):
