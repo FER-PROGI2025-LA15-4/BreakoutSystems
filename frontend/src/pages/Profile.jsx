@@ -430,7 +430,7 @@ function MyTeamsTab() {
                     </div>
                     <img src={selectedTeam.logo === null ? profilna : selectedTeam.logo} alt={"team logo"}/>
                 </div>
-                {selectedTeam.members && <>
+                {selectedTeam.members?.length > 0 && <>
                     <p>Članovi tima ({selectedTeam.members.length}/10):</p>
                     <ul>
                         {selectedTeam.members.map((member) =>
@@ -441,7 +441,7 @@ function MyTeamsTab() {
                         )}
                     </ul>
                 </>}
-                {(selectedTeamInvites || selectedTeam.members.length < 10) &&
+                {((user.uloga === "ADMIN" && (selectedTeamInvites || selectedTeam.members.length < 10)) || (user.uloga === "POLAZNIK" && selectedTeamInvites && selectedTeamInvites.length > 0)) &&
                     (<div className="team-invites">
                         <p className="pozvani-korisnici-naslov">Pozvani korisnici:</p>
                         {selectedTeamInvites &&
@@ -454,7 +454,7 @@ function MyTeamsTab() {
                                 )}
                             </ul>
                         }
-                        {selectedTeam.members.length + selectedTeamInvites.length < 10 &&
+                        {user.uloga === "ADMIN" && selectedTeam.members.length + selectedTeamInvites.length < 10 &&
                             <form onSubmit={submitUserAdd}>
                                 <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
                                 <input className="pozovi" type={"text"} name={"user"} placeholder={"Korisničko ime"} required={true}/>
@@ -463,7 +463,7 @@ function MyTeamsTab() {
                         }
                     </div>)
                 }
-                {user.username !== selectedTeam.leader && <button className="napusti-tim" onClick={() => handleDeclineClick(selectedTeam.name)}>Napusti tim</button>}
+                {user.username !== selectedTeam.leader && <button className="napusti-tim" onClick={() => {handleDeclineClick(selectedTeam.name);setView("list");}}>Napusti tim</button>}
                 {user.username === selectedTeam.leader && <>
                     <form onSubmit={submitEditTeam} encType={"multipart/form-data"}>
                         <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
