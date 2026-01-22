@@ -25,6 +25,7 @@ def get_invites():
     users = db.execute(
         "SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 0", (team_name,)).fetchall()
 
+    for user in users: print(user["username"])
     users = [user["username"] for user in users]
 
     db.close()
@@ -41,7 +42,7 @@ def add_member():
 
     data = request.get_json() or {}
     team = data.get('team_name')
-    username = data.get('username')
+    username = data.get('user')
     db = get_db_connection()
     rows = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?",
                       (team, current_user.username)).fetchone()
@@ -149,13 +150,22 @@ def remove_member():
         return jsonify({'error': 'forbidden access'}), 403
     data = request.get_json() or {}
     team = data.get('team_name')
-    username = data.get('username')
+    username = data.get('user')
     db = get_db_connection()
     rows = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?",
                       (team, current_user.username)).fetchone()
     if rows is None:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
+
+    profile_exists = db.execute("SELECT * FROM Polaznik WHERE username = ?", (username,)).fetchone()
+    if profile_exists is None:
+        db.close()
+        return jsonify({'error': 'no user'}), 404
+
+    if username == current_user.username:
+        db.close()
+        return jsonify({'error': 'self invite'}), 404
 
     existing = db.execute(
         "SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()

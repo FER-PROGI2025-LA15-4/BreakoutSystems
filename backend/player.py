@@ -94,8 +94,7 @@ def get_my_teams():
     result = []
 
     for team in teams:
-        members = db.execute(
-            "SELECT username FROM ClanTima WHERE ime_tima = ?", (team["ime"],)).fetchall()
+        members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 1", (team["ime"],)).fetchall()
 
         result.append({
             "name": team["ime"],
