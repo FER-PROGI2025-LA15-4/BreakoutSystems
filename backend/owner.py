@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, jsonify, request
-from flask_login import current_user,login_required
+from flask_login import current_user, login_required
 from datetime import datetime, timezone
 from auth import save_temp_file, move_temp_image
 from app import get_db_connection
@@ -8,6 +8,8 @@ from app import get_db_connection
 owner_bp = Blueprint('owner', __name__)
 
 # unos rezultata
+
+
 @owner_bp.route("/api/owner/enter-result", methods=["POST"])
 @login_required
 def enter_result():
@@ -22,23 +24,28 @@ def enter_result():
 
     db = get_db_connection()
 
-    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?", (room_id, current_user.username,)).fetchone()
+    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?",
+                      (room_id, current_user.username,)).fetchone()
     if not room:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
     cursor = db.cursor()
-    cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?", (result, room_id, dat_vr_poc))
+    cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?",
+                   (result, room_id, dat_vr_poc))
     if cursor.rowcount == 0:
         db.close()
         return jsonify({'error': 'appointment not found'}), 400
     for member in members:
-        cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)", (room_id, dat_vr_poc, member))
+        cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)",
+                       (room_id, dat_vr_poc, member))
 
     db.commit()
     db.close()
     return jsonify({"success": True}), 200
 
 # dohvat soba jednog vlasnika
+
+
 @owner_bp.route('/api/my-rooms', methods=['GET'])
 @login_required
 def get_my_rooms():
@@ -53,8 +60,8 @@ def get_my_rooms():
     if current_user.uloga == "ADMIN":
         rooms = db.execute("SELECT * FROM EscapeRoom").fetchall()
     else:
-        rooms = db.execute("SELECT * FROM EscapeRoom WHERE vlasnik_username = ?", (current_user.username,)).fetchall()
-
+        rooms = db.execute("SELECT * FROM EscapeRoom WHERE vlasnik_username = ?",
+                           (current_user.username,)).fetchall()
 
     result = []
     for room in rooms:
@@ -87,6 +94,8 @@ def get_my_rooms():
     return jsonify({"rooms": result}), 200
 
 # dohvat podataka o timu prilikom unosa rezultata
+
+
 @owner_bp.route('/api/owner/team-info')
 @login_required
 def get_owner_team_info():
@@ -98,7 +107,6 @@ def get_owner_team_info():
 
     if not ime_tima:
         return jsonify({'error': 'ime_tima query parameter is required'}), 400
-
 
     podaci_tima = db.execute("""
         SELECT t.image_url, t.voditelj_username
@@ -118,16 +126,17 @@ def get_owner_team_info():
     members_list = [member["username"] for member in members_rows]
 
     result = {
-            "ime_tima": ime_tima,
-            "logo": podaci_tima["image_url"],
-            "leader": podaci_tima["voditelj_username"],
-            "members": members_list
+        "ime_tima": ime_tima,
+        "logo": podaci_tima["image_url"],
+        "leader": podaci_tima["voditelj_username"],
+        "members": members_list
     }
 
     # ime_tima: "ime_tima1", logo: "url_slike_loga_tima1", leader: "username_voditelj_tim1", members: ["username_clan1_tim1", "username_clan2_tim1"] }
 
     db.close()
     return jsonify(result), 200
+
 
 @owner_bp.route('/api/owner/add-appointment', methods=['POST'])
 @login_required
@@ -152,10 +161,11 @@ def add_appointment():
         if not room:
             return jsonify({'error': 'forbidden access'}), 403
 
-        #Parsiranje vremena (ISO format sa 'Z' na kraju)
+        # Parsiranje vremena (ISO format sa 'Z' na kraju)
         # Zamjenjujemo 'Z' sa '+00:00' da bi fromisoformat radio ispravno na starijim Python verzijama
         # ili koristimo UTC timezone
-        dt_object = datetime.fromisoformat(date_time_string.replace('Z', '+00:00'))
+        dt_object = datetime.fromisoformat(
+            date_time_string.replace('Z', '+00:00'))
 
         if dt_object < datetime.now(timezone.utc):
             return jsonify({'error': 'Cannot add appointment in the past'}), 400
@@ -182,12 +192,11 @@ def edit_room():
 
     db = get_db_connection()
 
-
     if current_user.uloga == "ADMIN":
         # Admini ne trebaju provjeru članarine
         pass
     else:
-    # 2. Provjera članarine (prema tvojoj shemi, članarina je u tablici Vlasnik)
+        # 2. Provjera članarine (prema tvojoj shemi, članarina je u tablici Vlasnik)
         vlasnik = db.execute("SELECT clanarinaDoDatVr FROM Vlasnik WHERE username = ?",
                              (current_user.username,)).fetchone()
 
@@ -217,14 +226,12 @@ def edit_room():
         # 3. CREATE ili UPDATE
         if room_id:
             # Provjera vlasništva
-            if current_user.uloga != "ADMIN":
-                pass
-            else:
-                existing = db.execute("SELECT vlasnik_username FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
-                if not existing:
-                    return jsonify({'error': 'Soba ne postoji'}), 404
-                if existing['vlasnik_username'] != current_user.username:
-                    return jsonify({'error': 'Niste vlasnik ove sobe'}), 403
+            existing = db.execute(
+                "SELECT vlasnik_username FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
+            if not existing:
+                return jsonify({'error': 'Soba ne postoji'}), 404
+            if existing['vlasnik_username'] != current_user.username and current_user.uloga != "ADMIN":
+                return jsonify({'error': 'Niste vlasnik ove sobe'}), 403
 
             db.execute("""
                 UPDATE EscapeRoom SET 
@@ -232,22 +239,22 @@ def edit_room():
                 inicijalna_tezina=?, cijena=?, minBrClanTima=?, maxBrClanTima=?, kategorija=?
                 WHERE room_id=?
             """, (
-            naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, min_igraca, max_igraca, kategorija, room_id))
+                naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, min_igraca, max_igraca, kategorija, room_id))
         else:
             cursor = db.execute("""
                 INSERT INTO EscapeRoom 
                 (vlasnik_username, naziv, opis, geo_lat, geo_long, adresa, grad, inicijalna_tezina, cijena, minBrClanTima, maxBrClanTima, kategorija)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-            current_user.username, naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, min_igraca, max_igraca,
-            kategorija))
+                current_user.username, naziv, opis, geo_lat, geo_long, adresa, grad, tezina, cijena, min_igraca, max_igraca,
+                kategorija))
             room_id = cursor.lastrowid
 
         # 4. Obrada slika (images_list i images)
         images_list_raw = request.form.get('images_list', '[]')
         images_list = json.loads(images_list_raw)
-        uploaded_files = request.files.getlist('images')  # Atribut 'images' sadrži listu fajlova
-
+        # Atribut 'images' sadrži listu fajlova
+        uploaded_files = request.files.getlist('images')
 
         # Prvo obrišemo stare zapise slika iz baze za tu sobu (lakše je napraviti re-insert)
         # Napomena: U produkciji bi ovdje trebali paziti da ne obrišemo fajlove s diska koji nam još trebaju
@@ -255,7 +262,8 @@ def edit_room():
         if not images_list and len(uploaded_files) == 0:
             pass
         else:
-            db.execute("DELETE FROM EscapeRoomImage WHERE room_id = ?", (room_id,))
+            db.execute(
+                "DELETE FROM EscapeRoomImage WHERE room_id = ?", (room_id,))
             file_index = 0
             for idx, img_obj in enumerate(images_list):
                 final_url = None
