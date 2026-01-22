@@ -170,6 +170,10 @@ def add_appointment():
         if dt_object < datetime.now(timezone.utc):
             return jsonify({'error': 'Cannot add appointment in the past'}), 400
 
+        exist = db.execute("SELECT * FROM Termin WHERE room_id = ? AND datVrPoc = ?", (room_id, date_time_string)).fetchone()
+        if exist:
+            return jsonify({'error': 'Already exists'}), 400
+
         db.execute(
             "INSERT INTO Termin (room_id, datVrPoc) VALUES (?, ?)",
             (room_id, date_time_string)
