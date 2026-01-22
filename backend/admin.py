@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
-from app import get_db_connection
+from db_connection import get_db_connection
 
 admin_bp = Blueprint('admin', __name__)
 
