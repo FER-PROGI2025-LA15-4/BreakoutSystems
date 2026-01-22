@@ -301,6 +301,18 @@ function MyTeamsTab() {
             )
         }
     }, [selectedTeam]);
+    useEffect(() => {
+        if (selectedTeam) {
+            const name = selectedTeam.name;
+            for (const team of myTeams) {
+                if (team.name === name) {
+                    setSelectedTeam(team);
+                    return;
+                }
+            }
+            setSelectedTeam(null);
+        }
+    }, [myTeams]);
 
     const submitNewTeam = (e) => {
         e.preventDefault();
