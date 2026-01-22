@@ -77,8 +77,8 @@ def get_my_teams():
         FROM Tim t LEFT JOIN ClanTima c 
         ON c.ime_tima = t.ime 
         WHERE accepted = 1
-        AND c.username = ? 
-        OR t.voditelj_username = ?""", (current_user.username, current_user.username,)
+        AND (c.username = ? 
+        OR t.voditelj_username = ?)""", (current_user.username, current_user.username,)
     ).fetchall()
 
     result = []
