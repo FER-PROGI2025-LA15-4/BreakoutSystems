@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user
-from app import get_db_connection
+from db_connection import get_db_connection
 
 room_bp = Blueprint('room', __name__)
 # računa težinu sobe

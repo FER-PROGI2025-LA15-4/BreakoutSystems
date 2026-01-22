@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 from auth import save_temp_file, move_temp_image, delete_image_file
-from app import get_db_connection
+from db_connection import get_db_connection
 
 leader_bp = Blueprint('leader', __name__)
 

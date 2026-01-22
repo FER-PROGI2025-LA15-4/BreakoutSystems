@@ -1,5 +1,5 @@
 from config import Config
-from app import get_db_connection
+from db_connection import get_db_connection
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from smtplib import SMTP, SMTP_SSL

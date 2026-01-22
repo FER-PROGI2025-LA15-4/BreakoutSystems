@@ -5,7 +5,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from models import User
 from werkzeug.utils import secure_filename
-from app import get_db_connection
+from db_connection import get_db_connection
 
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
