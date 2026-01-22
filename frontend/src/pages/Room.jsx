@@ -64,10 +64,10 @@ async function fetchTeams() {
 
 // novi api za dohvat dostupnih termina za odredenu sobu?
 async function fetchAvailableAppointments(room_id) {
-    const response = await fetch(`/api/rooms/${room_id}/appointments`);
+    const response = await fetch(`/api/appointments?roomId=${room_id}`);
     if (response.ok) {
         const data = await response.json();
-        return data["appointments"] || data["termini"] || [];
+        return data["appointments"].filter(app => app.ime_tima === null).map(app => ({ id: "", title: "", start: new Date(app["datVrPoc"]) }));
     } else {
         return [];
     }
@@ -108,19 +108,6 @@ function toBackendDate(date) {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
-// probni termin samo da se prikaze kalendar, izbrisati kasnije
-function getFallbackAppointment() {
-    const date = new Date();
-    date.setDate(date.getDate() + 1);
-    date.setHours(18, 0, 0, 0);
-    return {
-        id: "demo-appointment",
-        title: "Probni termin",
-        start: date
-    };
-}
-
-
 function RoomContent({ room }) {
     const { user } = useAuth();
     const animatedComponents = makeAnimated();
@@ -128,7 +115,7 @@ function RoomContent({ room }) {
     const [owner, setOwner] = useState(null);
     const [teams, setTeams] = useState(null);
     const [selectedTeam, setSelectedTeam] = useState(null);
-    const [appointments, setAppointments] = useState(null);
+    const [appointments, setAppointments] = useState([]);
     const [appointmentsLoading, setAppointmentsLoading] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [reservationNote, setReservationNote] = useState(null);
@@ -216,8 +203,7 @@ function RoomContent({ room }) {
         });
         setReservationNote(null);
     };
-    const sourceAppointments = appointments && appointments.length > 0 ? appointments : [getFallbackAppointment()];
-    const calendarEvents = (sourceAppointments || [])
+    const calendarEvents = (appointments || [])
         .map((appointment) => {
             const start = normalizeAppointmentStart(appointment);
             if (!start) return null;
@@ -259,9 +245,11 @@ function RoomContent({ room }) {
                         {room.opis}
                     </p>
 
-                    <div className={"room-page-gallery"}>
-                        <ImageGallery lazyLoad={true} items={room.slike.map((img) => ({ original: img, thumbnail: img, loading: "lazy", thumbnailLoading: "lazy" }))}/>
-                    </div>
+                    {(room && room.slike) &&
+                        <div className={"room-page-gallery"}>
+                            <ImageGallery lazyLoad={true} items={room.slike.map((img) => ({ original: img, thumbnail: img, loading: "lazy", thumbnailLoading: "lazy" }))}/>
+                        </div>
+                    }
 
                     <p>
                         <strong>Težina: </strong>
