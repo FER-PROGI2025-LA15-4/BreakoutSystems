@@ -727,6 +727,12 @@ function MyRoomsTab() {
                     setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno dodan." });
                     setDtTime(new Date());
                     setNewAppointmentMode(false);
+                } else if (response.status === 400) {
+                    response.json().then((data) => {
+                        if (data["error"] === "Already exists") {
+                            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Termin već postoji za odabranu sobu." });
+                        }
+                    });
                 } else {
                     setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
                 }
