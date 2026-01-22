@@ -5,8 +5,6 @@ from db_connection import get_db_connection
 player_bp = Blueprint('player', __name__)
 
 # dohvat povijesti igara jednog polaznika
-
-
 @player_bp.route('/api/game-history', methods=['GET'])
 @login_required
 def get_game_history():
@@ -35,8 +33,6 @@ def get_game_history():
     return jsonify({"history": history}), 200
 
 # API preko kojeg korisnik ocjenjuje neku sobu
-
-
 @player_bp.route('/api/rate-room', methods=['POST'])
 @login_required
 def rate_room():
@@ -48,24 +44,20 @@ def rate_room():
     rating = data.get("rating")
 
     db = get_db_connection()
-    played = db.execute("SELECT * FROM ClanNaTerminu WHERE room_id = ? AND username = ?",
-                        (room_id, current_user.username)).fetchone()
+    played = db.execute("SELECT * FROM ClanNaTerminu WHERE room_id = ? AND username = ?", (room_id, current_user.username)).fetchone()
     if played is None:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
 
-    rtg_exists = db.execute("SELECT * FROM OcjenaTezine WHERE room_id = ? AND username = ?",
-                            (room_id, current_user.username)).fetchone()
+    rtg_exists = db.execute("SELECT * FROM OcjenaTezine WHERE room_id = ? AND username = ?", (room_id, current_user.username)).fetchone()
 
     cursor = db.cursor()
 
     if rtg_exists is None:
-        cursor.execute("INSERT INTO OcjenaTezine VALUES (room_id, username, vrijednost_ocjene) VALUES (?,?,?)",
-                       (room_id, current_user.username, rating))
+        cursor.execute("INSERT INTO OcjenaTezine VALUES (room_id, username, vrijednost_ocjene) VALUES (?,?,?)", (room_id, current_user.username, rating))
 
     else:
-        cursor.execute("UPDATE OcjenaTezine SET vrijednost_ocjene = ? WHERE room_id = ? AND username = ?",
-                       (rating, room_id, current_user.username))
+        cursor.execute("UPDATE OcjenaTezine SET vrijednost_ocjene = ? WHERE room_id = ? AND username = ?", (rating, room_id, current_user.username))
 
     db.commit()
     db.close()
@@ -73,8 +65,6 @@ def rate_room():
     return jsonify({"success": True}), 200
 
 # dohvat timova jednog polaznika
-
-
 @player_bp.route('/api/my-teams', methods=['GET'])
 @login_required
 def get_my_teams():
@@ -87,7 +77,8 @@ def get_my_teams():
         """SELECT DISTINCT t.ime, t.image_url, t.voditelj_username 
         FROM Tim t LEFT JOIN ClanTima c 
         ON c.ime_tima = t.ime 
-        WHERE c.username = ? 
+        WHERE (accepted = 1
+        AND c.username = ?) 
         OR t.voditelj_username = ?""", (current_user.username, current_user.username,)
     ).fetchall()
 
@@ -155,13 +146,11 @@ def get_my_invites():
     if current_user.uloga != "POLAZNIK":
         return jsonify({'error': 'forbidden access'}), 403
     db = get_db_connection()
-    invites = db.execute(
-        "SELECT * FROM ClanTima WHERE username = ? AND accepted = 0", (current_user.username,)).fetchall()
+    invites = db.execute("SELECT * FROM ClanTima WHERE username = ? AND accepted = 0", (current_user.username,)).fetchall()
     result = []
     for invite in invites:
         team_name = invite["ime_tima"]
-        team = db.execute(
-            "SELECT * FROM Tim WHERE ime_tima = ?", (team_name,)).fetchone()
+        team = db.execute("SELECT * FROM Tim WHERE ime = ?", (team_name,)).fetchone()
         result.append({
             "name": team["ime"],
             "logo": team["image_url"],
