@@ -1235,6 +1235,9 @@ function AdminAppointmentsTab() {
             if (response.ok) {
                 setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno uređen." });
                 setSelectedAppointment(null);
+                fetchRoomAppointments(selectedRoom.room_id).then((response) => {
+                    setAppointments(sortArr(response, (app) => app, "desc"));
+                });
             } else {
                 setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
             }
