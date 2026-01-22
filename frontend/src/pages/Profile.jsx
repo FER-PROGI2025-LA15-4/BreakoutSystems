@@ -430,7 +430,7 @@ function MyTeamsTab() {
                     </div>
                     <img src={selectedTeam.logo === null ? profilna : selectedTeam.logo} alt={"team logo"}/>
                 </div>
-                {selectedTeam.members && <>
+                {selectedTeam.members?.length > 0 && <>
                     <p>Članovi tima ({selectedTeam.members.length}/10):</p>
                     <ul>
                         {selectedTeam.members.map((member) =>
