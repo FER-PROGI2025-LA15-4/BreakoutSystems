@@ -707,7 +707,7 @@ function MyRoomsTab() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    room_id: selectedRoom.room_id,
+                    room_id: selectedAppRoom.room_id,
                     dt: dtTime.toISOString()
                 })
             }).then((response) => {
@@ -1411,7 +1411,7 @@ async function fetchMyRooms() {
         return [];
     }
 }
-async function fetchRoomAppointments(roomId) {
+export async function fetchRoomAppointments(roomId) {
     const response = await fetch(`/api/appointments?roomId=${roomId}`)
     if (response.ok) {
         const data = await response.json();
