@@ -55,6 +55,15 @@ def add_member():
     if existing:
         return "", 204
 
+    profile_exists = db.execute("SELECT * FROM Polaznik WHERE username = ?", (username,)).fetchone()
+    if profile_exists is None:
+        db.close()
+        return jsonify({'error': 'no user'}), 404
+
+    if username == current_user.username:
+        db.close()
+        return jsonify({'error': 'self invite'}), 404
+
     db.execute(
         "INSERT INTO ClanTima (ime_tima, username, accepted) VALUES (?, ?, 0)", (team, username))
     db.commit()
@@ -157,15 +166,6 @@ def remove_member():
     if rows is None:
         db.close()
         return jsonify({'error': 'forbidden access'}), 403
-
-    profile_exists = db.execute("SELECT * FROM Polaznik WHERE username = ?", (username,)).fetchone()
-    if profile_exists is None:
-        db.close()
-        return jsonify({'error': 'no user'}), 404
-
-    if username == current_user.username:
-        db.close()
-        return jsonify({'error': 'self invite'}), 404
 
     existing = db.execute(
         "SELECT * FROM ClanTima WHERE ime_tima = ? AND username = ?", (team, username)).fetchone()
