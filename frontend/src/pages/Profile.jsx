@@ -710,7 +710,6 @@ function MyRoomsTab() {
 
     const [dtTime, setDtTime] = useState(new Date());
     const handleAddAppointment = () => {
-
         if (dtTime < new Date()) {
             setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Termin ne može biti u prošlosti." });
         } else {
@@ -733,9 +732,7 @@ function MyRoomsTab() {
                 }
             })
         }
-    });
-};
-
+    };
 
     const [selectedAppRoom, setSelectedAppRoom] = useState(null);
     const handleAppRoomSelect = (opt) => {
