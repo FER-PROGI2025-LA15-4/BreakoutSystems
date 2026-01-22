@@ -7,7 +7,36 @@ leader_bp = Blueprint('leader', __name__)
 
 # vraća sve korisnike koji imaju aktivan invite u neki tim
 
+@leader_bp.route('/api/has-played', methods=['GET'])
+@login_required
+def has_played():
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
 
+    team_name = request.args.get('ime_tima')
+    room_id = request.args.get('room_id')
+
+    if not team_name or not room_id:
+        return jsonify({'error': 'missing params'}), 400
+
+    db = get_db_connection()
+
+
+    result = db.execute("""
+        SELECT 1 
+        FROM ClanNaTerminu 
+        WHERE room_id = ? AND username IN (
+            SELECT voditelj_username FROM Tim WHERE ime = ?
+            UNION
+            SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 1
+        )
+        LIMIT 1
+    """, (room_id, team_name, team_name)).fetchone()
+
+    # Ako result postoji, znači da je netko već igrao
+    netko_igrao = True if result else False
+
+    return jsonify({"netko_igrao": netko_igrao}), 200
 @leader_bp.route('/api/invites', methods=['GET'])
 @login_required
 def get_invites():

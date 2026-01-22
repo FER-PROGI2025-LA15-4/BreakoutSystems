@@ -698,29 +698,36 @@ function MyRoomsTab() {
 
     const [dtTime, setDtTime] = useState(new Date());
     const handleAddAppointment = () => {
-        if (dtTime < new Date()) {
-            setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Termin ne može biti u prošlosti." });
+    const dateObj = dtTime instanceof Date ? dtTime : new Date(dtTime);
+
+    if (isNaN(dateObj.getTime())) {
+        setPopup({ isOpen: true, title: "Greška", message: "Neispravan datum." });
+        return;
+    }
+
+    if (dateObj < new Date()) {
+        setPopup({ isOpen: true, title: "Oops", message: "Termin ne može biti u prošlosti." });
+        return;
+    }
+
+    authFetch("/api/owner/add-appointment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            room_id: selectedAppRoom.room_id,
+            dt: dateObj.toISOString()
+        })
+    }).then((response) => {
+        if (response.ok) {
+            setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno dodan." });
+            setDtTime(new Date());
+            setNewAppointmentMode(false);
         } else {
-            authFetch("/api/owner/add-appointment", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    room_id: selectedAppRoom.room_id,
-                    dt: dtTime.toISOString()
-                })
-            }).then((response) => {
-                if (response.ok) {
-                    setPopup({ isOpen: true, title: "Uspjeh!", message: "Termin je uspješno dodan." });
-                    setDtTime(new Date());
-                    setNewAppointmentMode(false);
-                } else {
-                    setPopup({ isOpen: true, title: "Oops, došlo je do greške!", message: "Pokušajte ponovno kasnije." });
-                }
-            })
+            setPopup({ isOpen: true, title: "Greška", message: "Pokušajte ponovno kasnije." });
         }
-    };
+    });
+};
+
 
     const [selectedAppRoom, setSelectedAppRoom] = useState(null);
     const handleAppRoomSelect = (opt) => {
