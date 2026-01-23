@@ -8,7 +8,21 @@ Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu.
 [_Wiki - Opis projektnog zadatka_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/1.--Opis-projektnog-zadatka)
 
 ## Funkcijski zahtjevi
-[_Wiki - Analiza zahtjeva_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/2.-Analiza-zahtjeva)
+### Dionici
+* Vlasnici escape roomova
+* Polaznici (voditelji i članovi timova)
+* Administratori
+* Razvojni tim
+
+### Funkcionalni zahtjevi po aktorima
+* Anonimni korisnik: pregledava escape roomove i rang-ljestvice, koristi interaktivnu kartu, registrira račun.
+* Član tima: pregledava vlastite rezultate i povijest, organizira se u timove, prima e-mail podsjetnike, ocjenjuje escape roomove.
+* Vođa tima: rezervira termine za tim, sprječava rezervaciju već posjećenih soba, plaća rezervacije.
+* Vlasnik escape rooma: dodaje i uređuje escape roomove, otvara termine, plaća naknadu za objavu.
+* Administrator: upravlja podacima sustava, briše profile i sobe, pristupa statistikama, dodaje nove administratore.
+* Vanjski servisi: autentifikacija (OAuth), online plaćanje, integracija interaktivne karte.
+* Baza podataka: pohranjuje korisnike, timove, escape roomove, termine, rezervacije, rezultate i rang-liste.
+
 
 ## Tehnologije
 [_Wiki - Tehnologije za implementaciju aplikacije_ ](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/7.-Tehnologije-za-implementaciju-aplikacije)
