@@ -9,6 +9,7 @@ from email import encoders
 from icalendar import Calendar, Event
 from zoneinfo import ZoneInfo
 
+# kreira iCalendar objekt
 
 def create_ics(start_dt, duration_minutes):
     cal = Calendar()
@@ -39,7 +40,7 @@ def send_gmail(my_address: str,
     # generating email
     e_mail = MIMEMultipart()
     e_mail["From"] = my_address
-    e_mail["To"] = ", ".join(to_address)
+    e_mail["To"] = to_address
     e_mail["Subject"] = subject
     e_mail.attach(MIMEText(body))
 
@@ -93,31 +94,41 @@ def send_gmail(my_address: str,
 
     return mail_sent, ret_message
 
-# traži korisnike kojima treba poslati email podsjetnik
-def send_reminder():
-
-    subject = "Podsjetnik o rezervaciji"
-    body = "Imate rezerviran termin"
-
-    db = get_db_connection()
-    now = datetime.now()
-    window_start = now + timedelta(hours=23)
-    window_end = now + timedelta(hours=25)
-    teams = db.execute("SELECT ime_tima FROM Termin WHERE datVrPoc BETWEEN ? AND ?", (window_start.isoformat(), window_end.isoformat(),)).fetchall()
-
-
-    for team in teams:
-        start_dt = datetime.fromisoformat(team["datVrPoc"]).replace(
+# traži korisnike kojima se šalje mail
+def create_mail(ime_tima: str, datvrpoc: str, room_id: str, subject: str, body: str):
+    # FIX: Zamjena razmaka s T kako bi fromisoformat radio, ili koristi strptime
+    try:
+        clean_dt = datvrpoc.replace(' ', 'T')
+        start_dt = datetime.fromisoformat(clean_dt).replace(
+            tzinfo=ZoneInfo("Europe/Zagreb")
+        )
+    except ValueError:
+        # Ako je datum u bazi '2026-01-24 15:00:00'
+        start_dt = datetime.strptime(datvrpoc, '%Y-%m-%d %H:%M:%S').replace(
             tzinfo=ZoneInfo("Europe/Zagreb")
         )
 
-        ics_data = create_ics(start_dt, duration_minutes=60)
+    ics_data = create_ics(start_dt, duration_minutes=60)
 
-        leader = db.execute("SELECT voditelj_username FROM Tim WHERE ime_tima = ?", (team["ime_tima"],)).fetchone()
-        members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ?", (team["ime_tima"],)).fetchall()
-        members.append(leader)
-        for member in members:
-            address = db.execute("SELECT email FROM Polaznik WHERE username = ?", (member["username"],)).fetchone()
+    db = get_db_connection()
+    # Dohvati voditelja
+    leader = db.execute("SELECT voditelj_username AS username FROM Tim WHERE ime = ?", (ime_tima,)).fetchone()
+    # Dohvati prihvaćene članove
+    members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 1", (ime_tima,)).fetchall()
+
+    all_recipients = [m["username"] for m in members]
+    if leader:
+        all_recipients.append(leader["username"])
+
+    for username in all_recipients:
+        # Provjera je li korisnik već igrao u toj sobi (ako je to logika koju želiš)
+        played_room = db.execute("SELECT 1 FROM ClanNaTerminu WHERE username = ? AND room_id = ?",
+                                 (username, room_id)).fetchone()
+        if played_room:
+            continue
+
+        address = db.execute("SELECT email FROM Polaznik WHERE username = ?", (username,)).fetchone()
+        if address and address["email"]:
             send_gmail(
                 my_address="breakoutsystems@gmail.com",
                 my_password=Config.GMAIL_PASSWORD,
@@ -128,3 +139,56 @@ def send_reminder():
                 body=body,
                 ics_data=ics_data
             )
+    db.close()
+
+
+# podsjetnik o rezervaciji
+def send_reminder():
+    subject = "BreakoutSystems - podsjetnik o rezervaciji"
+    db = get_db_connection()
+
+    now = datetime.now()
+    window_start = (now + timedelta(hours=23)).strftime('%Y-%m-%d %H:%M:%S')
+    window_end = (now + timedelta(hours=25)).strftime('%Y-%m-%d %H:%M:%S')
+
+    # FIX: Koristimo formatiran string umjesto .isoformat()
+    teams = db.execute("""
+        SELECT ime_tima, datVrPoc, room_id 
+        FROM Termin 
+        WHERE datVrPoc BETWEEN ? AND ? 
+        AND notified = 0 
+        AND ime_tima IS NOT NULL
+    """, (window_start, window_end)).fetchall()
+
+    for team in teams:
+        room = db.execute("SELECT naziv FROM EscapeRoom WHERE room_id = ?", (team["room_id"],)).fetchone()
+        # SQLite strftime formatiranje
+        dt_parts = db.execute(
+            "SELECT strftime('%H:%M', ?) as time, strftime('%d', ?) as day, strftime('%m', ?) as month",
+            (team["datVrPoc"], team["datVrPoc"], team["datVrPoc"])).fetchone()
+
+        body = f"Šaljemo vam podsjetnik na rezerviran termin za sobu {room['naziv']} datuma {dt_parts['day']}.{dt_parts['month']} u {dt_parts['time']}."
+
+        create_mail(team["ime_tima"], team["datVrPoc"], team["room_id"], subject, body)
+
+        # FIX: Commit promjene notified statusa
+        db.execute("UPDATE Termin SET notified = 1 WHERE ime_tima = ? AND datVrPoc = ? AND room_id = ?",
+                   (team["ime_tima"], team["datVrPoc"], team["room_id"]))
+        db.commit()
+
+    db.close()
+
+
+# potvrda o rezervaciji
+def send_confirmation(team_name: str, datVrPoc: str, room_id: str):
+    subject = "BreakoutSystems - rezervacija uspješna"
+    db = get_db_connection()
+
+    dt_parts = db.execute("SELECT strftime('%H:%M', ?) as time, strftime('%d', ?) as day, strftime('%m', ?) as month",
+                          (datVrPoc, datVrPoc, datVrPoc)).fetchone()
+    room = db.execute("SELECT naziv FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
+
+    body = f"Rezervirali ste termin za sobu {room['naziv']} datuma {dt_parts['day']}.{dt_parts['month']} u {dt_parts['time']}."
+
+    db.close()  # Zatvori prije poziva create_mail jer on otvara svoju vezu
+    create_mail(team_name, datVrPoc, room_id, subject, body)
