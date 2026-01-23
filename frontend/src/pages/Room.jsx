@@ -174,15 +174,14 @@ function RoomContent({ room }) {
         })
     }, [room]);
     useEffect(() => {
+        setTeams(null);
+        setSelectedTeam(null);
         if (user && user.uloga === "POLAZNIK") {
             fetchReservationTeams(room.room_id).then((newTeams) => {
                 setTeams(newTeams);
             });
-        } else {
-            setTeams(null);
-            setSelectedTeam(null);
         }
-    }, [user]);
+    }, [user, refreshAppointments]);
     useEffect(() => {
         let active = true;
         setAppointmentsLoading(true);

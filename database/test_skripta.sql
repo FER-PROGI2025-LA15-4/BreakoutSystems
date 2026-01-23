@@ -146,7 +146,8 @@ INSERT INTO Termin (room_id, datVrPoc, ime_tima, rezultatSekunde) VALUES
 (13, '2026-04-03 18:00:00', 'Tim Alfa', NULL),
 (9, '2027-02-01 17:00:00', 'Tim Delta', NULL),
 (9, '2027-02-01 20:00:00', 'Tim Epsilon', NULL),
-(9, '2026-02-01 20:00:00', NULL, NULL);
+(9, '2026-02-01 20:00:00', NULL, NULL),
+(9, '2026-02-01 22:00:00', NULL, NULL);
 
 
 
