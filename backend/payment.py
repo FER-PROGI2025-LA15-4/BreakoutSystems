@@ -129,6 +129,8 @@ def confirm_payment():
                 datVrPoc = session.metadata.get('datVrPoc')
                 ime_tima = session.metadata.get('ime_tima')
 
+                print(room_id, datVrPoc, ime_tima)
+
                 db = get_db_connection()
 
                 # Update tablice Termin: dodajemo ime tima na rezervirani termin
@@ -137,6 +139,8 @@ def confirm_payment():
                     SET ime_tima = ? 
                     WHERE room_id = ? AND datVrPoc = ?
                 """, (ime_tima, room_id, datVrPoc))
+
+
 
                 db.commit()
                 db.close()

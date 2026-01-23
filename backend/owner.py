@@ -149,13 +149,11 @@ def get_owner_team_info():
     return jsonify(result), 200
 
 
-
-
 @owner_bp.route('/api/owner/add-appointment', methods=['POST'])
 @login_required
 def add_appointment():
-
-    if current_user.uloga != "VLASNIK" and current_user.uloga != "ADMIN":
+    # 1. Provjera uloge
+    if current_user.uloga not in ["VLASNIK", "ADMIN"]:
         return jsonify({'error': 'forbidden access'}), 403
 
     data = request.get_json() or {}
@@ -167,47 +165,52 @@ def add_appointment():
 
     db = get_db_connection()
     try:
-
-        if current_user.uloga == "ADMIN":
-            # Admini ne trebaju provjeru vlasništva
-            pass
-        else:
-
+        # 2. Provjera vlasništva (samo za VLASNIK ulogu)
+        if current_user.uloga == "VLASNIK":
             room = db.execute(
                 "SELECT 1 FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?",
                 (room_id, current_user.username)
             ).fetchone()
-
             if not room:
-                print("ULOGA:", current_user.uloga, type(current_user.uloga))
-                return jsonify({'error': 'forbidden access'}), 403
+                return jsonify({'error': 'Niste vlasnik ove sobe'}), 403
 
+        # 3. FIX FORMATA: Pretvaramo ulazni ISO (T i Z) u format baze (razmak)
+        # Primjer: "2026-02-01T20:00:00.000Z" -> "2026-02-01 20:00:00"
+        try:
+            # Uklanjamo 'Z' i mijenjamo 'T' u razmak
+            clean_dt = date_time_string.replace('T', ' ').replace('Z', '')
+            # Uzimamo samo prvih 19 znakova (YYYY-MM-DD HH:MM:SS)
+            formatted_date = datetime.fromisoformat(clean_dt[:19]).strftime('%Y-%m-%d %H:%M:%S')
+        except Exception as e:
+            return jsonify({'error': f'Invalid date format: {str(e)}'}), 400
 
-        dt_object = datetime.fromisoformat(
-
-            #obrisati ovaj replace mozda i timezone.utc u potpunosti! - Filip
-            date_time_string.replace('Z', '+00:00'))
-
-        if dt_object < datetime.now(timezone.utc):
+        # 4. Provjera prošlosti
+        if datetime.strptime(formatted_date, '%Y-%m-%d %H:%M:%S') < datetime.now():
             return jsonify({'error': 'Cannot add appointment in the past'}), 400
 
-        exist = db.execute("SELECT * FROM Termin WHERE room_id = ? AND datVrPoc = ?", (room_id, date_time_string)).fetchone()
+        # 5. Provjera duplikata koristeći ispravan format
+        exist = db.execute(
+            "SELECT 1 FROM Termin WHERE room_id = ? AND datVrPoc = ?",
+            (room_id, formatted_date)
+        ).fetchone()
+
         if exist:
             return jsonify({'error': 'Already exists'}), 400
 
+        # 6. Unos u bazu
         db.execute(
             "INSERT INTO Termin (room_id, datVrPoc) VALUES (?, ?)",
-            (room_id, date_time_string)
+            (room_id, formatted_date)
         )
         db.commit()
         return jsonify({"success": True}), 200
+
     except Exception as e:
         db.rollback()
-        return jsonify({'error': str(e)}), 403
+        # Vraćamo 500 za stvarne greške baze, a ne 403, da znaš što se događa
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
     finally:
         db.close()
-
-
 
 @owner_bp.route('/api/owner/edit-room', methods=['POST'])
 @login_required
