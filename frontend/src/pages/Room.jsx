@@ -53,8 +53,8 @@ async function fetchLeaderboard(room_id) {
         return null;
     }
 }
-async function fetchTeams() {
-    const response = await authFetch("/api/my-teams");
+async function fetchReservationTeams(room_id) {
+    const response = await authFetch("/api/rooms/" + room_id + "/reservation-teams");
     if (response.ok) {
         const data = await response.json();
         return data["teams"];
@@ -175,7 +175,7 @@ function RoomContent({ room }) {
     }, [room]);
     useEffect(() => {
         if (user && user.uloga === "POLAZNIK") {
-            fetchTeams().then((newTeams) => {
+            fetchReservationTeams(room.room_id).then((newTeams) => {
                 setTeams(newTeams);
             });
         } else {
@@ -404,7 +404,7 @@ function RoomContent({ room }) {
                             {user && user.uloga === "POLAZNIK" ? (
                                 <Select
                                     components={animatedComponents}
-                                    options={teams ? teams.filter((team) => team.leader === user.username).map((team) => ({ value: team.name, label: team.name, team: team })) : []}
+                                    options={teams ? teams.map((team) => ({ value: team.name, label: team.name, team: team })) : []}
                                     isLoading={teams === null}
                                     isMulti={false}
                                     isClearable={true}
