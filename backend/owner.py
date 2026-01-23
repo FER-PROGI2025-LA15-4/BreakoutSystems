@@ -9,7 +9,6 @@ owner_bp = Blueprint('owner', __name__)
 
 # unos rezultata
 
-
 @owner_bp.route("/api/owner/enter-result", methods=["POST"])
 @login_required
 def enter_result():
@@ -19,30 +18,45 @@ def enter_result():
     data = request.get_json() or {}
     room_id = data.get("appointmentRoomId")
     dat_vr_poc = data.get("appointmentDatVrPoc")
-    members = data.get("teamMembers")
+    members = data.get("teamMembers") or []
     result = data.get("resultSeconds")
 
     db = get_db_connection()
+    try:
+        # 1. Provjera vlasništva
+        room = db.execute("SELECT 1 FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?",
+                          (room_id, current_user.username)).fetchone()
+        if not room:
+            return jsonify({'error': 'forbidden access'}), 403
 
-    room = db.execute("SELECT * FROM EscapeRoom WHERE room_id = ? AND vlasnik_username = ?",
-                      (room_id, current_user.username,)).fetchone()
-    if not room:
-        db.close()
-        return jsonify({'error': 'forbidden access'}), 403
-    cursor = db.cursor()
-    cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?",
-                   (result, room_id, dat_vr_poc))
-    if cursor.rowcount == 0:
-        db.close()
-        return jsonify({'error': 'appointment not found'}), 400
-    for member in members:
-        cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)",
-                       (room_id, dat_vr_poc, member))
+        cursor = db.cursor()
 
-    db.commit()
-    db.close()
-    return jsonify({"success": True}), 200
+        # 2. Update rezultata u Termin tablici
+        cursor.execute("UPDATE Termin SET rezultatSekunde = ? WHERE room_id = ? AND datVrPoc = ?",
+                       (result, room_id, dat_vr_poc))
 
+        if cursor.rowcount == 0:
+            return jsonify({'error': 'appointment not found'}), 400
+
+        # 3. Rješavanje IntegrityError-a: Prvo obriši postojeće članove za taj termin
+        # Ovo sprječava "UNIQUE constraint failed" ako su članovi već u bazi
+        cursor.execute("DELETE FROM ClanNaTerminu WHERE room_id = ? AND datVrPoc = ?",
+                       (room_id, dat_vr_poc))
+
+        # 4. Unos novih/odabranih članova
+        for member in members:
+            cursor.execute("INSERT INTO ClanNaTerminu (room_id, datVrPoc, username) VALUES (?, ?, ?)",
+                           (room_id, dat_vr_poc, member))
+
+        db.commit()
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        db.rollback()  # Poništi sve ako dođe do greške (važno za database lock)
+        print(f"Greška: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()  # Uvijek zatvori bazu, čak i ako padne!
 # dohvat soba jednog vlasnika
 
 
@@ -51,9 +65,6 @@ def enter_result():
 def get_my_rooms():
     if current_user.uloga != "VLASNIK" and current_user.uloga != "ADMIN":
         return jsonify({'error': 'forbidden access'}), 403
-
-    if current_user.username == 'ivica':
-        current_user.uloga = 'ADMIN'
 
     db = get_db_connection()
 
@@ -143,7 +154,7 @@ def get_owner_team_info():
 @owner_bp.route('/api/owner/add-appointment', methods=['POST'])
 @login_required
 def add_appointment():
-    print("Adding appointment...")
+
     if current_user.uloga != "VLASNIK" and current_user.uloga != "ADMIN":
         return jsonify({'error': 'forbidden access'}), 403
 
@@ -168,6 +179,7 @@ def add_appointment():
             ).fetchone()
 
             if not room:
+                print("ULOGA:", current_user.uloga, type(current_user.uloga))
                 return jsonify({'error': 'forbidden access'}), 403
 
 
@@ -206,8 +218,6 @@ def edit_room():
 
     db = get_db_connection()
 
-    if current_user.username == 'ivica':
-        current_user.uloga = 'ADMIN'
 
     if current_user.uloga == "ADMIN":
         # Admini ne trebaju provjeru članarine

@@ -1026,7 +1026,7 @@ function ResultEntryTab() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    appointmentRoomId: selectedAppointment.room_id,
+                    appointmentRoomId: selectedRoom.room_id,
                     appointmentDatVrPoc: selectedAppointment.datVrPoc,
                     teamMembers: selectedMembers,
                     resultSeconds: timeSeconds

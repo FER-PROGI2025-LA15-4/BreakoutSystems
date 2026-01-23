@@ -7,14 +7,16 @@ leader_bp = Blueprint('leader', __name__)
 
 # vraća sve korisnike koji imaju aktivan invite u neki tim
 
-@leader_bp.route('/api/has-played', methods=['GET'])
+@leader_bp.route('/api/has-played', methods=['POST'])
 @login_required
 def has_played():
+
     if current_user.uloga != "POLAZNIK":
         return jsonify({'error': 'forbidden access'}), 403
 
-    team_name = request.args.get('ime_tima')
-    room_id = request.args.get('room_id')
+    data = request.get_json()
+    team_name = data.get('ime_tima')
+    room_id = data.get('room_id')
 
     if not team_name or not room_id:
         return jsonify({'error': 'missing params'}), 400
