@@ -39,7 +39,7 @@ def send_gmail(my_address: str,
     # generating email
     e_mail = MIMEMultipart()
     e_mail["From"] = my_address
-    e_mail["To"] = ", ".join(to_address)
+    e_mail["To"] = to_address
     e_mail["Subject"] = subject
     e_mail.attach(MIMEText(body))
 
@@ -104,7 +104,7 @@ def create_mail(ime_tima: str, datvrpoc: str, room_id: str, subject: str, body: 
 
     db = get_db_connection()
     leader = db.execute("SELECT voditelj_username AS username FROM Tim WHERE ime = ?", (ime_tima,)).fetchone()
-    members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ?", (ime_tima,)).fetchall()
+    members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 1", (ime_tima,)).fetchall()
     members.append(leader)
     for member in members:
         played_room = db.execute("SELECT * FROM ClanNaTerminu WHERE username = ? AND room_id = ?", (member["username"], room_id,)).fetchone()
