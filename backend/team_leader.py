@@ -5,7 +5,6 @@ from db_connection import get_db_connection
 
 leader_bp = Blueprint('leader', __name__)
 
-# vraća sve korisnike koji imaju aktivan invite u neki tim
 
 @leader_bp.route('/api/has-played', methods=['POST'])
 @login_required
@@ -23,7 +22,6 @@ def has_played():
 
     db = get_db_connection()
 
-
     result = db.execute("""
         SELECT 1 
         FROM ClanNaTerminu 
@@ -39,6 +37,9 @@ def has_played():
     netko_igrao = True if result else False
 
     return jsonify({"netko_igrao": netko_igrao}), 200
+
+
+# vraća sve korisnike koji imaju aktivan invite u neki tim
 @leader_bp.route('/api/invites', methods=['GET'])
 @login_required
 def get_invites():
