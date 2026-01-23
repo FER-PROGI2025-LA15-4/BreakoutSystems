@@ -149,10 +149,10 @@ def send_reminder():
 def send_confirmation(team_name: str, datVrPoc: str, room_id: str):
     subject = "BreakoutSystems - rezervacija uspješna"
     db = get_db_connection()
-    time = db.execute("SELECT EXTRACT(HOUR AND MINUTE FROM ?)", datVrPoc).fetchone()
-    month = db.execute("SELECT EXTRACT(MONTH FROM ?)", datVrPoc).fetchone()
-    day = db.execute("SELECT EXTRACT(DAY FROM ?)", datVrPoc).fetchone()
+    time = db.execute("SELECT strftime('%H:%M', ?) AS time", (datVrPoc,)).fetchone()
+    month = db.execute("SELECT strftime('%m', ?) AS month", (datVrPoc,)).fetchone()
+    day = db.execute("SELECT strftime('%d', ?) AS day", (datVrPoc,)).fetchone()
     room_name = db.execute("SELECT naziv FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
-    body = f"Rezervirali ste termin za sobu {room_name} datuma {day}.{month} u {time}."
+    body = f"Rezervirali ste termin za sobu {room_name["naziv"]} datuma {day["day"]}.{month["month"]} u {time["time"]}."
     create_mail(team_name, datVrPoc, room_id, subject, body)
 

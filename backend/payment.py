@@ -52,6 +52,19 @@ def test_stripe_payment():
         ime_tima = data.get('ime_tima')
 
         db = get_db_connection()
+
+        team = db.execute("SELECT * FROM Tim WHERE ime = ? AND voditelj_username = ?",
+                          (ime_tima, current_user.username,)).fetchone()
+        if team is None:
+            print("Nema tima ili nije voditelj")
+            db.close()
+            return jsonify({'error': 'forbidden access'}), 403
+
+        team_played = db.execute("SELECT * FROM Termin WHERE ime_tima = ? AND room_id = ?", (ime_tima, room_id,)).fetchone()
+        if team_played:
+            db.close()
+            return jsonify({'error': 'forbidden access'}), 403
+
         room = db.execute("SELECT naziv, cijena FROM EscapeRoom WHERE room_id = ?", (room_id,)).fetchone()
         db.close()
 
