@@ -137,10 +137,10 @@ def send_reminder():
 
     for team in teams:
         room_name = db.execute("SELECT naziv FROM EscapeRoom WHERE room_id = ?", (team["room_id"],)).fetchone()
-        time = db.execute("SELECT EXTRACT(HOUR AND MINUTE FROM ?)", team["datVrPoc"]).fetchone()
-        month = db.execute("SELECT EXTRACT(MONTH FROM ?)", team["datVrPoc"]).fetchone()
-        day = db.execute("SELECT EXTRACT(DAY FROM ?)", team["datVrPoc"]).fetchone()
-        body = f"Šaljemo van podsjetnik na rezerviran termin za sobu {room_name} datuma {day}.{month} u {time}."
+        time = db.execute("SELECT strftime('%H:%M', ?) AS time", team["datVrPoc"]).fetchone()
+        month = db.execute("SELECT strftime('%m', ?) AS month", team["datVrPoc"]).fetchone()
+        day = db.execute("SELECT strftime('%d', ?) AS day", team["datVrPoc"]).fetchone()
+        body = f"Šaljemo van podsjetnik na rezerviran termin za sobu {room_name["naziv"]} datuma {day["day"]}.{month["month"]} u {time["time"]}."
         create_mail(team["ime_tima"], team["datVrPoc"], team["room_id"], subject, body)
 
     db.close()
