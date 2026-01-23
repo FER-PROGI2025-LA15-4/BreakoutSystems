@@ -1,11 +1,12 @@
 # BreakoutSystems
 
 ## Opis projekta
-Ovaj projekt je rezultat timskog rada u sklopu projeknog zadatka
-kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na
-Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
+Ovaj projekt je rezultat timskog rada u sklopu projeknog zadatka kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
 
-[_Wiki - Opis projektnog zadatka_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/1.--Opis-projektnog-zadatka)
+BreakoutSystems je web platforma za cjelovito upravljanje Escape Room poslovanjem. Platforma omogućuje igračima pretraživanje i rezervaciju Escape Roomova te praćenje rezultata i rangiranja timova, dok vlasnicima omogućuje oglašavanje soba, upravljanje terminima i unos rezultata. 
+
+Sustav uključuje OAuth 2.0 autentifikaciju, integrirani sustav plaćanja, interaktivnu kartu lokacija i dinamički algoritam rangiranja temeljen na brzini rješavanja i prilagodljivoj težini soba.
+
 
 ## Funkcijski zahtjevi
 [_Wiki - Analiza zahtjeva_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/2.-Analiza-zahtjeva)
