@@ -182,6 +182,45 @@ def edit_team():
     return jsonify({'status': 'Team data edited'}), 200
 
 
+@leader_bp.route('/api/rooms/<int:room_id>/reservation-teams', methods=['GET'])
+@login_required
+def get_reservation_teams(room_id):
+    if current_user.uloga != "POLAZNIK":
+        return jsonify({'error': 'forbidden access'}), 403
+
+    db = get_db_connection()
+
+    teams = db.execute("""
+        SELECT t.ime, t.image_url, t.voditelj_username
+        FROM Tim t
+        WHERE t.voditelj_username = ?
+          AND NOT EXISTS (
+              SELECT 1
+              FROM Termin tr
+              WHERE tr.room_id = ?
+                AND tr.ime_tima = t.ime
+          )
+    """, (current_user.username, room_id)).fetchall()
+
+    result = []
+
+    for team in teams:
+        members = db.execute(
+            "SELECT username FROM ClanTima WHERE ime_tima = ? AND accepted = 1",
+            (team["ime"],)
+        ).fetchall()
+
+        result.append({
+            "name": team["ime"],
+            "logo": team["image_url"],
+            "leader": team["voditelj_username"],
+            "members": [m["username"] for m in members]
+        })
+
+    db.close()
+    return jsonify({"teams": result}), 200
+
+
 # brisanje člana iz tima ili poništavnaje invitea
 @leader_bp.route('/api/remove-member', methods=['POST'])
 @login_required
