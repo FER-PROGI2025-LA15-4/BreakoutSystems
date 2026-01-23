@@ -127,7 +127,6 @@ def create_mail(ime_tima: str, datvrpoc: str, room_id: str, subject: str, body: 
 def send_reminder():
 
     subject = "BreakoutSystems - podsjetnik o rezervaciji"
-    body = "Imate rezerviran termin"
 
     db = get_db_connection()
     now = datetime.now()
