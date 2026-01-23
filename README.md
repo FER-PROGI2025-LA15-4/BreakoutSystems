@@ -40,14 +40,14 @@ Sve tehnologije su besplatne ili imaju studentski/besplatni tier.
 [_Wiki - Upute za puštanje u pogon_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/8.--Upute-za-puštanje-u-pogon)
 
 ## Članovi tima 
-| Ime i prezime   | Doprinos                   |
-|-----------------|----------------------------|
-| Hana Dolovčak   | Baza podataka, Wiki        |
-| Antonio Mamić   | Voditelj, DevOps, Frontend |
-| Aurora Necko    | Dizajn, Frontend           |
-| Bruno Pećnik    | Frontend                   |
-| Lucija Stipetić | Backend                    |
-| Filip Šušak     | Backend                    |
+| Ime i prezime   | Doprinos                     |
+|-----------------|------------------------------|
+| Hana Dolovčak   | Baza podataka, Dokumentacija |
+| Antonio Mamić   | Voditelj, DevOps, Frontend   |
+| Aurora Necko    | Dizajn, Frontend             |
+| Bruno Pećnik    | Frontend, Dokumentacija      |
+| Lucija Stipetić | Backend                      |
+| Filip Šušak     | Backend                      |
 
 
 
