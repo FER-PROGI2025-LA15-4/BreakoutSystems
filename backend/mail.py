@@ -103,11 +103,11 @@ def create_mail(ime_tima: str, datvrpoc: str, room_id: str, subject: str, body: 
     ics_data = create_ics(start_dt, duration_minutes=60)
 
     db = get_db_connection()
-    leader = db.execute("SELECT voditelj_username FROM Tim WHERE ime_tima = ?", (ime_tima,)).fetchone()
+    leader = db.execute("SELECT voditelj_username AS username FROM Tim WHERE ime = ?", (ime_tima,)).fetchone()
     members = db.execute("SELECT username FROM ClanTima WHERE ime_tima = ?", (ime_tima,)).fetchall()
     members.append(leader)
     for member in members:
-        played_room = db.execute("SELECT * FROM ClanNaTerminu WHERE username = ? AND room_id = ?", member["username"], room_id).fetchone()
+        played_room = db.execute("SELECT * FROM ClanNaTerminu WHERE username = ? AND room_id = ?", (member["username"], room_id,)).fetchone()
         if played_room:
             continue
         address = db.execute("SELECT email FROM Polaznik WHERE username = ?", (member["username"],)).fetchone()
@@ -136,9 +136,9 @@ def send_reminder():
 
     for team in teams:
         room_name = db.execute("SELECT naziv FROM EscapeRoom WHERE room_id = ?", (team["room_id"],)).fetchone()
-        time = db.execute("SELECT strftime('%H:%M', ?) AS time", team["datVrPoc"]).fetchone()
-        month = db.execute("SELECT strftime('%m', ?) AS month", team["datVrPoc"]).fetchone()
-        day = db.execute("SELECT strftime('%d', ?) AS day", team["datVrPoc"]).fetchone()
+        time = db.execute("SELECT strftime('%H:%M', ?) AS time", (team["datVrPoc"],)).fetchone()
+        month = db.execute("SELECT strftime('%m', ?) AS month", (team["datVrPoc"],)).fetchone()
+        day = db.execute("SELECT strftime('%d', ?) AS day", (team["datVrPoc"],)).fetchone()
         body = f"Šaljemo van podsjetnik na rezerviran termin za sobu {room_name["naziv"]} datuma {day["day"]}.{month["month"]} u {time["time"]}."
         create_mail(team["ime_tima"], team["datVrPoc"], team["room_id"], subject, body)
 
