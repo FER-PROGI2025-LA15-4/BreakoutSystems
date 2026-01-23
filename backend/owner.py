@@ -196,7 +196,7 @@ def add_appointment():
             return jsonify({'error': 'Already exists'}), 400
 
         db.execute(
-            "INSERT INTO Termin (room_id, datVrPoc) VALUES (?, ?)",
+            "INSERT INTO Termin (room_id, datVrPoc, ime_tima) VALUES (?, ?, NULL)",
             (room_id, date_time_string)
         )
         db.commit()

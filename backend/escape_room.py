@@ -293,6 +293,7 @@ def get_appointments():
                 SELECT ime_tima, datVrPoc, rezultatSekunde
                 FROM Termin
                 WHERE room_id = ?
+                AND ime_tima IS NULL
                 ORDER BY datVrPoc DESC
             """, (room_id,)).fetchall()
 

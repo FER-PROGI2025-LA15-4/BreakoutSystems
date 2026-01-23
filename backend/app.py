@@ -112,7 +112,16 @@ def run_test_sql():
 if __name__ == '__main__':
     with app.app_context():
         init_db()
+        scheduler = BackgroundScheduler()
+
+
+        def reminder_job():
+            with app.app_context():
+                send_reminder()
+
+
+        scheduler.add_job(reminder_job, 'interval', minutes=1)
+        scheduler.start()
+
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)), host='0.0.0.0')
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(send_reminder, 'interval', hours=1)
-    scheduler.start()
+
