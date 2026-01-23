@@ -453,20 +453,20 @@ function MyTeamsTab() {
                         )}
                     </ul>
                 </>}
-                {((user.uloga === "ADMIN" && (selectedTeamInvites || selectedTeam.members.length < 10)) || (user.uloga === "POLAZNIK" && selectedTeamInvites && selectedTeamInvites.length > 0)) &&
+                {((user.username === selectedTeam.leader && ((selectedTeamInvites && selectedTeamInvites.length > 0) || selectedTeam.members.length < 10)) || (selectedTeamInvites && selectedTeamInvites.length > 0)) &&
                     (<div className="team-invites">
                         <p className="pozvani-korisnici-naslov">Pozvani korisnici:</p>
-                        {selectedTeamInvites &&
+                        {(selectedTeamInvites && selectedTeamInvites.length > 0) &&
                             <ul>
                                 {selectedTeamInvites.map((member) =>
                                     <li key={member}>
                                         <p>{member}</p>
-                                        <button onClick={() => submitUserRemove(member)}>Ukloni</button>
+                                        {user.username === selectedTeam.leader && <button onClick={() => submitUserRemove(member)}>Ukloni</button>}
                                     </li>
                                 )}
                             </ul>
                         }
-                        {user.uloga === "ADMIN" && selectedTeam.members.length + selectedTeamInvites.length < 10 &&
+                        {user.username === selectedTeam.leader && selectedTeam.members.length + selectedTeamInvites.length < 10 &&
                             <form onSubmit={submitUserAdd}>
                                 <input type={"hidden"} name={"name"} value={selectedTeam.name} required={true}/>
                                 <input className="pozovi" type={"text"} name={"user"} placeholder={"Korisničko ime"} required={true}/>
@@ -1026,7 +1026,7 @@ function ResultEntryTab() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    appointmentRoomId: selectedAppointment.room_id,
+                    appointmentRoomId: selectedRoom.room_id,
                     appointmentDatVrPoc: selectedAppointment.datVrPoc,
                     teamMembers: selectedMembers,
                     resultSeconds: timeSeconds
