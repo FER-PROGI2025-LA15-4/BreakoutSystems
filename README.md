@@ -25,8 +25,16 @@ Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu.
 
 
 ## Tehnologije
-[_Wiki - Tehnologije za implementaciju aplikacije_ ](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/7.-Tehnologije-za-implementaciju-aplikacije)
-
+* Komunikacija: WhatsApp, Microsoft Teams, Git/GitHub
+* Dokumentacija: LaTeX, ERDPlus, Astah UML
+* Razvojna okruženja: VS Code, PyCharm, WebStorm
+* Backend: Python 3.11, Flask 2.3
+* Frontend: React 19.2, JavaScript ES2022
+* Baza podataka: SQLite 3.41
+* Testiranje: Selenium WebDriver 4.15, pytest 7.4
+* CI/CD: GitHub Actions, Azure App Service
+  
+Sve tehnologije su besplatne ili imaju studentski/besplatni tier.
 ## Instalacija
 [_Wiki - Upute za puštanje u pogon_](https://github.com/FER-PROGI2025-LA15-4/BreakoutSystems/wiki/8.--Upute-za-puštanje-u-pogon)
 
@@ -40,8 +48,7 @@ Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu.
 | Lucija Stipetić | Backend                    |
 | Filip Šušak     | Backend                    |
 
-## Kontribucije
->Pravila ovise o organizaciji tima i su često izdvojena u CONTRIBUTING.md
+
 
 
 
