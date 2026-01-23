@@ -404,7 +404,7 @@ function RoomContent({ room }) {
                             {user && user.uloga === "POLAZNIK" ? (
                                 <Select
                                     components={animatedComponents}
-                                    options={teams ? teams.map((team) => ({ value: team.name, label: team.name, team: team })) : []}
+                                    options={teams ? teams.filter((team) => team.leader === user.username).map((team) => ({ value: team.name, label: team.name, team: team })) : []}
                                     isLoading={teams === null}
                                     isMulti={false}
                                     isClearable={true}

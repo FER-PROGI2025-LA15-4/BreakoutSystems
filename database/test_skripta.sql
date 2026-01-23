@@ -15,8 +15,11 @@ INSERT INTO Korisnik (username, oauth_id, uloga) VALUES
 ('elena123', 'oauth_polaznik_444', 'POLAZNIK'),
 ('antonio123', 'oauth_polaznik_555', 'POLAZNIK'),
 ('am', 'oauth_vlasnik_648', 'VLASNIK'),
-('am2', '40371578', 'ADMIN'),
-('sara123', 'oauth_polaznik_666', 'POLAZNIK');
+('am2', 'oauth_vlasnik_649', 'ADMIN'),
+('am3', '40371578', 'POLAZNIK'),
+('sara123', 'oauth_polaznik_666', 'POLAZNIK'),
+('ivasovic', '68243603', 'ADMIN'),
+('dona301', '184747755', 'ADMIN');
 
 -- VLASNICI
 INSERT INTO Vlasnik (username, naziv_tvrtke, adresa, grad, telefon, logoImgUrl, clanarinaDoDatVr) VALUES
@@ -36,7 +39,8 @@ INSERT INTO Polaznik (username, email, profImgUrl) VALUES
 ('matej123', 'matej.babic@gmail.com', 'https://picsum.photos/500/505'),
 ('elena123', 'elena.kralj@icloud.com', 'https://picsum.photos/500/506'),
 ('antonio123', 'antonio.vukovic@protonmail.com', 'https://picsum.photos/500/507'),
-('sara123', 'sara.visic@email.com', 'https://picsum.photos/500/508');
+('sara123', 'sara.visic@email.com', 'https://picsum.photos/500/508'),
+('am3', 'sara.visic@email.com', 'https://picsum.photos/500/508');
 
 -- ESCAPE ROOM 
 INSERT INTO EscapeRoom (room_id, naziv, opis, geo_lat, geo_long, adresa, grad, inicijalna_tezina, cijena, minBrClanTima, maxBrClanTima, kategorija, vlasnik_username) VALUES
@@ -71,6 +75,7 @@ INSERT INTO Tim (ime, image_url, voditelj_username) VALUES
 -- ČLANOVI TIMA (prihvaćeni i pending zahtjevi)
 INSERT INTO ClanTima (ime_tima, username, accepted) VALUES
 ('Tim Alfa', 'matej123', 1),
+('Tim Alfa', 'am3', 1),
 ('Tim Alfa', 'elena123', 1),
 ('Tim Alfa', 'sara123', 0),    -- pending 
 ('Tim Beta', 'josip123', 1),
@@ -140,7 +145,8 @@ INSERT INTO Termin (room_id, datVrPoc, ime_tima, rezultatSekunde) VALUES
 (12, '2026-03-02 14:00:00', 'Tim Beta', NULL), 
 (13, '2026-04-03 18:00:00', 'Tim Alfa', NULL),
 (9, '2027-02-01 17:00:00', 'Tim Delta', NULL),
-(9, '2027-02-01 20:00:00', 'Tim Epsilon', NULL);
+(9, '2027-02-01 20:00:00', 'Tim Epsilon', NULL),
+(9, '2026-02-01 20:00:00', NULL, NULL);
 
 
 
