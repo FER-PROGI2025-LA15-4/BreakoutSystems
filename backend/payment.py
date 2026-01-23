@@ -4,6 +4,7 @@ from flask_login import current_user,login_required
 from db_connection import get_db_connection
 import stripe
 from datetime import datetime, timedelta
+from mail import send_confirmation
 
 payment_bp = Blueprint('payment', __name__)
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -140,6 +141,9 @@ def confirm_payment():
 
                 db.commit()
                 db.close()
+
+                send_confirmation(ime_tima, datVrPoc, room_id)
+
                 return jsonify({"status": "success", "message": "Termin uspješno rezerviran."})
         return jsonify({"status": "failed"}), 400
     except Exception as e:
