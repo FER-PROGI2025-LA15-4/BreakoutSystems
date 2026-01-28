@@ -132,7 +132,7 @@ def send_reminder():
     now = datetime.now()
     window_start = now + timedelta(hours=23)
     window_end = now + timedelta(hours=25)
-    teams = db.execute("SELECT ime_tima, datVrPoc, room_id FROM Termin WHERE datVrPoc BETWEEN ? AND ? AND notified = FALSE", (window_start.isoformat(), window_end.isoformat(),)).fetchall()
+    teams = db.execute("SELECT ime_tima, datVrPoc, room_id FROM Termin WHERE datVrPoc BETWEEN ? AND ? AND notified = 0", (window_start.isoformat(), window_end.isoformat(),)).fetchall()
 
     for team in teams:
         room_name = db.execute("SELECT naziv FROM EscapeRoom WHERE room_id = ?", (team["room_id"],)).fetchone()
@@ -141,7 +141,8 @@ def send_reminder():
         day = db.execute("SELECT strftime('%d', ?) AS day", (team["datVrPoc"],)).fetchone()
         body = f"Šaljemo van podsjetnik na rezerviran termin za sobu {room_name["naziv"]} datuma {day["day"]}.{month["month"]} u {time["time"]}."
         create_mail(team["ime_tima"], team["datVrPoc"], team["room_id"], subject, body)
-        db.execute("UPDATE Termin SET notified = TRUE WHERE ime_tima = ? AND datVrPoc = ? and room_id = ?", (team["ime_tima"], team["datVrPoc"], team["room_id"],)).fetchone()
+        db.execute("UPDATE Termin SET notified = 1 WHERE ime_tima = ? AND datVrPoc = ? and room_id = ?", (team["ime_tima"], team["datVrPoc"], team["room_id"],))
+        db.commit()
 
     db.close()
 
